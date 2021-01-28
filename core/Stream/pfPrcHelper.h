@@ -20,9 +20,12 @@
 #include "hsStream.h"
 #include <stack>
 
-class PLASMA_DLL pfPrcHelper {
+class PLASMA_DLL pfPrcHelper
+{
 public:
-    enum PrcExclude {
+    enum PrcExclude
+    {
+        kNone = 0,
         kExcludeTextureData = 0x1,
         kExcludeVertexData = 0x2
     };
@@ -40,7 +43,7 @@ private:
 
 public:
     pfPrcHelper(hsStream* S)
-        : iLvl(0), inTag(false), file(S), excludes(0) { startPrc(); }
+        : iLvl(), inTag(), file(S), excludes() { startPrc(); }
     ~pfPrcHelper() { finalize(); }
 
     void directWrite(const ST::string& text);

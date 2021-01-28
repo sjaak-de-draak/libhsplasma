@@ -24,12 +24,13 @@ PY_PLASMA_NEW_MSG(GUICtrlProcObject, "pfGUICtrlProcObject is abstract")
 
 PY_PLASMA_TYPE(GUICtrlProcObject, pfGUICtrlProcObject, "pfGUICtrlProcObject wrapper")
 
-PY_PLASMA_TYPE_INIT(GUICtrlProcObject) {
+PY_PLASMA_TYPE_INIT(GUICtrlProcObject)
+{
     pyGUICtrlProcObject_Type.tp_dealloc = pyGUICtrlProcObject_dealloc;
     pyGUICtrlProcObject_Type.tp_init = pyGUICtrlProcObject___init__;
     pyGUICtrlProcObject_Type.tp_new = pyGUICtrlProcObject_new;
     if (PyType_CheckAndReady(&pyGUICtrlProcObject_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyGUICtrlProcObject_Type);
     return (PyObject*)&pyGUICtrlProcObject_Type;

@@ -34,13 +34,14 @@ static PyGetSetDef pyScalarKey_GetSet[] = {
 
 PY_PLASMA_TYPE(ScalarKey, hsScalarKey, "hsScalarKey wrapper")
 
-PY_PLASMA_TYPE_INIT(ScalarKey) {
+PY_PLASMA_TYPE_INIT(ScalarKey)
+{
     pyScalarKey_Type.tp_init = pyScalarKey___init__;
     pyScalarKey_Type.tp_new = pyScalarKey_new;
     pyScalarKey_Type.tp_getset = pyScalarKey_GetSet;
     pyScalarKey_Type.tp_base = &pyKeyFrame_Type;
     if (PyType_CheckAndReady(&pyScalarKey_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyScalarKey_Type);
     return (PyObject*)&pyScalarKey_Type;

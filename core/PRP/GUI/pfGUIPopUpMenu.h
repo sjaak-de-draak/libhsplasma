@@ -19,20 +19,24 @@
 
 #include "pfGUIDialogMod.h"
 
-class PLASMA_DLL pfGUIPopUpMenu : public pfGUIDialogMod {
+class PLASMA_DLL pfGUIPopUpMenu : public pfGUIDialogMod
+{
     CREATABLE(pfGUIPopUpMenu, kGUIPopUpMenu, pfGUIDialogMod)
 
 public:
-    enum Alignment {
+    enum Alignment
+    {
         kAlignUpLeft, kAlignUpRight, kAlignDownLeft, kAlignDownRight
     };
 
-    enum MenuFlags {
+    enum MenuFlags
+    {
         kStayOpenAfterClick = kDerivedFlagsStart, kModalOutsideMenus,
         kOpenSubMenusOnHover, kScaleWithResolution
     };
 
-    struct PLASMA_DLL pfMenuItem {
+    struct PLASMA_DLL pfMenuItem
+    {
         ST::string fName;
         pfGUICtrlProcWriteableObject* fHandler;
         plKey fSubMenu;
@@ -48,7 +52,7 @@ protected:
 
 public:
     pfGUIPopUpMenu();
-    virtual ~pfGUIPopUpMenu();
+    ~pfGUIPopUpMenu();
 
     void read(hsStream* S, plResManager* mgr) HS_OVERRIDE;
     void write(hsStream* S, plResManager* mgr) HS_OVERRIDE;
@@ -73,9 +77,9 @@ public:
     Alignment getAlignment() const { return fAlignment; }
 
     void setMargin(unsigned short margin) { fMargin = margin; }
-    void setSkin(plKey skin) { fSkin = skin; }
-    void setOriginContext(plKey context) { fOriginContext = context; }
-    void setOriginAnchor(plKey anchor) { fOriginAnchor = anchor; }
+    void setSkin(plKey skin) { fSkin = std::move(skin); }
+    void setOriginContext(plKey context) { fOriginContext = std::move(context); }
+    void setOriginAnchor(plKey anchor) { fOriginAnchor = std::move(anchor); }
     void setAlignment(Alignment align) { fAlignment = align; }
 };
 

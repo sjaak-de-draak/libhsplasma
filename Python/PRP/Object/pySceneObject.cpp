@@ -44,11 +44,11 @@ PY_METHOD_VA(SceneObject, addInterface,
     pyKey* key;
     if (!PyArg_ParseTuple(args, "O", &key)) {
         PyErr_SetString(PyExc_TypeError, "addInterface expects a plKey");
-        return NULL;
+        return nullptr;
     }
     if (!pyKey_Check((PyObject*)key)) {
         PyErr_SetString(PyExc_TypeError, "addInterface expects a plKey");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addInterface(*key->fThis);
     Py_RETURN_NONE;
@@ -61,11 +61,11 @@ PY_METHOD_VA(SceneObject, addModifier,
     pyKey* key;
     if (!PyArg_ParseTuple(args, "O", &key)) {
         PyErr_SetString(PyExc_TypeError, "addModifier expects a plKey");
-        return NULL;
+        return nullptr;
     }
     if (!pyKey_Check((PyObject*)key)) {
         PyErr_SetString(PyExc_TypeError, "addModifier expects a plKey");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addModifier(*key->fThis);
     Py_RETURN_NONE;
@@ -78,7 +78,7 @@ PY_METHOD_VA(SceneObject, delInterface,
     int idx;
     if (!PyArg_ParseTuple(args, "i", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delInterface expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->delInterface(idx);
     Py_RETURN_NONE;
@@ -91,7 +91,7 @@ PY_METHOD_VA(SceneObject, delModifier,
     int idx;
     if (!PyArg_ParseTuple(args, "i", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delModifier expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->delModifier(idx);
     Py_RETURN_NONE;
@@ -107,7 +107,8 @@ PyMethodDef pySceneObject_Methods[] = {
     PY_METHOD_TERMINATOR
 };
 
-PY_GETSET_GETTER_DECL(SceneObject, interfaces) {
+PY_GETSET_GETTER_DECL(SceneObject, interfaces)
+{
     PyObject* list = PyTuple_New(self->fThis->getInterfaces().size());
     for (size_t i=0; i<self->fThis->getInterfaces().size(); i++)
         PyTuple_SET_ITEM(list, i, pyKey_FromKey(self->fThis->getInterfaces()[i]));
@@ -117,7 +118,8 @@ PY_GETSET_GETTER_DECL(SceneObject, interfaces) {
 PY_PROPERTY_SETTER_MSG(SceneObject, interfaces, "To add Interfaces, use addInterface")
 PY_PROPERTY_GETSET_DECL(SceneObject, interfaces)
 
-PY_GETSET_GETTER_DECL(SceneObject, modifiers) {
+PY_GETSET_GETTER_DECL(SceneObject, modifiers)
+{
     PyObject* list = PyTuple_New(self->fThis->getModifiers().size());
     for (size_t i=0; i<self->fThis->getModifiers().size(); i++)
         PyTuple_SET_ITEM(list, i, pyKey_FromKey(self->fThis->getModifiers()[i]));
@@ -146,13 +148,14 @@ PyGetSetDef pySceneObject_GetSet[] = {
 
 PY_PLASMA_TYPE(SceneObject, plSceneObject, "plSceneObject wrapper")
 
-PY_PLASMA_TYPE_INIT(SceneObject) {
+PY_PLASMA_TYPE_INIT(SceneObject)
+{
     pySceneObject_Type.tp_new = pySceneObject_new;
     pySceneObject_Type.tp_methods = pySceneObject_Methods;
     pySceneObject_Type.tp_getset = pySceneObject_GetSet;
     pySceneObject_Type.tp_base = &pySynchedObject_Type;
     if (PyType_CheckAndReady(&pySceneObject_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pySceneObject_Type);
     return (PyObject*)&pySceneObject_Type;

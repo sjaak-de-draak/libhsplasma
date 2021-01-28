@@ -19,17 +19,20 @@
 
 #include "PRP/KeyedObject/hsKeyedObject.h"
 
-class PLASMA_DLL plAudible : public hsKeyedObject {
+class PLASMA_DLL plAudible : public hsKeyedObject
+{
     CREATABLE(plAudible, kAudible, hsKeyedObject)
 };
 
 
-class PLASMA_DLL plAudibleNull : public plAudible {
+class PLASMA_DLL plAudibleNull : public plAudible
+{
     CREATABLE(plAudibleNull, kAudibleNull, plAudible)
 };
 
 
-class PLASMA_DLL plWinAudible : public plAudible {
+class PLASMA_DLL plWinAudible : public plAudible
+{
     CREATABLE(plWinAudible, kWinAudible, plAudible)
 
 private:
@@ -47,16 +50,17 @@ protected:
 public:
     const std::vector<plKey>& getSounds() const { return fSoundObjs; }
     std::vector<plKey>& getSounds() { return fSoundObjs; }
-    void addSound(plKey sound) { fSoundObjs.push_back(sound); }
+    void addSound(plKey sound) { fSoundObjs.emplace_back(std::move(sound)); }
     void delSound(size_t idx) { fSoundObjs.erase(fSoundObjs.begin() + idx); }
     void clearSounds() { fSoundObjs.clear(); }
 
     plKey getSceneNode() const { return fSceneNode; }
-    void setSceneNode(plKey node) { fSceneNode = node; }
+    void setSceneNode(plKey node) { fSceneNode = std::move(node); }
 };
 
 
-class PLASMA_DLL pl2WayWinAudible : public plWinAudible {
+class PLASMA_DLL pl2WayWinAudible : public plWinAudible
+{
     CREATABLE(pl2WayWinAudible, k2WayWinAudible, plWinAudible)
 };
 

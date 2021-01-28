@@ -20,7 +20,8 @@
 #include "plModifier.h"
 #include "Math/hsMatrix44.h"
 
-class PLASMA_DLL plPostEffectMod : public plSingleModifier {
+class PLASMA_DLL plPostEffectMod : public plSingleModifier
+{
     CREATABLE(plPostEffectMod, kPostEffectMod, plSingleModifier)
 
 public:
@@ -59,7 +60,7 @@ public:
     void setFovX(float x) { fFovX = x; }
     void setFovY(float y) { fFovY = y; }
     void setFov(float x, float y) { fFovX = x; fFovY = y; }
-    void setNodeKey(plKey node) { fNodeKey = node; }
+    void setNodeKey(plKey node) { fNodeKey = std::move(node); }
     void setDefaultW2C(const hsMatrix44& w2c) { fDefaultW2C = w2c; }
     void setDefaultC2W(const hsMatrix44& c2w) { fDefaultC2W = c2w; }
 };

@@ -25,13 +25,14 @@
 #include "plSpaceTree.h"
 #include "plIcicle.h"
 #include "plGeometrySpan.h"
-#include <memory>
 #include <vector>
 #include <list>
 
-class PLASMA_DLL plDISpanIndex {
+class PLASMA_DLL plDISpanIndex
+{
 public:
-    enum {
+    enum
+    {
         kNone = 0x0,
         kMatrixOnly = 0x1,
         kDontTransformSpans = 0x2
@@ -41,18 +42,20 @@ public:
     std::vector<unsigned int> fIndices;
 
 public:
-    plDISpanIndex() : fFlags(0) { }
+    plDISpanIndex() : fFlags() { }
     plDISpanIndex(const plDISpanIndex& init)
         : fFlags(init.fFlags), fIndices(init.fIndices) { }
     plDISpanIndex& operator=(const plDISpanIndex& cpy);
 };
 
 
-class PLASMA_DLL plDrawable : public hsKeyedObject {
+class PLASMA_DLL plDrawable : public hsKeyedObject
+{
     CREATABLE(plDrawable, kDrawable, hsKeyedObject)
 
 public:
-    enum {
+    enum
+    {
         kPropNoDraw = 0x1,
         kPropUNUSED = 0x2,
         kPropSortSpans = 0x4,
@@ -65,14 +68,16 @@ public:
         kPropHasVisLOS = 0x200
     };
 
-    enum {
+    enum
+    {
         kCritStatic = 0x1,
         kCritSortSpans = 0x2,
         kCritSortFaces = 0x8,
         kCritCharacter = 0x10
     };
 
-    enum plDrawableType {
+    enum plDrawableType
+    {
         kNormal = 0x1,
         kNonDrawable = 0x2,
         kEnviron = 0x4,
@@ -88,7 +93,8 @@ public:
         kAllTypes = 0x0000FF
     };
 
-    enum plSubDrawableType {
+    enum plSubDrawableType
+    {
         kSubNormal = 0x1,
         kSubNonDrawable = 0x2,
         kSubEnviron = 0x4,
@@ -103,7 +109,8 @@ public:
 };
 
 
-class PLASMA_DLL plDrawableSpans : public plDrawable {
+class PLASMA_DLL plDrawableSpans : public plDrawable
+{
     CREATABLE(plDrawableSpans, kDrawableSpans, plDrawable)
 
 protected:
@@ -121,11 +128,11 @@ protected:
     unsigned int fProps, fCriteria;
     unsigned int fRenderLevel;
     plKey fSceneNode;
-    std::vector< std::shared_ptr<plGeometrySpan> > fSourceSpans;
+    std::vector<plGeometrySpan*> fSourceSpans;
 
 public:
-    plDrawableSpans() : fSpaceTree(NULL), fProps(0), fCriteria(0), fRenderLevel(0) { }
-    virtual ~plDrawableSpans();
+    plDrawableSpans() : fSpaceTree(), fProps(), fCriteria(), fRenderLevel() { }
+    ~plDrawableSpans();
 
     void read(hsStream* S, plResManager* mgr) HS_OVERRIDE;
     void write(hsStream* S, plResManager* mgr) HS_OVERRIDE;
@@ -143,11 +150,16 @@ protected:
                      std::vector<plSpaceBuilderNode*>& right);
     void ISortSpace(std::vector<plSpaceBuilderNode*>& nodes, int axis);
 
+    /**
+     * Finds a buffer group with enough space for the requested amount of vertices.
+     */
+    size_t IFindBufferGroup(unsigned int format, unsigned int vertsNeeded);
+
 public:
     size_t getNumSpans() const { return fSpans.size(); }
     plSpan* getSpan(size_t idx) const { return fSpans[idx]; }
     plIcicle* getIcicle(size_t idx) const { return (plIcicle*)fSpans[idx]; }
-    size_t addIcicle(const plIcicle& span);
+    size_t addIcicle(plIcicle* span);
     void clearSpans();
 
     size_t getNumBufferGroups() const { return fGroups.size(); }
@@ -176,8 +188,8 @@ public:
     hsMatrix44 getLocalToBone(size_t idx) const { return fLocalToBones[idx]; }
     hsMatrix44 getBoneToLocal(size_t idx) const { return fBoneToLocals[idx]; }
     void clearTransforms();
-    void addTransform(const hsMatrix44& l2w, const hsMatrix44& w2l,
-                      const hsMatrix44& l2b, const hsMatrix44& b2l);
+    size_t addTransform(const hsMatrix44& l2w, const hsMatrix44& w2l,
+                        const hsMatrix44& l2b, const hsMatrix44& b2l);
 
     const hsBounds3Ext& getLocalBounds() { return fLocalBounds; }
     const hsBounds3Ext& getWorldBounds() { return fWorldBounds; }
@@ -188,7 +200,7 @@ public:
 
     const std::vector<plKey>& getMaterials() const { return fMaterials; }
     std::vector<plKey>& getMaterials() { return fMaterials; }
-    void addMaterial(plKey mat) { fMaterials.push_back(mat); }
+    void addMaterial(plKey mat) { fMaterials.emplace_back(std::move(mat)); }
     void clearMaterials() { fMaterials.clear(); }
 
     plSpaceTree* getSpaceTree() const { return fSpaceTree; }
@@ -201,15 +213,15 @@ public:
     void setProps(unsigned int props) { fProps = props; }
     void setCriteria(unsigned int crit) { fCriteria = crit; }
     void setRenderLevel(unsigned int level) { fRenderLevel = level; }
-    void setSceneNode(plKey node) { fSceneNode = node; }
+    void setSceneNode(plKey node) { fSceneNode = std::move(node); }
 
     void composeGeometry(bool clearspans=true, bool calcbounds=false);
     void decomposeGeometry(bool clearcolors=false);
-    size_t buildDIIndex(const std::vector<std::shared_ptr<plGeometrySpan> >& spans);
+    size_t buildDIIndex(const std::vector<plGeometrySpan*>& spans);
 
-    const std::vector<std::shared_ptr<plGeometrySpan> > getSourceSpans() const { return fSourceSpans; }
-    std::vector<std::shared_ptr<plGeometrySpan> > getSourceSpans() { return fSourceSpans; }
-    size_t addSourceSpan(const std::shared_ptr<plGeometrySpan>& span);
+    const std::vector<plGeometrySpan*>& getSourceSpans() const { return fSourceSpans; }
+    std::vector<plGeometrySpan*>& getSourceSpans() { return fSourceSpans; }
+    size_t addSourceSpan(plGeometrySpan* span);
 };
 
 #endif

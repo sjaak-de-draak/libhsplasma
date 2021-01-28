@@ -16,20 +16,22 @@
 
 #include "plAvBrainGeneric.h"
 
-plAvBrainGeneric::~plAvBrainGeneric() {
+plAvBrainGeneric::~plAvBrainGeneric()
+{
     for (auto stage = fStages.begin(); stage != fStages.end(); ++stage)
         delete *stage;
     delete fStartMessage;
     delete fEndMessage;
 }
 
-void plAvBrainGeneric::read(hsStream* S, plResManager* mgr) {
+void plAvBrainGeneric::read(hsStream* S, plResManager* mgr)
+{
     plArmatureBrain::read(S, mgr);
 
     clearStages();
     fStages.resize(S->readInt());
     for (size_t i=0; i<fStages.size(); i++) {
-        fStages[i] = plAnimStage::Convert(mgr->ReadCreatable(S));
+        fStages[i] = mgr->ReadCreatableC<plAnimStage>(S);
         fStages[i]->readAux(S);
     }
 
@@ -40,14 +42,14 @@ void plAvBrainGeneric::read(hsStream* S, plResManager* mgr) {
     fForward = S->readBool();
 
     if (S->readBool())
-        setStartMessage(plMessage::Convert(mgr->ReadCreatable(S)));
+        setStartMessage(mgr->ReadCreatableC<plMessage>(S));
     else
-        setStartMessage(NULL);
+        setStartMessage(nullptr);
 
     if (S->readBool())
-        setEndMessage(plMessage::Convert(mgr->ReadCreatable(S)));
+        setEndMessage(mgr->ReadCreatableC<plMessage>(S));
     else
-        setEndMessage(NULL);
+        setEndMessage(nullptr);
 
     fFadeIn = S->readFloat();
     fFadeOut = S->readFloat();
@@ -56,7 +58,8 @@ void plAvBrainGeneric::read(hsStream* S, plResManager* mgr) {
     fRecipient = mgr->readKey(S);
 }
 
-void plAvBrainGeneric::write(hsStream* S, plResManager* mgr) {
+void plAvBrainGeneric::write(hsStream* S, plResManager* mgr)
+{
     plArmatureBrain::write(S, mgr);
 
     S->writeInt(fStages.size());
@@ -71,12 +74,12 @@ void plAvBrainGeneric::write(hsStream* S, plResManager* mgr) {
     S->writeByte(fMode);
     S->writeBool(fForward);
 
-    S->writeBool(fStartMessage != NULL);
-    if (fStartMessage != NULL)
+    S->writeBool(fStartMessage != nullptr);
+    if (fStartMessage)
         mgr->WriteCreatable(S, fStartMessage);
 
-    S->writeBool(fEndMessage != NULL);
-    if (fEndMessage != NULL)
+    S->writeBool(fEndMessage != nullptr);
+    if (fEndMessage)
         mgr->WriteCreatable(S, fEndMessage);
 
     S->writeFloat(fFadeIn);
@@ -86,7 +89,8 @@ void plAvBrainGeneric::write(hsStream* S, plResManager* mgr) {
     mgr->writeKey(S, fRecipient);
 }
 
-void plAvBrainGeneric::IPrcWrite(pfPrcHelper* prc) {
+void plAvBrainGeneric::IPrcWrite(pfPrcHelper* prc)
+{
     plArmatureBrain::IPrcWrite(prc);
 
     prc->startTag("Stages");
@@ -111,7 +115,7 @@ void plAvBrainGeneric::IPrcWrite(pfPrcHelper* prc) {
     prc->writeParam("BodyUsage", fBodyUsage);
     prc->endTag(true);
 
-    if (fStartMessage != NULL) {
+    if (fStartMessage) {
         prc->writeSimpleTag("StartMessage");
         fStartMessage->prcWrite(prc);
         prc->closeTag();
@@ -121,7 +125,7 @@ void plAvBrainGeneric::IPrcWrite(pfPrcHelper* prc) {
         prc->endTag(true);
     }
 
-    if (fEndMessage != NULL) {
+    if (fEndMessage) {
         prc->writeSimpleTag("EndMessage");
         fEndMessage->prcWrite(prc);
         prc->closeTag();
@@ -136,7 +140,8 @@ void plAvBrainGeneric::IPrcWrite(pfPrcHelper* prc) {
     prc->closeTag();
 }
 
-void plAvBrainGeneric::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
+void plAvBrainGeneric::IPrcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     if (tag->getName() == "Stages") {
         fCurStage = tag->getParam("Current", "0").to_int();
         clearStages();
@@ -146,7 +151,7 @@ void plAvBrainGeneric::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
             if (child->getName() != "Stage")
                 throw pfPrcTagException(__FILE__, __LINE__, child->getName());
             const pfPrcTag* stageChild = child->getFirstChild();
-            while (stageChild != NULL) {
+            while (stageChild) {
                 fStages[i] = new plAnimStage();
                 if (stageChild->getName() == "plAnimStage") {
                     fStages[i]->prcParse(stageChild, mgr);
@@ -170,15 +175,15 @@ void plAvBrainGeneric::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
         fBodyUsage = (plAGAnim::BodyUsage)tag->getParam("BodyUsage", "0").to_uint();
     } else if (tag->getName() == "StartMessage") {
         if (tag->getParam("NULL", "False").to_bool()) {
-            setStartMessage(NULL);
+            setStartMessage(nullptr);
         } else if (tag->hasChildren()) {
-            setStartMessage(plMessage::Convert(mgr->prcParseCreatable(tag->getFirstChild())));
+            setStartMessage(mgr->prcParseCreatableC<plMessage>(tag->getFirstChild()));
         }
     } else if (tag->getName() == "EndMessage") {
         if (tag->getParam("NULL", "False").to_bool()) {
-            setEndMessage(NULL);
+            setEndMessage(nullptr);
         } else if (tag->hasChildren()) {
-            setEndMessage(plMessage::Convert(mgr->prcParseCreatable(tag->getFirstChild())));
+            setEndMessage(mgr->prcParseCreatableC<plMessage>(tag->getFirstChild()));
         }
     } else if (tag->getName() == "Recipient") {
         if (tag->hasChildren())
@@ -188,23 +193,27 @@ void plAvBrainGeneric::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
     }
 }
 
-void plAvBrainGeneric::delStage(size_t idx) {
+void plAvBrainGeneric::delStage(size_t idx)
+{
     delete fStages[idx];
     fStages.erase(fStages.begin() + idx);
 }
 
-void plAvBrainGeneric::clearStages() {
+void plAvBrainGeneric::clearStages()
+{
     for (auto stage = fStages.begin(); stage != fStages.end(); ++stage)
         delete *stage;
     fStages.clear();
 }
 
-void plAvBrainGeneric::setStartMessage(plMessage* msg) {
+void plAvBrainGeneric::setStartMessage(plMessage* msg)
+{
     delete fStartMessage;
     fStartMessage = msg;
 }
 
-void plAvBrainGeneric::setEndMessage(plMessage* msg) {
+void plAvBrainGeneric::setEndMessage(plMessage* msg)
+{
     delete fEndMessage;
     fEndMessage = msg;
 }

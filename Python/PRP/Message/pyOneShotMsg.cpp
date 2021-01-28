@@ -21,7 +21,8 @@
 
 PY_PLASMA_NEW(OneShotMsg, plOneShotMsg)
 
-PY_METHOD_NOARGS(OneShotMsg, clearCallbacks, "Remove all callbacks") {
+PY_METHOD_NOARGS(OneShotMsg, clearCallbacks, "Remove all callbacks")
+{
     self->fThis->getCallbacks().clearCallbacks();
     Py_RETURN_NONE;
 }
@@ -35,7 +36,7 @@ PY_METHOD_VA(OneShotMsg, addCallback,
     short user;
     if (!PyArg_ParseTuple(args, "esOh", "utf8", &marker, &key, &user) || !pyKey_Check(key)) {
         PyErr_SetString(PyExc_TypeError, "addCallback expects string, plKey, int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->getCallbacks().addCallback(marker, pyPlasma_get<plKey>(key), user);
     Py_RETURN_NONE;
@@ -48,12 +49,12 @@ PY_METHOD_VA(OneShotMsg, delCallback,
     Py_ssize_t idx;
     if (!PyArg_ParseTuple(args, "n", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delCallback expects an int");
-        return NULL;
+        return nullptr;
     }
     plOneShotCallbacks& cbs = self->fThis->getCallbacks();
     if (size_t(idx) >= cbs.getNumCallbacks()) {
         PyErr_SetNone(PyExc_IndexError);
-        return NULL;
+        return nullptr;
     }
     cbs.delCallback(idx);
     Py_RETURN_NONE;
@@ -66,7 +67,8 @@ static PyMethodDef pyOneShotMsg_Methods[] = {
     PY_METHOD_TERMINATOR
 };
 
-PY_GETSET_GETTER_DECL(OneShotMsg, callbacks) {
+PY_GETSET_GETTER_DECL(OneShotMsg, callbacks)
+{
     const plOneShotCallbacks& cbs = self->fThis->getCallbacks();
     PyObject* tup = PyTuple_New(cbs.getNumCallbacks());
     for (size_t i = 0; i < cbs.getNumCallbacks(); ++i) {
@@ -87,13 +89,14 @@ static PyGetSetDef pyOneShotMsg_GetSet[] = {
 
 PY_PLASMA_TYPE(OneShotMsg, plOneShotMsg, "plOneShotMsg wrapper")
 
-PY_PLASMA_TYPE_INIT(OneShotMsg) {
+PY_PLASMA_TYPE_INIT(OneShotMsg)
+{
     pyOneShotMsg_Type.tp_new = pyOneShotMsg_new;
     pyOneShotMsg_Type.tp_methods = pyOneShotMsg_Methods;
     pyOneShotMsg_Type.tp_getset = pyOneShotMsg_GetSet;
     pyOneShotMsg_Type.tp_base = &pyResponderMsg_Type;
     if (PyType_CheckAndReady(&pyOneShotMsg_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyOneShotMsg_Type);
     return (PyObject*)&pyOneShotMsg_Type;

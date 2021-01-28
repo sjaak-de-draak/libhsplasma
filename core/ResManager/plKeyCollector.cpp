@@ -20,7 +20,8 @@
 #include "Debug/plDebug.h"
 #include <list>
 
-plKeyCollector::~plKeyCollector() {
+plKeyCollector::~plKeyCollector()
+{
     unsigned keysLeft = 0;
 
     // This is now the "ultimate owner" of KeyedObjects, so we must delete
@@ -40,7 +41,8 @@ plKeyCollector::~plKeyCollector() {
         plDebug::Warning("Warning: {} keys were still loaded when the ResManager was destroyed.\n", keysLeft);
 }
 
-plKey plKeyCollector::findKey(plKey match) {
+plKey plKeyCollector::findKey(const plKey& match)
+{
     plKey key;
     std::vector<plKey> kList = getKeys(match->getLocation(), match->getType());
     for (unsigned int i=0; i < kList.size(); i++) {
@@ -52,13 +54,15 @@ plKey plKeyCollector::findKey(plKey match) {
     return key;
 }
 
-void plKeyCollector::add(plKey key) {
+void plKeyCollector::add(const plKey& key)
+{
     keys[key->getLocation()][key->getType()].push_back(key);
     if (key->getID() == 0)
         key->setID(keys[key->getLocation()][key->getType()].size());
 }
 
-void plKeyCollector::del(plKey key) {
+void plKeyCollector::del(const plKey& key)
+{
     std::vector<plKey>& keyList = keys[key->getLocation()][key->getType()];
     std::vector<plKey>::iterator it = keyList.begin();
     size_t sub = 0;
@@ -80,7 +84,8 @@ void plKeyCollector::del(plKey key) {
     }
 }
 
-void plKeyCollector::delAll(const plLocation& loc) {
+void plKeyCollector::delAll(const plLocation& loc)
+{
     std::map<short, std::vector<plKey> >& locList = keys[loc];
     auto loc_iter = locList.begin();
     while (loc_iter != locList.end()) {
@@ -98,7 +103,8 @@ void plKeyCollector::delAll(const plLocation& loc) {
     cleanupKeys();
 }
 
-void plKeyCollector::cleanupKeys() {
+void plKeyCollector::cleanupKeys()
+{
     auto loc_iter = keys.begin();
     while (loc_iter != keys.end()) {
         auto tp_iter = loc_iter->second.begin();
@@ -133,11 +139,13 @@ void plKeyCollector::cleanupKeys() {
     }
 }
 
-void plKeyCollector::reserveKeySpace(const plLocation& loc, short type, int num) {
+void plKeyCollector::reserveKeySpace(const plLocation& loc, short type, int num)
+{
     keys[loc][type].reserve(num);
 }
 
-void plKeyCollector::sortKeys(const plLocation& loc) {
+void plKeyCollector::sortKeys(const plLocation& loc)
+{
     std::vector<short> types = getTypes(loc);
     std::list<plKey> sortKeys;
     for (unsigned int i=0; i<types.size(); i++) {
@@ -156,11 +164,13 @@ void plKeyCollector::sortKeys(const plLocation& loc) {
     }
 }
 
-unsigned int plKeyCollector::countTypes(const plLocation& loc, bool checkKeys) {
+unsigned int plKeyCollector::countTypes(const plLocation& loc, bool checkKeys)
+{
     return getTypes(loc, checkKeys).size();
 }
 
-unsigned int plKeyCollector::countKeys(const plLocation& loc, bool checkKeys) {
+unsigned int plKeyCollector::countKeys(const plLocation& loc, bool checkKeys)
+{
     unsigned int kCount = 0;
     for (unsigned int i=0; i<TYPESPACE_MAX; i++)
         kCount += getKeys(loc, i, checkKeys).size();
@@ -168,7 +178,8 @@ unsigned int plKeyCollector::countKeys(const plLocation& loc, bool checkKeys) {
 }
 
 std::vector<plKey> plKeyCollector::getKeys(const plLocation& loc, short type,
-                                           bool checkKeys) {
+                                           bool checkKeys)
+{
     if (checkKeys) {
         std::list<plKey> kList;
         std::vector<plKey>::iterator it;
@@ -184,7 +195,8 @@ std::vector<plKey> plKeyCollector::getKeys(const plLocation& loc, short type,
     }
 }
 
-std::vector<short> plKeyCollector::getTypes(const plLocation& loc, bool checkKeys) {
+std::vector<short> plKeyCollector::getTypes(const plLocation& loc, bool checkKeys)
+{
     std::list<short> types;
     for (unsigned short i=0; i<TYPESPACE_MAX; i++) {
         if (checkKeys) {
@@ -208,7 +220,8 @@ std::vector<short> plKeyCollector::getTypes(const plLocation& loc, bool checkKey
     return std::vector<short>(types.begin(), types.end());
 }
 
-std::vector<plLocation> plKeyCollector::getPages() {
+std::vector<plLocation> plKeyCollector::getPages()
+{
     std::list<plLocation> pages;
     keymap_t::iterator i;
     for (i = keys.begin(); i != keys.end(); i++)
@@ -216,7 +229,8 @@ std::vector<plLocation> plKeyCollector::getPages() {
     return std::vector<plLocation>(pages.begin(), pages.end());
 }
 
-void plKeyCollector::ChangeLocation(const plLocation& from, const plLocation& to) {
+void plKeyCollector::ChangeLocation(const plLocation& from, const plLocation& to)
+{
     for (unsigned int i=0; i<TYPESPACE_MAX; i++) {
         if (from == to) {
             // Only flags are different
@@ -234,7 +248,8 @@ void plKeyCollector::ChangeLocation(const plLocation& from, const plLocation& to
     keys.erase(keys.find(from));
 }
 
-void plKeyCollector::MoveKey(plKey key, const plLocation& to) {
+void plKeyCollector::MoveKey(const plKey& key, const plLocation& to)
+{
     std::vector<plKey>& keyList = keys[key->getLocation()][key->getType()];
     std::vector<plKey>::iterator it = keyList.begin();
     size_t sub = 0;

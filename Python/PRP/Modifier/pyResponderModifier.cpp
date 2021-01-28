@@ -29,11 +29,11 @@ PY_METHOD_VA(ResponderModifier, addState,
     pyResponderModifier_State* state;
     if (!PyArg_ParseTuple(args, "O", &state)) {
         PyErr_SetString(PyExc_TypeError, "addState expects a plResponderModifier_State");
-        return NULL;
+        return nullptr;
     }
     if (!pyResponderModifier_State_Check((PyObject*)state)) {
         PyErr_SetString(PyExc_TypeError, "addState expects a plResponderModifier_State");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addState(state->fThis);
     state->fPyOwned = false;
@@ -47,13 +47,14 @@ PY_METHOD_VA(ResponderModifier, delState,
     int idx;
     if (!PyArg_ParseTuple(args, "i", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delState expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->delState(idx);
     Py_RETURN_NONE;
 }
 
-PY_METHOD_NOARGS(ResponderModifier, clearStates, "Delete all states from the Responder") {
+PY_METHOD_NOARGS(ResponderModifier, clearStates, "Delete all states from the Responder")
+{
     self->fThis->clearStates();
     Py_RETURN_NONE;
 }
@@ -65,7 +66,8 @@ static PyMethodDef pyResponderModifier_Methods[] = {
     PY_METHOD_TERMINATOR
 };
 
-PY_GETSET_GETTER_DECL(ResponderModifier, states) {
+PY_GETSET_GETTER_DECL(ResponderModifier, states)
+{
     PyObject* list = PyTuple_New(self->fThis->getStates().size());
     for (size_t i=0; i<self->fThis->getStates().size(); i++)
         PyTuple_SET_ITEM(list, i, pyResponderModifier_State_FromResponderModifier_State(self->fThis->getStates()[i]));
@@ -89,13 +91,14 @@ static PyGetSetDef pyResponderModifier_GetSet[] = {
 
 PY_PLASMA_TYPE(ResponderModifier, plResponderModifier, "plResponderModifier wrapper")
 
-PY_PLASMA_TYPE_INIT(ResponderModifier) {
+PY_PLASMA_TYPE_INIT(ResponderModifier)
+{
     pyResponderModifier_Type.tp_new = pyResponderModifier_new;
     pyResponderModifier_Type.tp_methods = pyResponderModifier_Methods;
     pyResponderModifier_Type.tp_getset = pyResponderModifier_GetSet;
     pyResponderModifier_Type.tp_base = &pySingleModifier_Type;
     if (PyType_CheckAndReady(&pyResponderModifier_Type) < 0)
-        return NULL;
+        return nullptr;
 
     PY_TYPE_ADD_CONST(ResponderModifier, "kDetectTrigger",
                       plResponderModifier::kDetectTrigger);

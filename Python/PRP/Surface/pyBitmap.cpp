@@ -29,7 +29,7 @@ PY_METHOD_VA(Bitmap, setConfig,
     int format;
     if (!PyArg_ParseTuple(args, "i", &format)) {
         PyErr_SetString(PyExc_TypeError, "setConfig expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->setConfig((plBitmap::ColorFormat)format);
     Py_RETURN_NONE;
@@ -48,12 +48,14 @@ PY_PROPERTY(unsigned char, Bitmap, DXCompression, getDXCompression, setDXCompres
 PY_PROPERTY(unsigned char, Bitmap, DXBlockSize, getDXBlockSize, setDXBlockSize)
 PY_PROPERTY(unsigned char, Bitmap, ARGBType, getARGBType, setARGBType)
 
-PY_GETSET_GETTER_DECL(Bitmap, modTime) {
+PY_GETSET_GETTER_DECL(Bitmap, modTime)
+{
     return Py_BuildValue("ii", pyPlasma_convert(self->fThis->getLowModTime()),
                                pyPlasma_convert(self->fThis->getHighModTime()));
 }
 
-PY_GETSET_SETTER_DECL(Bitmap, modTime) {
+PY_GETSET_SETTER_DECL(Bitmap, modTime)
+{
     PY_PROPERTY_CHECK_NULL(modTime)
     if (!PyTuple_Check(value) || (PyTuple_Size(value) != 2)) {
         PyErr_SetString(PyExc_TypeError, "modTime should be a tuple (int, int)");
@@ -87,13 +89,14 @@ static PyGetSetDef pyBitmap_GetSet[] = {
 
 PY_PLASMA_TYPE(Bitmap, plBitmap, "plBitmap wrapper")
 
-PY_PLASMA_TYPE_INIT(Bitmap) {
+PY_PLASMA_TYPE_INIT(Bitmap)
+{
     pyBitmap_Type.tp_new = pyBitmap_new;
     pyBitmap_Type.tp_methods = pyBitmap_Methods;
     pyBitmap_Type.tp_getset = pyBitmap_GetSet;
     pyBitmap_Type.tp_base = &pyKeyedObject_Type;
     if (PyType_CheckAndReady(&pyBitmap_Type) < 0)
-        return NULL;
+        return nullptr;
 
     // Flags
     PY_TYPE_ADD_CONST(Bitmap, "kAlphaChannelFlag", plBitmap::kAlphaChannelFlag);

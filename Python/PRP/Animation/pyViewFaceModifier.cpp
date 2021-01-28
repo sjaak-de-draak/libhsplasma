@@ -45,12 +45,13 @@ static PyGetSetDef pyViewFaceModifier_GetSet[] = {
 
 PY_PLASMA_TYPE(ViewFaceModifier, plViewFaceModifier, "plViewFaceModifier wrapper")
 
-PY_PLASMA_TYPE_INIT(ViewFaceModifier) {
+PY_PLASMA_TYPE_INIT(ViewFaceModifier)
+{
     pyViewFaceModifier_Type.tp_new = pyViewFaceModifier_new;
     pyViewFaceModifier_Type.tp_getset = pyViewFaceModifier_GetSet;
     pyViewFaceModifier_Type.tp_base = &pySingleModifier_Type;
     if (PyType_CheckAndReady(&pyViewFaceModifier_Type) < 0)
-        return NULL;
+        return nullptr;
 
     PY_TYPE_ADD_CONST(ViewFaceModifier, "kPivotFace", plViewFaceModifier::kPivotFace);
     PY_TYPE_ADD_CONST(ViewFaceModifier, "kPivotFavorY", plViewFaceModifier::kPivotFavorY);

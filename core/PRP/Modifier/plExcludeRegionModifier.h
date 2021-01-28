@@ -19,7 +19,8 @@
 
 #include "plModifier.h"
 
-class PLASMA_DLL plExcludeRegionModifier : public plSingleModifier {
+class PLASMA_DLL plExcludeRegionModifier : public plSingleModifier
+{
     CREATABLE(plExcludeRegionModifier, kExcludeRegionModifier, plSingleModifier)
 
 public:
@@ -31,7 +32,8 @@ protected:
     float fSeekTime;
 
 public:
-    plExcludeRegionModifier() : fSeek(false), fSeekTime(0.0f) {
+    plExcludeRegionModifier() : fSeek(), fSeekTime()
+    {
         fFlags.setName(kBlockCameras, "kBlockCameras");
     }
 
@@ -45,7 +47,7 @@ protected:
 public:
     std::vector<plKey>& getSafePoints() { return fSafePoints; }
     const std::vector<plKey>& getSafePoints() const { return fSafePoints; }
-    void addSafePoint(plKey key) { fSafePoints.push_back(key); }
+    void addSafePoint(plKey key) { fSafePoints.emplace_back(std::move(key)); }
     void clearSafePoints() { fSafePoints.clear(); }
     void delSafePoint(size_t idx) { fSafePoints.erase(fSafePoints.begin() + idx); }
 

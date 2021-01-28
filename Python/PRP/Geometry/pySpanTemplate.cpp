@@ -28,11 +28,11 @@ PY_METHOD_VA(SpanTemplate, read,
     pyStream* stream;
     if (!PyArg_ParseTuple(args, "O", &stream)) {
         PyErr_SetString(PyExc_TypeError, "read expects a hsStream");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream)) {
         PyErr_SetString(PyExc_TypeError, "read expects a hsStream");
-        return NULL;
+        return nullptr;
     }
     self->fThis->read(stream->fThis);
     Py_RETURN_NONE;
@@ -45,11 +45,11 @@ PY_METHOD_VA(SpanTemplate, write,
     pyStream* stream;
     if (!PyArg_ParseTuple(args, "O", &stream)) {
         PyErr_SetString(PyExc_TypeError, "write expects a hsStream");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream)) {
         PyErr_SetString(PyExc_TypeError, "write expects a hsStream");
-        return NULL;
+        return nullptr;
     }
     self->fThis->write(stream->fThis);
     Py_RETURN_NONE;
@@ -61,7 +61,8 @@ static PyMethodDef pySpanTemplate_Methods[] = {
     PY_METHOD_TERMINATOR
 };
 
-PY_GETSET_GETTER_DECL(SpanTemplate, vertices) {
+PY_GETSET_GETTER_DECL(SpanTemplate, vertices)
+{
     std::vector<plSpanTemplate::Vertex> verts = self->fThis->getVertices();
     PyObject* list = PyTuple_New(verts.size());
     for (size_t i=0; i<verts.size(); i++)
@@ -69,7 +70,8 @@ PY_GETSET_GETTER_DECL(SpanTemplate, vertices) {
     return list;
 }
 
-PY_GETSET_SETTER_DECL(SpanTemplate, vertices) {
+PY_GETSET_SETTER_DECL(SpanTemplate, vertices)
+{
     PY_PROPERTY_CHECK_NULL(vertices)
     pySequenceFastRef seq(value);
     if (!seq.isSequence()) {
@@ -91,7 +93,8 @@ PY_GETSET_SETTER_DECL(SpanTemplate, vertices) {
 
 PY_PROPERTY_GETSET_DECL(SpanTemplate, vertices)
 
-PY_GETSET_GETTER_DECL(SpanTemplate, indices) {
+PY_GETSET_GETTER_DECL(SpanTemplate, indices)
+{
     const unsigned short* indices = self->fThis->getIndices();
     size_t numIndices = self->fThis->getNumTris() * 3;
     PyObject* list = PyTuple_New(numIndices);
@@ -100,7 +103,8 @@ PY_GETSET_GETTER_DECL(SpanTemplate, indices) {
     return list;
 }
 
-PY_GETSET_SETTER_DECL(SpanTemplate, indices) {
+PY_GETSET_SETTER_DECL(SpanTemplate, indices)
+{
     PY_PROPERTY_CHECK_NULL(indices)
     pySequenceFastRef seq(value);
     if (!seq.isSequence()) {
@@ -134,12 +138,13 @@ static PyGetSetDef pySpanTemplate_GetSet[] = {
 
 PY_PLASMA_TYPE(SpanTemplate, plSpanTemplate, "plSpanTemplate wrapper")
 
-PY_PLASMA_TYPE_INIT(SpanTemplate) {
+PY_PLASMA_TYPE_INIT(SpanTemplate)
+{
     pySpanTemplate_Type.tp_new = pySpanTemplate_new;
     pySpanTemplate_Type.tp_methods = pySpanTemplate_Methods;
     pySpanTemplate_Type.tp_getset = pySpanTemplate_GetSet;
     if (PyType_CheckAndReady(&pySpanTemplate_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pySpanTemplate_Type);
     return (PyObject*)&pySpanTemplate_Type;

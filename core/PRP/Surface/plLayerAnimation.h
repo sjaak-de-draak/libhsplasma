@@ -21,7 +21,8 @@
 #include "PRP/Animation/plController.h"
 #include "PRP/Animation/plAnimTimeConvert.h"
 
-class PLASMA_DLL plLayerAnimationBase : public plLayerInterface {
+class PLASMA_DLL plLayerAnimationBase : public plLayerInterface
+{
     CREATABLE(plLayerAnimationBase, kLayerAnimationBase, plLayerInterface)
 
 protected:
@@ -33,10 +34,10 @@ protected:
     plController* fTransformCtl;
 
 public:
-    plLayerAnimationBase() : fPreshadeColorCtl(NULL), fRuntimeColorCtl(NULL),
-                             fAmbientColorCtl(NULL), fSpecularColorCtl(NULL),
-                             fOpacityCtl(NULL), fTransformCtl(NULL) { }
-    virtual ~plLayerAnimationBase();
+    plLayerAnimationBase()
+        : fPreshadeColorCtl(), fRuntimeColorCtl(), fAmbientColorCtl(),
+          fSpecularColorCtl(), fOpacityCtl(), fTransformCtl() { }
+    ~plLayerAnimationBase();
 
     void read(hsStream* S, plResManager* mgr) HS_OVERRIDE;
     void write(hsStream* S, plResManager* mgr) HS_OVERRIDE;
@@ -63,7 +64,8 @@ public:
 };
 
 
-class PLASMA_DLL plLayerAnimation : public plLayerAnimationBase {
+class PLASMA_DLL plLayerAnimation : public plLayerAnimationBase
+{
     CREATABLE(plLayerAnimation, kLayerAnimation, plLayerAnimationBase)
 
 protected:
@@ -83,7 +85,8 @@ public:
 };
 
 
-class PLASMA_DLL plLayerLinkAnimation : public plLayerAnimation {
+class PLASMA_DLL plLayerLinkAnimation : public plLayerAnimation
+{
     CREATABLE(plLayerLinkAnimation, kLayerLinkAnimation, plLayerAnimation)
 
 protected:
@@ -104,12 +107,13 @@ public:
     plKey getLinkKey() const { return fLinkKey; }
     bool getLeavingAge() const { return fLeavingAge; }
 
-    void setLinkKey(plKey key) { fLinkKey = key; }
+    void setLinkKey(plKey key) { fLinkKey = std::move(key); }
     void setLeavingAge(bool leaving) { fLeavingAge = leaving; }
 };
 
 
-class PLASMA_DLL plLayerSDLAnimation : public plLayerAnimation {
+class PLASMA_DLL plLayerSDLAnimation : public plLayerAnimation
+{
     CREATABLE(plLayerSDLAnimation, kLayerSDLAnimation, plLayerAnimationBase)
 
 protected:

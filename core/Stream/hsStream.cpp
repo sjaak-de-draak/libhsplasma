@@ -25,7 +25,8 @@ static const int eoaStrKey[8] = {'m','y','s','t','n','e','r','d'};
 
 /* hsStream */
 #define BLOCKSIZE 4096
-void hsStream::writeFrom(hsStream* src) {
+void hsStream::writeFrom(hsStream* src)
+{
     unsigned char buf[BLOCKSIZE];
     for (size_t spos = 0; spos < (src->size() / BLOCKSIZE); spos++) {
         src->read(BLOCKSIZE, buf);
@@ -36,19 +37,22 @@ void hsStream::writeFrom(hsStream* src) {
     write(endsize, buf);
 }
 
-uint8_t hsStream::readByte() {
+uint8_t hsStream::readByte()
+{
     uint8_t v;
     read(sizeof(v), &v);
     return v;
 }
 
-uint16_t hsStream::readShort() {
+uint16_t hsStream::readShort()
+{
     uint16_t v;
     read(sizeof(v), &v);
     return LESWAP16(v);
 }
 
-void hsStream::readShorts(size_t count, uint16_t* buf) {
+void hsStream::readShorts(size_t count, uint16_t* buf)
+{
     read(sizeof(uint16_t) * count, buf);
 #ifdef WORDS_BIGENDIAN
     for (size_t i=0; i<count; i++)
@@ -56,13 +60,15 @@ void hsStream::readShorts(size_t count, uint16_t* buf) {
 #endif
 }
 
-uint32_t hsStream::readInt() {
+uint32_t hsStream::readInt()
+{
     uint32_t v;
     read(sizeof(v), &v);
     return LESWAP32(v);
 }
 
-void hsStream::readInts(size_t count, uint32_t* buf) {
+void hsStream::readInts(size_t count, uint32_t* buf)
+{
     read(sizeof(uint32_t) * count, buf);
 #ifdef WORDS_BIGENDIAN
     for (size_t i=0; i<count; i++)
@@ -70,76 +76,77 @@ void hsStream::readInts(size_t count, uint32_t* buf) {
 #endif
 }
 
-uint32_t hsStream::readIntSwap() {
+uint32_t hsStream::readIntSwap()
+{
     uint32_t v;
     read(sizeof(v), &v);
     return BESWAP32(v);
 }
 
-float hsStream::readFloat() {
+float hsStream::readFloat()
+{
     float v;
     read(sizeof(v), &v);
     return LESWAPF(v);
 }
 
-double hsStream::readDouble() {
+double hsStream::readDouble()
+{
     double v;
     read(sizeof(v), &v);
     return LESWAPD(v);
 }
 
-bool hsStream::readBool() {
+bool hsStream::readBool()
+{
     return readByte() != 0;
 }
 
-ST::string hsStream::readStr(size_t len) {
+ST::string hsStream::readStr(size_t len)
+{
     ST::char_buffer result;
-    char* buf = result.create_writable_buffer(len);
-    read(len * sizeof(char), buf);
-    buf[len] = 0;
+    result.allocate(len);
+    read(len * sizeof(char), result.data());
 
     try {
         return result;
     } catch (ST::unicode_error&) {
         fprintf(stderr, "WARNING: String \"%s\" contained invalid unicode characters.\n"
                 "Treating as Latin-1 instead.  If you save this file, the string will be\n"
-                "converted to UTF-8!\n", buf);
+                "converted to UTF-8!\n", result.data());
         return ST::string::from_latin_1(result);
     }
 }
 
-ST::string hsStream::readSafeStr() {
-    char* buf;
+ST::string hsStream::readSafeStr()
+{
     uint16_t ssInfo = readShort();
     if (ssInfo == 0) {
         if (ver < MAKE_VERSION(2, 0, 63, 5) && readShort() != 0) {
             skip(-2);
         }
-        return ST::null;
+        return ST::string();
     }
 
     ST::char_buffer result;
     if (ver.isUniversal()) {
-        buf = result.create_writable_buffer(ssInfo);
-        read(ssInfo, buf);
-        buf[ssInfo] = 0;
+        result.allocate(ssInfo);
+        read(ssInfo, result.data());
     } else if (ver.isNewPlasma()) {
-        buf = result.create_writable_buffer(ssInfo);
-        read(ssInfo, buf);
+        result.allocate(ssInfo);
+        read(ssInfo, result.data());
         for (size_t i=0; i<ssInfo; i++)
-            buf[i] ^= eoaStrKey[i%8];
-        buf[ssInfo] = 0;
+            result[i] ^= eoaStrKey[i%8];
     } else {
         if (!(ssInfo & 0xF000))
             readShort(); // Discarded
         uint16_t size = (ssInfo & 0x0FFF);
-        buf = result.create_writable_buffer(size);
-        read(size, buf);
-        if ((size > 0) && (buf[0] & 0x80)) {
+        result.allocate(size);
+        read(size, result.data());
+        if ((size > 0) && (result.front() & 0x80)) {
             for (size_t i=0; i<size; i++)
-                buf[i] = ~buf[i];
+                result[i] = ~result[i];
         }
-        buf[size] = 0;
     }
 
     try {
@@ -147,39 +154,37 @@ ST::string hsStream::readSafeStr() {
     } catch (ST::unicode_error&) {
         fprintf(stderr, "WARNING: String \"%s\" contained invalid unicode characters.\n"
                 "Treating as Latin-1 instead.  If you save this file, the string will be \n"
-                "converted to UTF-8!\n", buf);
+                "converted to UTF-8!\n", result.data());
         return ST::string::from_latin_1(result);
     }
 }
 
-ST::string hsStream::readSafeWStr() {
+ST::string hsStream::readSafeWStr()
+{
     uint16_t ssInfo = readShort();
     ST::utf16_buffer result;
-    char16_t* buf;
     if (ver.isUniversal()) {
-        buf = result.create_writable_buffer(ssInfo);
+        result.allocate(ssInfo);
         for (size_t i=0; i<ssInfo; i++)
-            buf[i] = readShort() & 0xFFFF;
+            result[i] = readShort();
         readShort();    // Terminator
-        buf[ssInfo] = 0;
     } else if (ver.isNewPlasma()) {
-        buf = result.create_writable_buffer(ssInfo);
+        result.allocate(ssInfo);
         for (size_t i=0; i<ssInfo; i++)
-            buf[i] = (readShort() ^ eoaStrKey[i%8]) & 0xFFFF;
+            result[i] = readShort() ^ eoaStrKey[i%8];
         readShort();    // Terminator
-        buf[ssInfo] = 0;
     } else {
         uint16_t size = (ssInfo & 0x0FFF);
-        buf = result.create_writable_buffer(size);
+        result.allocate(size);
         for (size_t i=0; i<size; i++)
-            buf[i] = (~readShort()) & 0xFFFF;
+            result[i] = ~readShort();
         readShort();    // Terminator
-        buf[size] = 0;
     }
     return result;
 }
 
-ST::string hsStream::readLine() {
+ST::string hsStream::readLine()
+{
     ST::string_stream line;
     char c = readByte();
     while ((c != '\n') && (c != '\r') && !eof()) {
@@ -188,21 +193,33 @@ ST::string hsStream::readLine() {
     }
     if (c != '\n' && c != '\r')
         line.append_char(c);
-    if (c == '\r')
-        readByte(); // Eat the \n in Windows-style EOLs
+    if (c == '\r') {
+        if (!eof()) {
+            // Eat the \n in Windows-style EOLs
+            char nextChar = readByte();
+            if (nextChar != '\n') {
+                // Old-school MacOS carriage return without line feed...
+                // Rewind one character.
+                skip(-1);
+            }
+        }
+    }
     return line.to_string();
 }
 
-void hsStream::writeByte(uint8_t v) {
+void hsStream::writeByte(uint8_t v)
+{
     write(sizeof(v), &v);
 }
 
-void hsStream::writeShort(uint16_t v) {
+void hsStream::writeShort(uint16_t v)
+{
     v = LESWAP16(v);
     write(sizeof(v), &v);
 }
 
-void hsStream::writeShorts(size_t count, const uint16_t* buf) {
+void hsStream::writeShorts(size_t count, const uint16_t* buf)
+{
 #ifdef WORDS_BIGENDIAN
     uint16_t* swbuf = new uint16_t[count];
     for (size_t i=0; i<count; i++)
@@ -214,12 +231,14 @@ void hsStream::writeShorts(size_t count, const uint16_t* buf) {
 #endif
 }
 
-void hsStream::writeInt(uint32_t v) {
+void hsStream::writeInt(uint32_t v)
+{
     v = LESWAP32(v);
     write(sizeof(v), &v);
 }
 
-void hsStream::writeInts(size_t count, const uint32_t* buf) {
+void hsStream::writeInts(size_t count, const uint32_t* buf)
+{
 #ifdef WORDS_BIGENDIAN
     uint32_t* swbuf = new uint32_t[count];
     for (size_t i=0; i<count; i++)
@@ -231,31 +250,37 @@ void hsStream::writeInts(size_t count, const uint32_t* buf) {
 #endif
 }
 
-void hsStream::writeIntSwap(uint32_t v) {
+void hsStream::writeIntSwap(uint32_t v)
+{
     v = BESWAP32(v);
     write(sizeof(v), &v);
 }
 
-void hsStream::writeFloat(float v) {
+void hsStream::writeFloat(float v)
+{
     v = LESWAPF(v);
     write(sizeof(v), &v);
 }
 
-void hsStream::writeDouble(double v) {
+void hsStream::writeDouble(double v)
+{
     v = LESWAPD(v);
     write(sizeof(v), &v);
 }
 
-void hsStream::writeBool(bool v) {
+void hsStream::writeBool(bool v)
+{
     char b = v ? 1 : 0;
     write(sizeof(b), &b);
 }
 
-void hsStream::writeStr(const ST::string& str) {
+void hsStream::writeStr(const ST::string& str)
+{
     write(str.size(), str.c_str());
 }
 
-void hsStream::writeSafeStr(const ST::string& str) {
+void hsStream::writeSafeStr(const ST::string& str)
+{
     if (str.size() > 0xFFF)
         plDebug::Warning("SafeString length is excessively long");
 
@@ -272,19 +297,20 @@ void hsStream::writeSafeStr(const ST::string& str) {
         writeShort(ssInfo);
         wbuf = new char[ssInfo];
         for (size_t i=0; i<ssInfo; i++)
-            wbuf[i] = str.char_at(i) ^ eoaStrKey[i%8];
+            wbuf[i] = str[i] ^ eoaStrKey[i%8];
     } else {
         ssInfo &= 0x0FFF;
         writeShort(ssInfo | 0xF000);
         wbuf = new char[ssInfo];
         for (size_t i=0; i<ssInfo; i++)
-            wbuf[i] = ~str.char_at(i);
+            wbuf[i] = ~str[i];
     }
     write(ssInfo, wbuf);
     delete[] wbuf;
 }
 
-void hsStream::writeSafeWStr(const ST::string& str) {
+void hsStream::writeSafeWStr(const ST::string& str)
+{
     ST::utf16_buffer buf = str.to_utf16();
     if (buf.size() > 0xFFF)
         plDebug::Warning("SafeWString length is excessively long");
@@ -298,7 +324,7 @@ void hsStream::writeSafeWStr(const ST::string& str) {
     } else if (ver.isNewPlasma()) {
         writeShort(ssInfo);
         for (size_t i=0; i<ssInfo; i++)
-            writeShort(buf.data()[i] ^ eoaStrKey[i%8]);
+            writeShort(buf[i] ^ eoaStrKey[i%8]);
         writeShort(0);  // Terminator
     } else {
         ssInfo &= 0x0FFF;
@@ -309,7 +335,8 @@ void hsStream::writeSafeWStr(const ST::string& str) {
     }
 }
 
-void hsStream::writeLine(const ST::string& ln, bool winEOL) {
+void hsStream::writeLine(const ST::string& ln, bool winEOL)
+{
     writeStr(ln);
     if (winEOL)
         writeByte('\r');
@@ -318,15 +345,17 @@ void hsStream::writeLine(const ST::string& ln, bool winEOL) {
 
 
 /* hsFileStream */
-bool hsFileStream::FileExists(const ST::string& file) {
+bool hsFileStream::FileExists(const ST::string& file)
+{
     FILE* eFile = fopen(file.c_str(), "rb");
-    bool exist = (eFile != NULL);
+    bool exist = (eFile != nullptr);
     if (exist)
         fclose(eFile);
     return exist;
 }
 
-bool hsFileStream::open(const ST::string& file, FileMode mode) {
+bool hsFileStream::open(const ST::string& file, FileMode mode)
+{
     const char* fms;
     switch (mode) {
     case fmRead:
@@ -346,7 +375,7 @@ bool hsFileStream::open(const ST::string& file, FileMode mode) {
     }
 
     F = fopen(file.c_str(), fms);
-    if (F != NULL) {
+    if (F) {
         fm = mode;
         return true;
     } else if (mode == fmRead || mode == fmReadWrite) {
@@ -355,14 +384,16 @@ bool hsFileStream::open(const ST::string& file, FileMode mode) {
     return false;
 }
 
-void hsFileStream::close() {
-    if (F != NULL)
+void hsFileStream::close()
+{
+    if (F)
         fclose(F);
-    F = NULL;
+    F = nullptr;
 }
 
-uint32_t hsFileStream::size() const {
-    if (F == NULL)
+uint32_t hsFileStream::size() const
+{
+    if (F == nullptr)
         return 0;
     unsigned int p = ftell(F);
     fseek(F, 0, SEEK_END);
@@ -371,52 +402,60 @@ uint32_t hsFileStream::size() const {
     return sz;
 }
 
-uint32_t hsFileStream::pos() const {
-    if (F == NULL)
+uint32_t hsFileStream::pos() const
+{
+    if (F == nullptr)
         return 0;
     return ftell(F);
 }
 
-bool hsFileStream::eof() const {
-    if (F == NULL)
+bool hsFileStream::eof() const
+{
+    if (F == nullptr)
         return true;
     int c = fgetc(F);
     ungetc(c, F);
     return (c == EOF);
 }
 
-void hsFileStream::seek(uint32_t pos) {
-    if (F == NULL)
+void hsFileStream::seek(uint32_t pos)
+{
+    if (F == nullptr)
         return;
     fseek(F, pos, SEEK_SET);
 }
 
-void hsFileStream::skip(int32_t count) {
-    if (F == NULL)
+void hsFileStream::skip(int32_t count)
+{
+    if (F == nullptr)
         return;
     fseek(F, count, SEEK_CUR);
 }
 
-void hsFileStream::fastForward() {
-    if (F == NULL)
+void hsFileStream::fastForward()
+{
+    if (F == nullptr)
         return;
     fseek(F, 0, SEEK_END);
 }
 
-void hsFileStream::rewind() {
-    if (F == NULL)
+void hsFileStream::rewind()
+{
+    if (F == nullptr)
         return;
     fseek(F, 0, SEEK_SET);
 }
 
-void hsFileStream::flush() {
-    if (F == NULL)
+void hsFileStream::flush()
+{
+    if (F == nullptr)
         return;
     fflush(F);
 }
 
-size_t hsFileStream::read(size_t size, void* buf) {
-    if (F == NULL || fm == fmWrite || fm == fmCreate)
+size_t hsFileStream::read(size_t size, void* buf)
+{
+    if (F == nullptr || fm == fmWrite || fm == fmCreate)
         throw hsFileReadException(__FILE__, __LINE__);
     size_t nread = fread(buf, 1, size, F);
     if (nread != size) {
@@ -427,37 +466,19 @@ size_t hsFileStream::read(size_t size, void* buf) {
     return nread;
 }
 
-size_t hsFileStream::write(size_t size, const void* buf) {
-    if (F == NULL || fm == fmRead)
+size_t hsFileStream::write(size_t size, const void* buf)
+{
+    if (F == nullptr || fm == fmRead)
         throw hsFileWriteException(__FILE__, __LINE__);
     return fwrite(buf, 1, size, F);
 }
 
-time_t hsFileStream::getModTime() const {
-    if (F == NULL)
+time_t hsFileStream::getModTime() const
+{
+    if (F == nullptr)
         return 0;
 
     struct stat stbuf;
     fstat(fileno(F), &stbuf);
     return stbuf.st_mtime;
-}
-
-
-/* hsFileReadException */
-hsFileReadException::hsFileReadException(const char* file,
-                     unsigned long line, const char* filename) HS_NOEXCEPT
-                   : hsException(file, line) {
-    fWhat = "Error reading file";
-    if (filename != NULL)
-        fWhat += ST::string(": ") + filename;
-}
-
-
-/* hsFileWriteException */
-hsFileWriteException::hsFileWriteException(const char* file,
-                      unsigned long line, const char* filename) HS_NOEXCEPT
-                    : hsException(file, line) {
-    fWhat = "Error writing to file";
-    if (filename != NULL)
-        fWhat += ST::string(": ") + filename;
 }

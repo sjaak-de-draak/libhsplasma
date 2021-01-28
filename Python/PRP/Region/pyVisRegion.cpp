@@ -33,12 +33,13 @@ PyGetSetDef pyVisRegion_GetSet[] = {
 
 PY_PLASMA_TYPE(VisRegion, plVisRegion, "plVisRegion wrapper")
 
-PY_PLASMA_TYPE_INIT(VisRegion) {
+PY_PLASMA_TYPE_INIT(VisRegion)
+{
     pyVisRegion_Type.tp_new = pyVisRegion_new;
     pyVisRegion_Type.tp_getset = pyVisRegion_GetSet;
     pyVisRegion_Type.tp_base = &pyObjInterface_Type;
     if (PyType_CheckAndReady(&pyVisRegion_Type) < 0)
-        return NULL;
+        return nullptr;
 
     PY_TYPE_ADD_CONST(VisRegion, "kDisable", plVisRegion::kDisable);
     PY_TYPE_ADD_CONST(VisRegion, "kIsNot", plVisRegion::kIsNot);

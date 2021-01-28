@@ -17,17 +17,20 @@
 #include "plScalarChannel.h"
 
 /* plScalarConstant */
-void plScalarConstant::read(hsStream* S, plResManager* mgr) {
+void plScalarConstant::read(hsStream* S, plResManager* mgr)
+{
     plAGChannel::read(S, mgr);
     fResult = S->readFloat();
 }
 
-void plScalarConstant::write(hsStream* S, plResManager* mgr) {
+void plScalarConstant::write(hsStream* S, plResManager* mgr)
+{
     plAGChannel::write(S, mgr);
     S->writeFloat(fResult);
 }
 
-void plScalarConstant::IPrcWrite(pfPrcHelper* prc) {
+void plScalarConstant::IPrcWrite(pfPrcHelper* prc)
+{
     plAGChannel::IPrcWrite(prc);
 
     prc->startTag("Result");
@@ -35,7 +38,8 @@ void plScalarConstant::IPrcWrite(pfPrcHelper* prc) {
     prc->endTag(true);
 }
 
-void plScalarConstant::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
+void plScalarConstant::IPrcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     if (tag->getName() == "Result") {
         fResult = tag->getParam("value", "0").to_float();
     } else {
@@ -45,39 +49,45 @@ void plScalarConstant::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
 
 
 /* plScalarControllerChannel */
-plScalarControllerChannel::~plScalarControllerChannel() {
+plScalarControllerChannel::~plScalarControllerChannel()
+{
     delete fController;
 }
 
-void plScalarControllerChannel::read(hsStream* S, plResManager* mgr) {
+void plScalarControllerChannel::read(hsStream* S, plResManager* mgr)
+{
     plAGChannel::read(S, mgr);
-    setController(plController::Convert(mgr->ReadCreatable(S)));
+    setController(mgr->ReadCreatableC<plController>(S));
 }
 
-void plScalarControllerChannel::write(hsStream* S, plResManager* mgr) {
+void plScalarControllerChannel::write(hsStream* S, plResManager* mgr)
+{
     plAGChannel::write(S, mgr);
     plController::WriteController(S, mgr, fController);
 }
 
-void plScalarControllerChannel::IPrcWrite(pfPrcHelper* prc) {
+void plScalarControllerChannel::IPrcWrite(pfPrcHelper* prc)
+{
     plAGChannel::IPrcWrite(prc);
 
     prc->writeSimpleTag("Controller");
-    if (fController != NULL)
+    if (fController)
         fController->prcWrite(prc);
     prc->closeTag();
 }
 
-void plScalarControllerChannel::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
+void plScalarControllerChannel::IPrcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     if (tag->getName() == "Controller") {
         if (tag->hasChildren())
-            setController(plController::Convert(mgr->prcParseCreatable(tag->getFirstChild())));
+            setController(mgr->prcParseCreatableC<plController>(tag->getFirstChild()));
     } else {
         plAGChannel::IPrcParse(tag, mgr);
     }
 }
 
-void plScalarControllerChannel::setController(plController* controller) {
+void plScalarControllerChannel::setController(plController* controller)
+{
     delete fController;
     fController = controller;
 }

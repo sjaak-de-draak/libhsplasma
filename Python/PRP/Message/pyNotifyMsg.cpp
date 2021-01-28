@@ -23,7 +23,8 @@
 
 PY_PLASMA_NEW(NotifyMsg, plNotifyMsg)
 
-PY_METHOD_NOARGS(NotifyMsg, clearEvents, "Remove all event objects") {
+PY_METHOD_NOARGS(NotifyMsg, clearEvents, "Remove all event objects")
+{
     self->fThis->clearEvents();
     Py_RETURN_NONE;
 }
@@ -35,11 +36,11 @@ PY_METHOD_VA(NotifyMsg, addEvent,
     pyEventData* evt;
     if (!PyArg_ParseTuple(args, "O", &evt)) {
         PyErr_SetString(PyExc_TypeError, "addEvent expects a proEventData");
-        return NULL;
+        return nullptr;
     }
     if (!pyEventData_Check((PyObject*)evt)) {
         PyErr_SetString(PyExc_TypeError, "addEvent expects a proEventData");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addEvent(evt->fThis);
     evt->fPyOwned = false;
@@ -53,7 +54,7 @@ PY_METHOD_VA(NotifyMsg, delEvent,
     int idx;
     if (!PyArg_ParseTuple(args, "i", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delEvent expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->delEvent(idx);
     Py_RETURN_NONE;
@@ -66,7 +67,8 @@ static PyMethodDef pyNotifyMsg_Methods[] = {
     PY_METHOD_TERMINATOR
 };
 
-PY_GETSET_GETTER_DECL(NotifyMsg, events) {
+PY_GETSET_GETTER_DECL(NotifyMsg, events)
+{
     PyObject* list = PyTuple_New(self->fThis->getEvents().size());
     for (size_t i=0; i<self->fThis->getEvents().size(); i++)
         PyTuple_SET_ITEM(list, i, ICreateEventData(self->fThis->getEvents()[i]));
@@ -90,13 +92,14 @@ static PyGetSetDef pyNotifyMsg_GetSet[] = {
 
 PY_PLASMA_TYPE(NotifyMsg, plNotifyMsg, "plNotifyMsg wrapper")
 
-PY_PLASMA_TYPE_INIT(NotifyMsg) {
+PY_PLASMA_TYPE_INIT(NotifyMsg)
+{
     pyNotifyMsg_Type.tp_new = pyNotifyMsg_new;
     pyNotifyMsg_Type.tp_methods = pyNotifyMsg_Methods;
     pyNotifyMsg_Type.tp_getset = pyNotifyMsg_GetSet;
     pyNotifyMsg_Type.tp_base = &pyMessage_Type;
     if (PyType_CheckAndReady(&pyNotifyMsg_Type) < 0)
-        return NULL;
+        return nullptr;
 
     PY_TYPE_ADD_CONST(NotifyMsg, "kActivator", plNotifyMsg::kActivator);
     PY_TYPE_ADD_CONST(NotifyMsg, "kVarNotification", plNotifyMsg::kVarNotification);

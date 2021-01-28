@@ -49,14 +49,15 @@ static PyGetSetDef pyCompoundController_GetSet[] = {
 
 PY_PLASMA_TYPE(CompoundController, plCompoundController, "plCompoundController wrapper")
 
-PY_PLASMA_TYPE_INIT(CompoundController) {
+PY_PLASMA_TYPE_INIT(CompoundController)
+{
     pyCompoundController_Type.tp_init = pyCompoundController___init__;
     pyCompoundController_Type.tp_new = pyCompoundController_new;
     pyCompoundController_Type.tp_methods = pyCompoundController_Methods;
     pyCompoundController_Type.tp_getset = pyCompoundController_GetSet;
     pyCompoundController_Type.tp_base = &pyController_Type;
     if (PyType_CheckAndReady(&pyCompoundController_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyCompoundController_Type);
     return (PyObject*)&pyCompoundController_Type;

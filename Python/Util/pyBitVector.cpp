@@ -23,7 +23,8 @@ PY_PLASMA_DEALLOC(BitVector)
 PY_PLASMA_EMPTY_INIT(BitVector)
 PY_PLASMA_NEW(BitVector, hsBitVector)
 
-PY_PLASMA_SUBSCRIPT_DECL(BitVector) {
+PY_PLASMA_SUBSCRIPT_DECL(BitVector)
+{
     if (pyPlasma_check<ST::string>(key)) {
         ST::string name = pyPlasma_get<ST::string>(key);
         unsigned int idx = self->fThis->getValue(name.c_str());
@@ -33,11 +34,12 @@ PY_PLASMA_SUBSCRIPT_DECL(BitVector) {
         return pyPlasma_convert(self->fThis->get(idx));
     } else {
         PyErr_SetString(PyExc_TypeError, "Invalid subscript");
-        return NULL;
+        return nullptr;
     }
 }
 
-PY_PLASMA_ASS_SUBSCRIPT_DECL(BitVector) {
+PY_PLASMA_ASS_SUBSCRIPT_DECL(BitVector)
+{
     if (!pyPlasma_check<bool>(value)) {
         PyErr_SetString(PyExc_TypeError, "BitVector bits should be bools");
         return -1;
@@ -59,11 +61,13 @@ PY_PLASMA_ASS_SUBSCRIPT_DECL(BitVector) {
     }
 }
 
-PY_METHOD_NOARGS(BitVector, isEmpty, "Returns whether the vector is empty") {
+PY_METHOD_NOARGS(BitVector, isEmpty, "Returns whether the vector is empty")
+{
     return pyPlasma_convert(self->fThis->isEmpty());
 }
 
-PY_METHOD_NOARGS(BitVector, clear, "Clears the vector of all bits") {
+PY_METHOD_NOARGS(BitVector, clear, "Clears the vector of all bits")
+{
     self->fThis->clear();
     Py_RETURN_NONE;
 }
@@ -83,7 +87,7 @@ PY_METHOD_VA(BitVector, getName,
     int index;
     if (!PyArg_ParseTuple(args, "i", &index)) {
         PyErr_SetString(PyExc_TypeError, "getName expects an int");
-        return NULL;
+        return nullptr;
     }
     return pyPlasma_convert(self->fThis->getName((size_t)index));
 }
@@ -95,7 +99,7 @@ PY_METHOD_VA(BitVector, getValue,
     const char* name;
     if (!PyArg_ParseTuple(args, "s", &name)) {
         PyErr_SetString(PyExc_TypeError, "getValue expects a string");
-        return NULL;
+        return nullptr;
     }
     return pyPlasma_convert(self->fThis->getValue(name));
 }
@@ -108,7 +112,7 @@ PY_METHOD_VA(BitVector, setName,
     const char* name;
     if (!PyArg_ParseTuple(args, "is", &index, &name)) {
         PyErr_SetString(PyExc_TypeError, "setName expects int, string");
-        return NULL;
+        return nullptr;
     }
     self->fThis->setName(index, name);
     Py_RETURN_NONE;
@@ -121,11 +125,11 @@ PY_METHOD_VA(BitVector, read,
     pyStream* stream;
     if (!PyArg_ParseTuple(args, "O", &stream)) {
         PyErr_SetString(PyExc_TypeError, "read expects a hsStream");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream)) {
         PyErr_SetString(PyExc_TypeError, "read expects a hsStream");
-        return NULL;
+        return nullptr;
     }
     self->fThis->read(stream->fThis);
     Py_RETURN_NONE;
@@ -138,11 +142,11 @@ PY_METHOD_VA(BitVector, write,
     pyStream* stream;
     if (!PyArg_ParseTuple(args, "O", &stream)) {
         PyErr_SetString(PyExc_TypeError, "write expects a hsStream");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream)) {
         PyErr_SetString(PyExc_TypeError, "write expects a hsStream");
-        return NULL;
+        return nullptr;
     }
     self->fThis->write(stream->fThis);
     Py_RETURN_NONE;
@@ -163,7 +167,8 @@ static PyMethodDef pyBitVector_Methods[] = {
 PY_PLASMA_TYPE(BitVector, hsBitVector, "hsBitVector wrapper")
 PY_PLASMA_TYPE_AS_MAPPING(BitVector)
 
-PY_PLASMA_TYPE_INIT(BitVector) {
+PY_PLASMA_TYPE_INIT(BitVector)
+{
     pyBitVector_As_Mapping.mp_subscript = pyBitVector_mp_subscript;
     pyBitVector_As_Mapping.mp_ass_subscript = pyBitVector_mp_ass_subscript;
     pyBitVector_Type.tp_dealloc = pyBitVector_dealloc;
@@ -172,7 +177,7 @@ PY_PLASMA_TYPE_INIT(BitVector) {
     pyBitVector_Type.tp_as_mapping = &pyBitVector_As_Mapping;
     pyBitVector_Type.tp_methods = pyBitVector_Methods;
     if (PyType_CheckAndReady(&pyBitVector_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyBitVector_Type);
     return (PyObject*)&pyBitVector_Type;

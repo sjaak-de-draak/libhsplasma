@@ -30,12 +30,13 @@ static PyGetSetDef pyResponderStateEventData_GetSet[] = {
 PY_PLASMA_TYPE(ResponderStateEventData, proResponderStateEventData,
                "proResponderStateEventData wrapper")
 
-PY_PLASMA_TYPE_INIT(ResponderStateEventData) {
+PY_PLASMA_TYPE_INIT(ResponderStateEventData)
+{
     pyResponderStateEventData_Type.tp_new = pyResponderStateEventData_new;
     pyResponderStateEventData_Type.tp_getset = pyResponderStateEventData_GetSet;
     pyResponderStateEventData_Type.tp_base = &pyEventData_Type;
     if (PyType_CheckAndReady(&pyResponderStateEventData_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyResponderStateEventData_Type);
     return (PyObject*)&pyResponderStateEventData_Type;

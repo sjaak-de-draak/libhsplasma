@@ -18,7 +18,8 @@
 #include <cstring>
 
 /* plWAVHeader */
-void plWAVHeader::read(hsStream* S) {
+void plWAVHeader::read(hsStream* S)
+{
     fFormatTag = S->readShort();
     fNumChannels = S->readShort();
     fNumSamplesPerSec = S->readInt();
@@ -27,7 +28,8 @@ void plWAVHeader::read(hsStream* S) {
     fBitsPerSample = S->readShort();
 }
 
-void plWAVHeader::write(hsStream* S) {
+void plWAVHeader::write(hsStream* S)
+{
     S->writeShort(fFormatTag);
     S->writeShort(fNumChannels);
     S->writeInt(fNumSamplesPerSec);
@@ -36,7 +38,8 @@ void plWAVHeader::write(hsStream* S) {
     S->writeShort(fBitsPerSample);
 }
 
-void plWAVHeader::prcWrite(pfPrcHelper* prc) {
+void plWAVHeader::prcWrite(pfPrcHelper* prc)
+{
     prc->startTag("WavHeader");
     prc->writeParam("Format", fFormatTag);
     prc->writeParam("Channels", fNumChannels);
@@ -47,7 +50,8 @@ void plWAVHeader::prcWrite(pfPrcHelper* prc) {
     prc->endTag(true);
 }
 
-void plWAVHeader::prcParse(const pfPrcTag* tag) {
+void plWAVHeader::prcParse(const pfPrcTag* tag)
+{
     if (tag->getName() != "WavHeader")
         throw pfPrcTagException(__FILE__, __LINE__, tag->getName());
 
@@ -61,11 +65,13 @@ void plWAVHeader::prcParse(const pfPrcTag* tag) {
 
 
 /* plSoundBuffer */
-plSoundBuffer::~plSoundBuffer() {
+plSoundBuffer::~plSoundBuffer()
+{
     delete[] fData;
 }
 
-void plSoundBuffer::read(hsStream* S, plResManager* mgr) {
+void plSoundBuffer::read(hsStream* S, plResManager* mgr)
+{
     hsKeyedObject::read(S, mgr);
 
     fFlags = S->readInt();
@@ -84,19 +90,20 @@ void plSoundBuffer::read(hsStream* S, plResManager* mgr) {
         fData = new unsigned char[fDataLength];
         S->read(fDataLength, fData);
     } else {
-        fData = NULL;
+        fData = nullptr;
     }
 }
 
-void plSoundBuffer::write(hsStream* S, plResManager* mgr) {
+void plSoundBuffer::write(hsStream* S, plResManager* mgr)
+{
     hsKeyedObject::write(S, mgr);
 
-    if (fData == NULL)
+    if (fData == nullptr)
         fFlags |= kIsExternal;
     S->writeInt(fFlags);
     S->writeInt(fDataLength);
     ST::string writeFileName = fFileName;
-    if (!fFileName.is_empty()) {
+    if (!fFileName.empty()) {
         writeFileName = strrchr(fFileName.c_str(), '\\');
         if (writeFileName != NULL)
             fFileName = writeFileName;
@@ -108,22 +115,24 @@ void plSoundBuffer::write(hsStream* S, plResManager* mgr) {
         S->write(fDataLength, fData);
 }
 
-void plSoundBuffer::IPrcWrite(pfPrcHelper* prc) {
+void plSoundBuffer::IPrcWrite(pfPrcHelper* prc)
+{
     hsKeyedObject::IPrcWrite(prc);
 
     prc->startTag("SoundBuffer");
     prc->writeParamHex("Flags", fFlags);
     prc->writeParam("Length", (unsigned long)fDataLength);
     prc->writeParam("Filename", fFileName);
-    prc->endTag(fData == NULL);
-    if (fData != NULL) {
+    prc->endTag(fData == nullptr);
+    if (fData) {
         prc->writeHexStream(fDataLength, fData);
         prc->closeTag();
     }
     fHeader.prcWrite(prc);
 }
 
-void plSoundBuffer::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
+void plSoundBuffer::IPrcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     if (tag->getName() == "SoundBuffer") {
         fFlags = tag->getParam("Flags", "0").to_uint();
         fDataLength = tag->getParam("Length", "0").to_uint();
@@ -139,12 +148,13 @@ void plSoundBuffer::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
     }
 }
 
-void plSoundBuffer::setData(size_t length, const unsigned char* data) {
+void plSoundBuffer::setData(size_t length, const unsigned char* data)
+{
     delete[] fData;
 
-    if (length == 0 || data == NULL) {
+    if (length == 0 || data == nullptr) {
         fDataLength = length;   // Length can be specified with a null datum
-        fData = NULL;
+        fData = nullptr;
     } else {
         fDataLength = length;
         fData = new unsigned char[length];

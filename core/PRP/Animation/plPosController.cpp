@@ -17,21 +17,24 @@
 #include "plPosController.h"
 
 /* plSimplePosController */
-plSimplePosController::~plSimplePosController() {
+plSimplePosController::~plSimplePosController()
+{
     delete fPosition;
 }
 
-void plSimplePosController::read(hsStream* S, plResManager* mgr) {
+void plSimplePosController::read(hsStream* S, plResManager* mgr)
+{
     if (S->readInt() != 0) {
         setPosition(new plPoint3Controller());
         fPosition->read(S, mgr);
     } else {
-        setPosition(NULL);
+        setPosition(nullptr);
     }
 }
 
-void plSimplePosController::write(hsStream* S, plResManager* mgr) {
-    if (fPosition != NULL) {
+void plSimplePosController::write(hsStream* S, plResManager* mgr)
+{
+    if (fPosition) {
         S->writeInt(1);
         fPosition->write(S, mgr);
     } else {
@@ -39,8 +42,9 @@ void plSimplePosController::write(hsStream* S, plResManager* mgr) {
     }
 }
 
-void plSimplePosController::IPrcWrite(pfPrcHelper* prc) {
-    if (fPosition != NULL) {
+void plSimplePosController::IPrcWrite(pfPrcHelper* prc)
+{
+    if (fPosition) {
         fPosition->prcWrite(prc);
     } else {
         prc->startTag("plPoint3Controller");
@@ -49,67 +53,72 @@ void plSimplePosController::IPrcWrite(pfPrcHelper* prc) {
     }
 }
 
-void plSimplePosController::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
+void plSimplePosController::IPrcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     if (tag->getName() == "plPoint3Controller") {
         if (!tag->getParam("NULL", "false").to_bool()) {
             setPosition(new plPoint3Controller());
             fPosition->prcParse(tag, mgr);
         } else {
-            setPosition(NULL);
+            setPosition(nullptr);
         }
     } else {
         plCreatable::IPrcParse(tag, mgr);
     }
 }
 
-void plSimplePosController::setPosition(plPoint3Controller* pos) {
+void plSimplePosController::setPosition(plPoint3Controller* pos)
+{
     delete fPosition;
     fPosition = pos;
 }
 
 
 /* plCompoundPosController */
-plCompoundPosController::~plCompoundPosController() {
+plCompoundPosController::~plCompoundPosController()
+{
     delete fXController;
     delete fYController;
     delete fZController;
 }
 
-void plCompoundPosController::read(hsStream* S, plResManager* mgr) {
+void plCompoundPosController::read(hsStream* S, plResManager* mgr)
+{
     if (S->readInt() != 0) {
         setX(new plScalarController());
         fXController->read(S, mgr);
     } else {
-        setX(NULL);
+        setX(nullptr);
     }
     if (S->readInt() != 0) {
         setY(new plScalarController());
         fYController->read(S, mgr);
     } else {
-        setY(NULL);
+        setY(nullptr);
     }
     if (S->readInt() != 0) {
         setZ(new plScalarController());
         fZController->read(S, mgr);
     } else {
-        setZ(NULL);
+        setZ(nullptr);
     }
 }
 
-void plCompoundPosController::write(hsStream* S, plResManager* mgr) {
-    if (fXController != NULL) {
+void plCompoundPosController::write(hsStream* S, plResManager* mgr)
+{
+    if (fXController) {
         S->writeInt(1);
         fXController->write(S, mgr);
     } else {
         S->writeInt(0);
     }
-    if (fYController != NULL) {
+    if (fYController) {
         S->writeInt(1);
         fYController->write(S, mgr);
     } else {
         S->writeInt(0);
     }
-    if (fZController != NULL) {
+    if (fZController) {
         S->writeInt(1);
         fZController->write(S, mgr);
     } else {
@@ -117,9 +126,10 @@ void plCompoundPosController::write(hsStream* S, plResManager* mgr) {
     }
 }
 
-void plCompoundPosController::IPrcWrite(pfPrcHelper* prc) {
+void plCompoundPosController::IPrcWrite(pfPrcHelper* prc)
+{
     prc->writeSimpleTag("X");
-    if (fXController != NULL) {
+    if (fXController) {
         fXController->prcWrite(prc);
     } else {
         prc->startTag("plScalarController");
@@ -128,7 +138,7 @@ void plCompoundPosController::IPrcWrite(pfPrcHelper* prc) {
     }
     prc->closeTag();
     prc->writeSimpleTag("Y");
-    if (fYController != NULL) {
+    if (fYController) {
         fYController->prcWrite(prc);
     } else {
         prc->startTag("plScalarController");
@@ -137,7 +147,7 @@ void plCompoundPosController::IPrcWrite(pfPrcHelper* prc) {
     }
     prc->closeTag();
     prc->writeSimpleTag("Z");
-    if (fZController != NULL) {
+    if (fZController) {
         fZController->prcWrite(prc);
     } else {
         prc->startTag("plScalarController");
@@ -147,34 +157,36 @@ void plCompoundPosController::IPrcWrite(pfPrcHelper* prc) {
     prc->closeTag();
 }
 
-void plCompoundPosController::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
+void plCompoundPosController::IPrcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     if (tag->getName() == "X") {
         if (tag->hasChildren() && !tag->getFirstChild()->getParam("NULL", "false").to_bool()) {
             setX(new plScalarController());
             fXController->prcParse(tag->getFirstChild(), mgr);
         } else {
-            setX(NULL);
+            setX(nullptr);
         }
     } else if (tag->getName() == "Y") {
         if (tag->hasChildren() && !tag->getFirstChild()->getParam("NULL", "false").to_bool()) {
             setY(new plScalarController());
             fYController->prcParse(tag->getFirstChild(), mgr);
         } else {
-            setY(NULL);
+            setY(nullptr);
         }
     } else if (tag->getName() == "Z") {
         if (tag->hasChildren() && !tag->getFirstChild()->getParam("NULL", "false").to_bool()) {
             setZ(new plScalarController());
             fZController->prcParse(tag->getFirstChild(), mgr);
         } else {
-            setZ(NULL);
+            setZ(nullptr);
         }
     } else {
         plCreatable::IPrcParse(tag, mgr);
     }
 }
 
-void plCompoundPosController::setController(unsigned int index, plScalarController* controller) {
+void plCompoundPosController::setController(unsigned int index, plScalarController* controller)
+{
     switch (index) {
     case kX:
         delete fXController;
@@ -191,17 +203,20 @@ void plCompoundPosController::setController(unsigned int index, plScalarControll
     }
 }
 
-void plCompoundPosController::setX(plScalarController* controller) {
+void plCompoundPosController::setX(plScalarController* controller)
+{
     delete fXController;
     fXController = controller;
 }
 
-void plCompoundPosController::setY(plScalarController* controller) {
+void plCompoundPosController::setY(plScalarController* controller)
+{
     delete fYController;
     fYController = controller;
 }
 
-void plCompoundPosController::setZ(plScalarController* controller) {
+void plCompoundPosController::setZ(plScalarController* controller)
+{
     delete fZController;
     fZController = controller;
 }

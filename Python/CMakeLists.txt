@@ -13,7 +13,15 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLAN
     set(CMAKE_C_FLAGS "-fno-strict-aliasing ${CMAKE_C_FLAGS}")
 endif()
 
-include_directories(${PROJECT_SOURCE_DIR}/core)
+if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 8.0)
+        # GCC 8 adds a warning that prevents us from using Python's C API
+        # in the "usual" way -- disable it for now.
+        set(CMAKE_CXX_FLAGS "-Wno-cast-function-type ${CMAKE_CXX_FLAGS}")
+        set(CMAKE_C_FLAGS "-Wno-cast-function-type ${CMAKE_C_FLAGS}")
+    endif()
+endif()
+
 include_directories(${PYTHON_INCLUDE_DIRS})
 include_directories(./)
 
@@ -164,6 +172,7 @@ set(PRP_AVATAR_SOURCES
     PRP/Avatar/pyScalarControllerChannel.cpp
     PRP/Avatar/pyScalarSDLChannel.cpp
     PRP/Avatar/pyScalarTimeScale.cpp
+    PRP/Avatar/pySeekPointMod.cpp
     PRP/Avatar/pySittingModifier.cpp
     PRP/Avatar/pySoundVolumeApplicator.cpp
     PRP/Avatar/pySpotInnerApplicator.cpp
@@ -178,6 +187,7 @@ set(PRP_AVATAR_HEADERS
     PRP/Avatar/pyATCAnim.h
     PRP/Avatar/pyLadderModifier.h
     PRP/Avatar/pyMultistageBehMod.h
+    PRP/Avatar/pySeekPointMod.h
     PRP/Avatar/pySittingModifier.h
 )
 
@@ -238,6 +248,7 @@ set(PRP_GEOM_SOURCES
     PRP/Geometry/pyMobileOccluder.cpp
     PRP/Geometry/pyOccluder.cpp
     PRP/Geometry/pyParticleSpan.cpp
+    PRP/Geometry/pySharedMesh.cpp
     PRP/Geometry/pySpaceTree.cpp
     PRP/Geometry/pySpaceTreeNode.cpp
     PRP/Geometry/pySpan.cpp
@@ -255,6 +266,7 @@ set(PRP_GEOM_HEADERS
     PRP/Geometry/pyGBufferGroup.h
     PRP/Geometry/pyGeometrySpan.h
     PRP/Geometry/pyOccluder.h
+    PRP/Geometry/pySharedMesh.h
     PRP/Geometry/pySpaceTree.h
     PRP/Geometry/pySpan.h
     PRP/Geometry/pySpanConvert.cpp
@@ -370,12 +382,14 @@ set(PRP_MSG_SOURCES
     PRP/Message/pyResponderMsg.cpp
     PRP/Message/pyResponderStateEventData.cpp
     PRP/Message/pyRideAnimatedPhysMsg.cpp
+    PRP/Message/pySimSuppressMsg.cpp
     PRP/Message/pySimulationMsg.cpp
     PRP/Message/pySoundMsg.cpp
     PRP/Message/pySpawnedEventData.cpp
     PRP/Message/pySubWorldMsg.cpp
     PRP/Message/pySwimMsg.cpp
     PRP/Message/pyTimerCallbackMsg.cpp
+    PRP/Message/pyWarpMsg.cpp
     PRP/Message/pyVariableEventData.cpp
 )
 set(PRP_MSG_HEADERS
@@ -398,9 +412,11 @@ set(PRP_MSG_HEADERS
     PRP/Message/pySwimMsg.h
     PRP/Message/pyResponderMsg.h
     PRP/Message/pyTimerCallbackMsg.h
+    PRP/Message/pyWarpMsg.h
 )
 
 set(PRP_MISC_SOURCES
+    PRP/Misc/pyAgeLinkEffects.cpp
     PRP/Misc/pyAgeInfoStruct.cpp
     PRP/Misc/pyAgeLinkStruct.cpp
     PRP/Misc/pyFogEnvironment.cpp
@@ -542,17 +558,30 @@ set(PRP_REGION_HEADERS
 )
 
 set(PRP_SURFACE_SOURCES
+    PRP/Surface/pyActivePrintShape.cpp
     PRP/Surface/pyBitmap.cpp
     PRP/Surface/pyCubicEnvironmap.cpp
     PRP/Surface/pyCubicRenderTarget.cpp
     PRP/Surface/pyDistOpacityMod.cpp
+    PRP/Surface/pyDynaBulletMgr.cpp
+    PRP/Surface/pyDynaDecalMgr.cpp
+    PRP/Surface/pyDynaFootMgr.cpp
+    PRP/Surface/pyDynaPuddleMgr.cpp
+    PRP/Surface/pyDynaRippleMgr.cpp
+    PRP/Surface/pyDynaRippleVSMgr.cpp
+    PRP/Surface/pyDynaTorpedoMgr.cpp
+    PRP/Surface/pyDynaTorpedoVSMgr.cpp
+    PRP/Surface/pyDynaWakeMgr.cpp
     PRP/Surface/pyDynamicCamMap.cpp
     PRP/Surface/pyDynamicEnvMap.cpp
     PRP/Surface/pyDynamicTextMap.cpp
     PRP/Surface/pyFadeOpacityMod.cpp
     PRP/Surface/pyFixedWaterState7.cpp
+    PRP/Surface/pyFont.cpp
     PRP/Surface/pyGMatState.cpp
     PRP/Surface/pyGMaterial.cpp
+    PRP/Surface/pyGrassShaderMod.cpp
+    PRP/Surface/pyGrassWave.cpp
     PRP/Surface/pyLayer.cpp
     PRP/Surface/pyLayerAVI.cpp
     PRP/Surface/pyLayerAnimation.cpp
@@ -564,6 +593,7 @@ set(PRP_SURFACE_SOURCES
     PRP/Surface/pyLayerMovie.cpp
     PRP/Surface/pyLayerSDLAnimation.cpp
     PRP/Surface/pyMipmap.cpp
+    PRP/Surface/pyPrintShape.cpp
     PRP/Surface/pyRenderTarget.cpp
     PRP/Surface/pyShader.cpp
     PRP/Surface/pyShaderConst.cpp
@@ -575,15 +605,20 @@ set(PRP_SURFACE_HEADERS
     PRP/Surface/pyBitmap.h
     PRP/Surface/pyCubicEnvironmap.h
     PRP/Surface/pyDistOpacityMod.h
+    PRP/Surface/pyDynaDecalMgr.h
+    PRP/Surface/pyDynaRippleMgr.h
     PRP/Surface/pyDynamicEnvMap.h
     PRP/Surface/pyDynamicTextMap.h
     PRP/Surface/pyFadeOpacityMod.h
     PRP/Surface/pyFixedWaterState7.h
+    PRP/Surface/pyFont.h
     PRP/Surface/pyGMatState.h
     PRP/Surface/pyGMaterial.h
+    PRP/Surface/pyGrassShaderMod.h
     PRP/Surface/pyLayer.h
     PRP/Surface/pyLayerAnimation.h
     PRP/Surface/pyLayerMovie.h
+    PRP/Surface/pyPrintShape.h
     PRP/Surface/pyRenderTarget.h
     PRP/Surface/pyShader.h
     PRP/Surface/pyWaveSet.h
@@ -610,22 +645,35 @@ set(RESMGR_HEADERS
     ResManager/pyResManager.h
 )
 
+set(SDL_SOURCES
+    SDL/pyStateDescriptor.cpp
+    SDL/pySDLMgr.cpp
+    SDL/pyVarDescriptor.cpp
+)
+set(SDL_HEADERS
+    SDL/pySDL.h
+)
+
 set(STREAM_SOURCES
     Stream/pyEncryptedStream.cpp
     Stream/pyFileStream.cpp
+    Stream/pyPrcHelper.cpp
     Stream/pyRAMStream.cpp
     Stream/pyStream.cpp
 )
 set(STREAM_HEADERS
+    Stream/pyPrcHelper.h
     Stream/pyStream.h
 )
 
 set(SYS_SOURCES
     Sys/pyColor32.cpp
     Sys/pyColorRGBA.cpp
+    Sys/pyUnifiedTime.cpp
 )
 set(SYS_HEADERS
     Sys/pyColor.h
+    Sys/pyUnifiedTime.h
 )
 
 set(UTIL_SOURCES
@@ -635,6 +683,36 @@ set(UTIL_SOURCES
 set(UTIL_HEADERS
     Util/pyBitVector.h
     Util/pyDDSurface.h
+)
+
+set(VAULT_SOURCES
+    Vault/pyServerGuid.cpp
+    Vault/pyVault.cpp
+    Vault/pyVaultNode.cpp
+    Vault/pyVaultPlayerNode.cpp
+    Vault/pyVaultAgeNode.cpp
+    Vault/pyVaultGameServerNode.cpp
+    Vault/pyVaultAdminNode.cpp
+    Vault/pyVaultServerNode.cpp
+    Vault/pyVaultFolderNode.cpp
+    Vault/pyVaultPlayerInfoNode.cpp
+    Vault/pyVaultSystemNode.cpp
+    Vault/pyVaultImageNode.cpp
+    Vault/pyVaultTextNoteNode.cpp
+    Vault/pyVaultSDLNode.cpp
+    Vault/pyVaultAgeLinkNode.cpp
+    Vault/pyVaultChronicleNode.cpp
+    Vault/pyVaultPlayerInfoListNode.cpp
+    Vault/pyVaultMarkerNode.cpp
+    Vault/pyVaultAgeInfoNode.cpp
+    Vault/pyVaultAgeInfoListNode.cpp
+    Vault/pyVaultMarkerListNode.cpp
+    Vault/pyVaultStore.cpp
+)
+set(VAULT_HEADERS
+    Vault/pyServerGuid.h
+    Vault/pyVaultNode.h
+    Vault/pyVaultStore.h
 )
 
 set(PYTHON_SOURCES
@@ -667,9 +745,11 @@ add_library(PyHSPlasma SHARED
             ${PRP_SURFACE_SOURCES}  ${PRP_SURFACE_HEADERS}
             ${PRP_SOURCES}          ${PRP_HEADERS}
             ${RESMGR_SOURCES}       ${RESMGR_HEADERS}
+            ${SDL_SOURCES}          ${SDL_HEADERS}
             ${STREAM_SOURCES}       ${STREAM_HEADERS}
             ${SYS_SOURCES}          ${SYS_HEADERS}
             ${UTIL_SOURCES}         ${UTIL_HEADERS}
+            ${VAULT_SOURCES}        ${VAULT_HEADERS}
             ${PYTHON_SOURCES}       ${PYTHON_HEADERS}
 )
 
@@ -681,7 +761,7 @@ if(NOT WIN32)
                           SUFFIX ".so"
     )
 
-    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import sys, distutils.sysconfig; sys.stdout.write(distutils.sysconfig.get_python_lib())"
+    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import sys, distutils.sysconfig; sys.stdout.write(distutils.sysconfig.get_python_lib(prefix='${CMAKE_INSTALL_PREFIX}'))"
                     OUTPUT_VARIABLE _PYTHON_LIB_DIR
     )
     install(TARGETS PyHSPlasma
@@ -715,6 +795,7 @@ source_group("PRP\\Message" FILES ${PRP_MSG_HEADERS} ${PRP_MSG_SOURCES})
 source_group("PRP\\Misc" FILES ${PRP_MISC_HEADERS} ${PRP_MISC_SOURCES})
 source_group("PRP\\Modifier" FILES ${PRP_MOD_HEADERS} ${PRP_MOD_SOURCES})
 source_group("PRP\\Object" FILES ${PRP_OBJ_HEADERS} ${PRP_OBJ_SOURCES})
+source_group("PRP\\Particle" FILES ${PRP_PARTICLE_HEADERS} ${PRP_PARTICLE_SOURCES})
 source_group("PRP\\Physics" FILES ${PRP_PHYS_HEADERS} ${PRP_PHYS_SOURCES})
 source_group("PRP\\Region" FILES ${PRP_REGION_HEADERS} ${PRP_REGION_SOURCES})
 source_group("PRP\\Surface" FILES ${PRP_SURFACE_HEADERS} ${PRP_SURFACE_SOURCES})
@@ -724,3 +805,4 @@ source_group("SDL" FILES ${SDL_HEADERS} ${SDL_SOURCES})
 source_group("Stream" FILES ${STREAM_HEADERS} ${STREAM_SOURCES})
 source_group("Sys" FILES ${SYS_HEADERS} ${SYS_SOURCES})
 source_group("Util" FILES ${UTIL_HEADERS} ${UTIL_SOURCES})
+source_group("Vault" FILES ${VAULT_HEADERS} ${VAULT_SOURCES})

@@ -40,13 +40,14 @@ static PyGetSetDef pyCompoundRotController_GetSet[] = {
 PY_PLASMA_TYPE(CompoundRotController, plCompoundRotController,
                "plCompoundRotController wrapper")
 
-PY_PLASMA_TYPE_INIT(CompoundRotController) {
+PY_PLASMA_TYPE_INIT(CompoundRotController)
+{
     pyCompoundRotController_Type.tp_init = pyCompoundRotController___init__;
     pyCompoundRotController_Type.tp_new = pyCompoundRotController_new;
     pyCompoundRotController_Type.tp_getset = pyCompoundRotController_GetSet;
     pyCompoundRotController_Type.tp_base = &pyRotController_Type;
     if (PyType_CheckAndReady(&pyCompoundRotController_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyCompoundRotController_Type);
     return (PyObject*)&pyCompoundRotController_Type;

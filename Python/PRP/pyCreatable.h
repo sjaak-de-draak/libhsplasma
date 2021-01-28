@@ -26,15 +26,17 @@ PyObject* ICreate(class plCreatable* pCre);
 
 /* Python property helpers */
 #define PY_PROPERTY_CREATABLE_READ(myType, name, getter)                \
-    PY_GETSET_GETTER_DECL(myType, name) {                               \
+    PY_GETSET_GETTER_DECL(myType, name)                                 \
+    {                                                                   \
         return ICreate(self->fThis->getter());                          \
     }
 
 #define PY_PROPERTY_CREATABLE_WRITE(plType, pyType, myType, name, setter) \
-    PY_GETSET_SETTER_DECL(myType, name) {                               \
+    PY_GETSET_SETTER_DECL(myType, name)                                 \
+    {                                                                   \
         PY_PROPERTY_CHECK_NULL(name)                                    \
         if (value == Py_None) {                                         \
-            self->fThis->setter(NULL);                                  \
+            self->fThis->setter(nullptr);                               \
             return 0;                                                   \
         } else if (!py##pyType##_Check(value)) {                        \
             PyErr_SetString(PyExc_TypeError, #name " expected type " #plType); \
@@ -55,15 +57,17 @@ PyObject* ICreate(class plCreatable* pCre);
     PY_PROPERTY_GETSET_RO_DECL(myType, name)
 
 #define PY_PROPERTY_CREATABLE_MEMBER_READ(myType, name, member)         \
-    PY_GETSET_GETTER_DECL(myType, name) {                               \
+    PY_GETSET_GETTER_DECL(myType, name)                                 \
+    {                                                                   \
         return ICreate(self->fThis->member);                            \
     }
 
 #define PY_PROPERTY_CREATABLE_MEMBER_WRITE(plType, pyType, myType, name, member) \
-    PY_GETSET_SETTER_DECL(myType, name) {                               \
+    PY_GETSET_SETTER_DECL(myType, name)                                 \
+    {                                                                   \
         PY_PROPERTY_CHECK_NULL(name)                                    \
         if (value == Py_None) {                                         \
-            self->fThis->member = NULL;                                 \
+            self->fThis->member = nullptr;                              \
             return 0;                                                   \
         } else if (!py##pyType##_Check(value)) {                        \
             PyErr_SetString(PyExc_TypeError, #name " expected type " #plType); \

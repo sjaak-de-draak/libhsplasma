@@ -19,7 +19,8 @@
 
 #include "plAvBrainGeneric.h"
 
-class PLASMA_DLL plAvBrainCoop : public plAvBrainGeneric {
+class PLASMA_DLL plAvBrainCoop : public plAvBrainGeneric
+{
     CREATABLE(plAvBrainCoop, kAvBrainCoop, plAvBrainGeneric)
 
 private:
@@ -30,8 +31,8 @@ private:
     std::vector<plKey> fRecipients;
 
 public:
-    plAvBrainCoop() : fInitiatorID(0), fInitiatorSerial(0),
-                      fWaitingForClick(false) { }
+    plAvBrainCoop()
+        : fInitiatorID(), fInitiatorSerial(), fWaitingForClick() { }
 
     void read(hsStream* S, plResManager* mgr) HS_OVERRIDE;
     void write(hsStream* S, plResManager* mgr) HS_OVERRIDE;
@@ -43,7 +44,7 @@ protected:
 public:
     const std::vector<plKey>& getRecipients() const { return fRecipients; }
     std::vector<plKey>& getRecipients() { return fRecipients; }
-    void addRecipeient(plKey recp) { fRecipients.push_back(recp); }
+    void addRecipeient(plKey recp) { fRecipients.emplace_back(std::move(recp)); }
     void delRecipient(size_t idx) { fRecipients.erase(fRecipients.begin() + idx); }
     void clearRecipients() { fRecipients.clear(); }
 
@@ -56,8 +57,8 @@ public:
     void setInitiatorID(unsigned int id) { fInitiatorID = id; }
     void setInitiatorSerial(unsigned short serial) { fInitiatorSerial = serial; }
     void setWaitingForClick(bool waiting) { fWaitingForClick = waiting; }
-    void setHostKey(plKey host) { fHostKey = host; }
-    void setGuestKey(plKey guest) { fGuestKey = guest; }
+    void setHostKey(plKey host) { fHostKey = std::move(host); }
+    void setGuestKey(plKey guest) { fGuestKey = std::move(guest); }
 };
 
 #endif

@@ -24,11 +24,12 @@ PY_PLASMA_NEW(SpotInnerApplicator, plSpotInnerApplicator)
 PY_PLASMA_TYPE(SpotInnerApplicator, plSpotInnerApplicator,
                "plSpotInnerApplicator wrapper")
 
-PY_PLASMA_TYPE_INIT(SpotInnerApplicator) {
+PY_PLASMA_TYPE_INIT(SpotInnerApplicator)
+{
     pySpotInnerApplicator_Type.tp_new = pySpotInnerApplicator_new;
     pySpotInnerApplicator_Type.tp_base = &pyAGApplicator_Type;
     if (PyType_CheckAndReady(&pySpotInnerApplicator_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pySpotInnerApplicator_Type);
     return (PyObject*)&pySpotInnerApplicator_Type;

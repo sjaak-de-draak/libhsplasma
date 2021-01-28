@@ -34,11 +34,11 @@ PY_METHOD_VA(SpanInstance, read,
     int numVerts;
     if (!PyArg_ParseTuple(args, "OOi", &stream, &encoding, &numVerts)) {
         PyErr_SetString(PyExc_TypeError, "read expects hsStream, plSpanEncoding, int");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream) || !pySpanEncoding_Check((PyObject*)encoding)) {
         PyErr_SetString(PyExc_TypeError, "read expects hsStream, plSpanEncoding, int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->read(stream->fThis, *encoding->fThis, numVerts);
     Py_RETURN_NONE;
@@ -51,11 +51,11 @@ PY_METHOD_VA(SpanInstance, write,
     pyStream* stream;
     if (!PyArg_ParseTuple(args, "O", &stream)) {
         PyErr_SetString(PyExc_TypeError, "write expects an hsStream");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream)) {
         PyErr_SetString(PyExc_TypeError, "write expects an hsStream");
-        return NULL;
+        return nullptr;
     }
     self->fThis->write(stream->fThis);
     Py_RETURN_NONE;
@@ -67,7 +67,8 @@ static PyMethodDef pySpanInstance_Methods[] = {
     PY_METHOD_TERMINATOR
 };
 
-PY_GETSET_GETTER_DECL(SpanInstance, posDeltas) {
+PY_GETSET_GETTER_DECL(SpanInstance, posDeltas)
+{
     std::vector<hsVector3> deltas = self->fThis->getPosDeltas();
     PyObject* list = PyTuple_New(deltas.size());
     for (size_t i=0; i<deltas.size(); i++)
@@ -75,7 +76,8 @@ PY_GETSET_GETTER_DECL(SpanInstance, posDeltas) {
     return list;
 }
 
-PY_GETSET_SETTER_DECL(SpanInstance, posDeltas) {
+PY_GETSET_SETTER_DECL(SpanInstance, posDeltas)
+{
     PY_PROPERTY_CHECK_NULL(posDeltas)
     pySequenceFastRef seq(value);
     if (!seq.isSequence()) {
@@ -97,7 +99,8 @@ PY_GETSET_SETTER_DECL(SpanInstance, posDeltas) {
 
 PY_PROPERTY_GETSET_DECL(SpanInstance, posDeltas)
 
-PY_GETSET_GETTER_DECL(SpanInstance, colors) {
+PY_GETSET_GETTER_DECL(SpanInstance, colors)
+{
     std::vector<unsigned int> colors = self->fThis->getColors();
     PyObject* list = PyTuple_New(colors.size());
     for (size_t i=0; i<colors.size(); i++)
@@ -105,7 +108,8 @@ PY_GETSET_GETTER_DECL(SpanInstance, colors) {
     return list;
 }
 
-PY_GETSET_SETTER_DECL(SpanInstance, colors) {
+PY_GETSET_SETTER_DECL(SpanInstance, colors)
+{
     PY_PROPERTY_CHECK_NULL(colors)
     pySequenceFastRef seq(value);
     if (!seq.isSequence()) {
@@ -138,14 +142,15 @@ static PyGetSetDef pySpanInstance_GetSet[] = {
 
 PY_PLASMA_TYPE(SpanInstance, plSpanInstance, "plSpanInstance wrapper")
 
-PY_PLASMA_TYPE_INIT(SpanInstance) {
+PY_PLASMA_TYPE_INIT(SpanInstance)
+{
     pySpanInstance_Type.tp_dealloc = pySpanInstance_dealloc;
     pySpanInstance_Type.tp_init = pySpanInstance___init__;
     pySpanInstance_Type.tp_new = pySpanInstance_new;
     pySpanInstance_Type.tp_methods = pySpanInstance_Methods;
     pySpanInstance_Type.tp_getset = pySpanInstance_GetSet;
     if (PyType_CheckAndReady(&pySpanInstance_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pySpanInstance_Type);
     return (PyObject*)&pySpanInstance_Type;

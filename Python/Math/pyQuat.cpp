@@ -22,12 +22,13 @@
 
 PY_PLASMA_VALUE_DEALLOC(Quat)
 
-PY_PLASMA_INIT_DECL(Quat) {
+PY_PLASMA_INIT_DECL(Quat)
+{
     float x = 0.0f, y = 0.0f, z = 0.0f, w = 0.0f;
-    PyObject* init = NULL;
-    static char* kwlist[] = { _pycs("X"), _pycs("Y"), _pycs("Z"), _pycs("W"), NULL };
-    static char* kwlist2[] = { _pycs("quat"), NULL };
-    static char* kwlist3[] = { _pycs("angle"), _pycs("axis"), NULL };
+    PyObject* init = nullptr;
+    static char* kwlist[] = { _pycs("X"), _pycs("Y"), _pycs("Z"), _pycs("W"), nullptr };
+    static char* kwlist2[] = { _pycs("quat"), nullptr };
+    static char* kwlist3[] = { _pycs("angle"), _pycs("axis"), nullptr };
 
     if (PyArg_ParseTupleAndKeywords(args, kwds, "ffff", kwlist, &x, &y, &z, &w)) {
         (*self->fThis) = hsQuat(x, y, z, w);
@@ -40,7 +41,7 @@ PY_PLASMA_INIT_DECL(Quat) {
             return -1;
         }
     } else if (PyErr_Clear(), PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist2, &init)) {
-        if (init == NULL) {
+        if (init == nullptr) {
             (*self->fThis) = hsQuat();
             return 0;
         }
@@ -59,29 +60,33 @@ PY_PLASMA_INIT_DECL(Quat) {
 
 PY_PLASMA_VALUE_NEW(Quat, hsQuat)
 
-PY_PLASMA_REPR_DECL(Quat) {
+PY_PLASMA_REPR_DECL(Quat)
+{
     ST::string repr = ST::format("hsQuat({f}, {f}, {f}, {f})",
              self->fThis->X, self->fThis->Y, self->fThis->Z, self->fThis->W);
     return pyPlasma_convert(repr);
 }
 
-PY_PLASMA_NB_BINARYFUNC_DECL(Quat, add) {
+PY_PLASMA_NB_BINARYFUNC_DECL(Quat, add)
+{
     if (!pyQuat_Check(left) || !pyQuat_Check(right)) {
         PyErr_SetString(PyExc_TypeError, "Incompatible Types");
-        return NULL;
+        return nullptr;
     }
     return pyPlasma_convert(pyPlasma_get<hsQuat>(left) + pyPlasma_get<hsQuat>(right));
 }
 
-PY_PLASMA_NB_BINARYFUNC_DECL(Quat, subtract) {
+PY_PLASMA_NB_BINARYFUNC_DECL(Quat, subtract)
+{
     if (!pyQuat_Check(left) || !pyQuat_Check(right)) {
         PyErr_SetString(PyExc_TypeError, "Incompatible Types");
-        return NULL;
+        return nullptr;
     }
     return pyPlasma_convert(pyPlasma_get<hsQuat>(left) - pyPlasma_get<hsQuat>(right));
 }
 
-PY_PLASMA_NB_BINARYFUNC_DECL(Quat, multiply) {
+PY_PLASMA_NB_BINARYFUNC_DECL(Quat, multiply)
+{
     if (pyQuat_Check(left)) {
         if (pyQuat_Check(right)) {
             return pyPlasma_convert(pyPlasma_get<hsQuat>(left) * pyPlasma_get<hsQuat>(right));
@@ -89,48 +94,54 @@ PY_PLASMA_NB_BINARYFUNC_DECL(Quat, multiply) {
             return pyPlasma_convert(pyPlasma_get<hsQuat>(left) * pyPlasma_get<float>(right));
         } else {
             PyErr_SetString(PyExc_TypeError, "Incompatible Types");
-            return NULL;
+            return nullptr;
         }
     } else if (pyQuat_Check(right)) {
         if (pyPlasma_check<float>(left)) {
             return pyPlasma_convert(pyPlasma_get<hsQuat>(right) * pyPlasma_get<float>(left));
         } else {
             PyErr_SetString(PyExc_TypeError, "Incompatible Types");
-            return NULL;
+            return nullptr;
         }
     } else {
         PyErr_SetString(PyExc_TypeError, "This should not happen");
-        return NULL;
+        return nullptr;
     }
 }
 
-PY_PLASMA_NB_UNARYFUNC_DECL(Quat, negative) {
+PY_PLASMA_NB_UNARYFUNC_DECL(Quat, negative)
+{
     return pyPlasma_convert(hsQuat(-(self->fThis->X), -(self->fThis->Y),
                                    -(self->fThis->Z), -(self->fThis->W)));
 }
 
-PY_PLASMA_NB_UNARYFUNC_DECL(Quat, positive) {
+PY_PLASMA_NB_UNARYFUNC_DECL(Quat, positive)
+{
     return pyPlasma_convert(hsQuat(+(self->fThis->X), +(self->fThis->Y),
                                    +(self->fThis->Z), +(self->fThis->W)));
 }
 
-PY_PLASMA_NB_UNARYFUNC_DECL(Quat, absolute) {
+PY_PLASMA_NB_UNARYFUNC_DECL(Quat, absolute)
+{
     return pyPlasma_convert(hsQuat(fabs(self->fThis->X),
                                    fabs(self->fThis->Y),
                                    fabs(self->fThis->Z),
                                    fabs(self->fThis->W)));
 }
 
-PY_PLASMA_NB_INQUIRY_DECL(Quat, nonzero) {
+PY_PLASMA_NB_INQUIRY_DECL(Quat, nonzero)
+{
     return (self->fThis->X != 0.0f) || (self->fThis->Y != 0.0f)
         || (self->fThis->Z != 0.0f) || (self->fThis->W != 0.0f);
 }
 
-PY_METHOD_STATIC_NOARGS(Quat, Identity, "Returns an identity quaternion") {
+PY_METHOD_STATIC_NOARGS(Quat, Identity, "Returns an identity quaternion")
+{
     return pyPlasma_convert(hsQuat::Identity());
 }
 
-PY_METHOD_NOARGS(Quat, conjugate, "Returns the conjugate of the quaternion") {
+PY_METHOD_NOARGS(Quat, conjugate, "Returns the conjugate of the quaternion")
+{
     return pyPlasma_convert(self->fThis->conjugate());
 }
 
@@ -141,11 +152,11 @@ PY_METHOD_VA(Quat, read,
     pyStream* stream;
     if (!PyArg_ParseTuple(args, "O", &stream)) {
         PyErr_SetString(PyExc_TypeError, "read expects a hsStream");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream)) {
         PyErr_SetString(PyExc_TypeError, "read expects a hsStream");
-        return NULL;
+        return nullptr;
     }
     self->fThis->read(stream->fThis);
     Py_RETURN_NONE;
@@ -158,11 +169,11 @@ PY_METHOD_VA(Quat, write,
     pyStream* stream;
     if (!PyArg_ParseTuple(args, "O", &stream)) {
         PyErr_SetString(PyExc_TypeError, "write expects a hsStream");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream)) {
         PyErr_SetString(PyExc_TypeError, "write expects a hsStream");
-        return NULL;
+        return nullptr;
     }
     self->fThis->write(stream->fThis);
     Py_RETURN_NONE;
@@ -192,7 +203,8 @@ PyGetSetDef pyQuat_GetSet[] = {
 PY_PLASMA_TYPE(Quat, hsQuat, "Plasma Quaternion")
 PY_PLASMA_TYPE_AS_NUMBER(Quat)
 
-PY_PLASMA_TYPE_INIT(Quat) {
+PY_PLASMA_TYPE_INIT(Quat)
+{
     pyQuat_As_Number.nb_add = pyQuat_nb_add;
     pyQuat_As_Number.nb_subtract = pyQuat_nb_subtract;
     pyQuat_As_Number.nb_multiply = pyQuat_nb_multiply;
@@ -209,7 +221,7 @@ PY_PLASMA_TYPE_INIT(Quat) {
     pyQuat_Type.tp_getset = pyQuat_GetSet;
     pyQuat_Type.tp_flags |= Py_TPFLAGS_CHECKTYPES;
     if (PyType_CheckAndReady(&pyQuat_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyQuat_Type);
     return (PyObject*)&pyQuat_Type;

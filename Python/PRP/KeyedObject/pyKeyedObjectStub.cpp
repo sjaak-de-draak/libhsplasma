@@ -20,7 +20,8 @@
 #include "pyKey.h"
 #include "PRP/pyCreatable.h"
 
-PY_PLASMA_INIT_DECL(KeyedObjectStub) {
+PY_PLASMA_INIT_DECL(KeyedObjectStub)
+{
     const char* name = "";
     if (!PyArg_ParseTuple(args, "|s", &name)) {
         PyErr_SetString(PyExc_TypeError, "__init__ expects an optional string");
@@ -42,13 +43,14 @@ static PyGetSetDef pyKeyedObjectStub_GetSet[] = {
 
 PY_PLASMA_TYPE(KeyedObjectStub, hsKeyedObjectStub, "hsKeyedObjectStub wrapper")
 
-PY_PLASMA_TYPE_INIT(KeyedObjectStub) {
+PY_PLASMA_TYPE_INIT(KeyedObjectStub)
+{
     pyKeyedObjectStub_Type.tp_init = pyKeyedObjectStub___init__;
     pyKeyedObjectStub_Type.tp_new = pyKeyedObjectStub_new;
     pyKeyedObjectStub_Type.tp_getset = pyKeyedObjectStub_GetSet;
     pyKeyedObjectStub_Type.tp_base = &pyCreatable_Type;
     if (PyType_CheckAndReady(&pyKeyedObjectStub_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyKeyedObjectStub_Type);
     return (PyObject*)&pyKeyedObjectStub_Type;

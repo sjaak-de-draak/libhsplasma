@@ -21,12 +21,14 @@
 #include "plFixedWaterState6.h"
 #include "plFixedWaterState7.h"
 
-class PLASMA_DLL plWaveSetBase : public plMultiModifier {
+class PLASMA_DLL plWaveSetBase : public plMultiModifier
+{
     CREATABLE(plWaveSetBase, kWaveSetBase, plMultiModifier)
 };
 
 
-class PLASMA_DLL plWaveSet6 : public plWaveSetBase {
+class PLASMA_DLL plWaveSet6 : public plWaveSetBase
+{
     CREATABLE(plWaveSet6, kWaveSet6, plWaveSetBase)
 
 public:
@@ -39,7 +41,8 @@ protected:
 };
 
 
-class PLASMA_DLL plWaveSet7 : public plWaveSetBase {
+class PLASMA_DLL plWaveSet7 : public plWaveSetBase
+{
     CREATABLE(plWaveSet7, kWaveSet7, plWaveSetBase)
 
 public:
@@ -52,7 +55,8 @@ protected:
     plKey fEnvMap, fRefObj;
 
 public:
-    plWaveSet7() : fMaxLen(0.0f) {
+    plWaveSet7() : fMaxLen()
+    {
         fFlags.setName(kHasRefObject, "kHasRefObject");
     }
 
@@ -66,13 +70,13 @@ protected:
 public:
     std::vector<plKey>& getShores() { return fShores; }
     const std::vector<plKey>& getShores() const { return fShores; }
-    void addShore(plKey key) { fShores.push_back(key); }
+    void addShore(plKey key) { fShores.emplace_back(std::move(key)); }
     void delShore(size_t idx) { fShores.erase(fShores.begin() + idx); }
     void clearShores() { fShores.clear(); }
 
     std::vector<plKey>& getDecals() { return fDecals; }
     const std::vector<plKey>& getDecals() const { return fDecals; }
-    void addDecal(plKey key) { fDecals.push_back(key); }
+    void addDecal(plKey key) { fDecals.emplace_back(std::move(key)); }
     void delDecal(size_t idx) { fDecals.erase(fDecals.begin() + idx); }
     void clearDecals() { fDecals.clear(); }
 
@@ -84,8 +88,8 @@ public:
 
     void setState(const plFixedWaterState7& value) { fState = value; }
     void setMaxLen(float value) { fMaxLen = value; }
-    void setEnvMap(plKey value) { fEnvMap = value; }
-    void setRefObj(plKey value) { fRefObj = value; }
+    void setEnvMap(plKey value) { fEnvMap = std::move(value); }
+    void setRefObj(plKey value) { fRefObj = std::move(value); }
 };
 
 #endif

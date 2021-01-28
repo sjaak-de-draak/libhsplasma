@@ -25,7 +25,8 @@
 
 PY_PLASMA_NEW_MSG(LightInfo, "plLightInfo is abstract")
 
-PY_METHOD_NOARGS(LightInfo, clearVisRegions, "Remove all VisRegions from the light") {
+PY_METHOD_NOARGS(LightInfo, clearVisRegions, "Remove all VisRegions from the light")
+{
     self->fThis->clearVisRegions();
     Py_RETURN_NONE;
 }
@@ -37,7 +38,7 @@ PY_METHOD_VA(LightInfo, addVisRegion,
     pyKey* key;
     if (!PyArg_ParseTuple(args, "O", &key) || !pyKey_Check((PyObject*)key)) {
         PyErr_SetString(PyExc_TypeError, "addVisRegion expects a plKey");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addVisRegion(*key->fThis);
     Py_RETURN_NONE;
@@ -49,7 +50,8 @@ static PyMethodDef pyLightInfo_Methods[] = {
     PY_METHOD_TERMINATOR
 };
 
-PY_GETSET_GETTER_DECL(LightInfo, visRegions) {
+PY_GETSET_GETTER_DECL(LightInfo, visRegions)
+{
     PyObject* list = PyTuple_New(self->fThis->getVisRegions().size());
     for (size_t i=0; i<self->fThis->getVisRegions().size(); i++)
         PyTuple_SET_ITEM(list, i, pyKey_FromKey(self->fThis->getVisRegions()[i]));
@@ -87,13 +89,14 @@ static PyGetSetDef pyLightInfo_GetSet[] = {
 
 PY_PLASMA_TYPE(LightInfo, plLightInfo, "plLightInfo wrapper")
 
-PY_PLASMA_TYPE_INIT(LightInfo) {
+PY_PLASMA_TYPE_INIT(LightInfo)
+{
     pyLightInfo_Type.tp_new = pyLightInfo_new;
     pyLightInfo_Type.tp_methods = pyLightInfo_Methods;
     pyLightInfo_Type.tp_getset = pyLightInfo_GetSet;
     pyLightInfo_Type.tp_base = &pyObjInterface_Type;
     if (PyType_CheckAndReady(&pyLightInfo_Type) < 0)
-        return NULL;
+        return nullptr;
 
     PY_TYPE_ADD_CONST(LightInfo, "kLPObsolete", plLightInfo::kLPObsolete);
     PY_TYPE_ADD_CONST(LightInfo, "kLPCastShadows", plLightInfo::kLPCastShadows);

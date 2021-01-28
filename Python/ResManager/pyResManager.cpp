@@ -26,7 +26,8 @@
 
 PY_PLASMA_DEALLOC(ResManager)
 
-PY_PLASMA_INIT_DECL(ResManager) {
+PY_PLASMA_INIT_DECL(ResManager)
+{
     int version = PlasmaVer::pvUnknown;
     if (!PyArg_ParseTuple(args, "|i", &version))
         return -1;
@@ -44,7 +45,7 @@ PY_METHOD_VA(ResManager, setVer,
     int ver, force = 0;
     if (!PyArg_ParseTuple(args, "i|i", &ver, &force)) {
         PyErr_SetString(PyExc_TypeError, "setVer expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->setVer((PlasmaVer)ver, (force != 0));
     Py_RETURN_NONE;
@@ -63,11 +64,11 @@ PY_METHOD_VA(ResManager, readKey,
     pyStream* stream;
     if (!PyArg_ParseTuple(args, "O", &stream)) {
         PyErr_SetString(PyExc_TypeError, "readKey expects an hsStream");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream)) {
         PyErr_SetString(PyExc_TypeError, "readKey expects an hsStream");
-        return NULL;
+        return nullptr;
     }
     return pyKey_FromKey(self->fThis->readKey(stream->fThis));
 }
@@ -79,11 +80,11 @@ PY_METHOD_VA(ResManager, readUoid,
     pyStream* stream;
     if (!PyArg_ParseTuple(args, "O", &stream)) {
         PyErr_SetString(PyExc_TypeError, "readUoid expects an hsStream");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream)) {
         PyErr_SetString(PyExc_TypeError, "readUoid expects an hsStream");
-        return NULL;
+        return nullptr;
     }
     return pyKey_FromKey(self->fThis->readUoid(stream->fThis));
 }
@@ -96,11 +97,11 @@ PY_METHOD_VA(ResManager, writeKey,
     pyKey* key;
     if (!PyArg_ParseTuple(args, "OO", &stream, &key)) {
         PyErr_SetString(PyExc_TypeError, "writeKey expects hsStream, plKey");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream) || !pyKey_Check((PyObject*)key)) {
         PyErr_SetString(PyExc_TypeError, "writeKey expects hsStream, plKey");
-        return NULL;
+        return nullptr;
     }
     self->fThis->writeKey(stream->fThis, *(key->fThis));
     Py_RETURN_NONE;
@@ -114,11 +115,11 @@ PY_METHOD_VA(ResManager, writeUoid,
     pyKey* key;
     if (!PyArg_ParseTuple(args, "OO", &stream, &key)) {
         PyErr_SetString(PyExc_TypeError, "writeUoid expects hsStream, plKey");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream) || !pyKey_Check((PyObject*)key)) {
         PyErr_SetString(PyExc_TypeError, "writeUoid expects hsStream, plKey");
-        return NULL;
+        return nullptr;
     }
     self->fThis->writeUoid(stream->fThis, *(key->fThis));
     Py_RETURN_NONE;
@@ -131,11 +132,11 @@ PY_METHOD_VA(ResManager, getObject,
     pyKey* key;
     if (!PyArg_ParseTuple(args, "O", &key)) {
         PyErr_SetString(PyExc_TypeError, "getObject expects a plKey");
-        return NULL;
+        return nullptr;
     }
     if (!pyKey_Check((PyObject*)key)) {
         PyErr_SetString(PyExc_TypeError, "getObject expects a plKey");
-        return NULL;
+        return nullptr;
     }
     return ICreate(self->fThis->getObject(*(key->fThis)));
 }
@@ -147,11 +148,11 @@ PY_METHOD_VA(ResManager, countKeys,
     pyLocation* loc;
     if (!PyArg_ParseTuple(args, "O", &loc)) {
         PyErr_SetString(PyExc_TypeError, "countKeys expects a plLocation");
-        return NULL;
+        return nullptr;
     }
     if (!pyLocation_Check((PyObject*)loc)) {
         PyErr_SetString(PyExc_TypeError, "countKeys expects a plLocation");
-        return NULL;
+        return nullptr;
     }
     return pyPlasma_convert(self->fThis->countKeys(*(loc->fThis)));
 }
@@ -160,23 +161,34 @@ PY_METHOD_VA(ResManager, ReadPage,
     "Params: filename, [stub]\n"
     "Reads an entire PRP file and returns the plPageInfo for it")
 {
-    const char* filename;
+    ST::string filename;
+    pyStream* prxStream;
+    pyStream* prmStream = nullptr;
     int stub = false;
-    if (!PyArg_ParseTuple(args, "s|i", &filename, &stub)) {
-        PyErr_SetString(PyExc_TypeError, "ReadPage expects a string");
-        return NULL;
-    }
-    plPageInfo* page = NULL;
-    try {
-        page = self->fThis->ReadPage(filename, (stub != 0));
-    } catch (...) {
-        PyErr_SetString(PyExc_IOError, "Error reading page");
-        return NULL;
-    }
-    if (page == NULL) {
-        Py_RETURN_NONE;
+    if (PyArg_ParseTuple(args, "O&|i", PyAnyString_PathDecoder, &filename, &stub)) {
+        try {
+            return pyPageInfo_FromPageInfo(self->fThis->ReadPage(filename, (stub != 0)));
+        } catch (...) {
+            PyErr_SetString(PyExc_IOError, "Error reading page");
+            return nullptr;
+        }
+    } else if (PyErr_Clear(), PyArg_ParseTuple(args, "O|Oi", &prxStream, &prmStream, &stub)) {
+        if (!pyStream_Check((PyObject*)prxStream) || (prmStream && !pyStream_Check((PyObject*)prmStream))) {
+            PyErr_SetString(PyExc_TypeError, "ReadPage expects a string, an hsStream, or an os.PathLike object");
+            return nullptr;
+        }
+
+        hsStream* prxS = prxStream->fThis;
+        hsStream* prmS = prmStream ? prmStream->fThis : nullptr;
+        try {
+            return pyPageInfo_FromPageInfo(self->fThis->ReadPage(prxS, prmS, (stub != 0)));
+        } catch (...) {
+            PyErr_SetString(PyExc_IOError, "Error reading page");
+            return nullptr;
+        }
     } else {
-        return pyPageInfo_FromPageInfo(page);
+        PyErr_SetString(PyExc_TypeError, "ReadPage expects a string, an hsStream, or an os.PathLike object");
+        return nullptr;
     }
 }
 
@@ -184,23 +196,39 @@ PY_METHOD_VA(ResManager, WritePage,
     "Params: filename, page\n"
     "Writes an entire page to a PRP file")
 {
-    const char* filename;
+    ST::string filename;
+    pyStream* stream;
     pyPageInfo* page;
-    if (!PyArg_ParseTuple(args, "sO", &filename, &page)) {
-        PyErr_SetString(PyExc_TypeError, "WritePage expects string, plPageInfo");
-        return NULL;
+    if (PyArg_ParseTuple(args, "O&O", PyAnyString_PathDecoder, &filename, &page)) {
+        if (!pyPageInfo_Check((PyObject*)page)) {
+            PyErr_SetString(PyExc_TypeError, "WritePage expects a string, hsStream, or os.PathLike object, and a plPageInfo");
+            return nullptr;
+        }
+
+        try {
+            self->fThis->WritePage(filename, page->fThis);
+            Py_RETURN_NONE;
+        } catch (...) {
+            PyErr_SetString(PyExc_IOError, "Error writing page");
+            return nullptr;
+        }
+    } else if (PyErr_Clear(), PyArg_ParseTuple(args, "OO", &stream, &page)) {
+        if (!pyPageInfo_Check((PyObject*)page) || !pyStream_Check((PyObject*)stream)) {
+            PyErr_SetString(PyExc_TypeError, "WritePage expects a string, hsStream, or os.PathLike object, and a plPageInfo");
+            return nullptr;
+        }
+
+        try {
+            self->fThis->WritePage(stream->fThis, page->fThis);
+            Py_RETURN_NONE;
+        } catch (...) {
+            PyErr_SetString(PyExc_IOError, "Error writing page");
+            return nullptr;
+        }
+    } else {
+        PyErr_SetString(PyExc_TypeError, "WritePage expects a string, hsStream, or os.PathLike object, and a plPageInfo");
+        return nullptr;
     }
-    if (!pyPageInfo_Check((PyObject*)page)) {
-        PyErr_SetString(PyExc_TypeError, "WritePage expects string, plPageInfo");
-        return NULL;
-    }
-    try {
-        self->fThis->WritePage(filename, page->fThis);
-    } catch (...) {
-        PyErr_SetString(PyExc_IOError, "Error writing page");
-        return NULL;
-    }
-    Py_RETURN_NONE;
 }
 
 PY_METHOD_VA(ResManager, FindPage,
@@ -210,14 +238,14 @@ PY_METHOD_VA(ResManager, FindPage,
     pyLocation* loc;
     if (!PyArg_ParseTuple(args, "O", &loc)) {
         PyErr_SetString(PyExc_TypeError, "FindPage expects a plLocation");
-        return NULL;
+        return nullptr;
     }
     if (!pyLocation_Check((PyObject*)loc)) {
         PyErr_SetString(PyExc_TypeError, "FindPage expects a plLocation");
-        return NULL;
+        return nullptr;
     }
     plPageInfo* page = self->fThis->FindPage(*loc->fThis);
-    if (page == NULL) {
+    if (page == nullptr) {
         Py_RETURN_NONE;
     } else {
         return pyPageInfo_FromPageInfo(page);
@@ -232,11 +260,11 @@ PY_METHOD_VA(ResManager, UnloadPage,
     pyLocation* loc;
     if (!PyArg_ParseTuple(args, "O", &loc)) {
         PyErr_SetString(PyExc_TypeError, "UnloadPage expects a plLocation");
-        return NULL;
+        return nullptr;
     }
     if (!pyLocation_Check((PyObject*)loc)) {
         PyErr_SetString(PyExc_TypeError, "UnloadPage expects a plLocation");
-        return NULL;
+        return nullptr;
     }
     self->fThis->UnloadPage(*loc->fThis);
     Py_RETURN_NONE;
@@ -247,24 +275,24 @@ PY_METHOD_VA(ResManager, ReadAge,
     "Reads a .age file. If readPages is True, also loads all PRPs\n"
     "identified in the .age file")
 {
-    const char* filename;
+    ST::string filename;
     char readPages;
-    if (!PyArg_ParseTuple(args, "sb", &filename, &readPages)) {
+    if (!PyArg_ParseTuple(args, "O&b", PyAnyString_PathDecoder, &filename, &readPages)) {
         PyErr_SetString(PyExc_TypeError, "ReadAge expects string, bool");
-        return NULL;
+        return nullptr;
     }
-    plAgeInfo* age = NULL;
+    plAgeInfo* age = nullptr;
     try {
         age = self->fThis->ReadAge(filename, readPages != 0);
     } catch (hsException& e) {
         ST::string err = ST::format("Error reading age: {}", e.what());
         PyErr_SetString(PyExc_IOError, err.c_str());
-        return NULL;
+        return nullptr;
     } catch (...) {
         PyErr_SetString(PyExc_IOError, "Error reading age");
-        return NULL;
+        return nullptr;
     }
-    if (age == NULL) {
+    if (age == nullptr) {
         Py_RETURN_NONE;
     } else {
         return pyAgeInfo_FromAgeInfo(age);
@@ -276,21 +304,21 @@ PY_METHOD_VA(ResManager, WriteAge,
     "Writes a plAgeInfo to the specified file\n"
     "Does NOT write any PRP files!")
 {
-    const char* filename;
+    ST::string filename;
     pyAgeInfo* age;
-    if (!PyArg_ParseTuple(args, "sO", &filename, &age)) {
-        PyErr_SetString(PyExc_TypeError, "WriteAge expects string, plAgeInfo");
-        return NULL;
+    if (!PyArg_ParseTuple(args, "O&O", PyAnyString_PathDecoder, &filename, &age)) {
+        PyErr_SetString(PyExc_TypeError, "WriteAge expects string or an os.PathLike object, plAgeInfo");
+        return nullptr;
     }
     if (!pyAgeInfo_Check((PyObject*)age)) {
-        PyErr_SetString(PyExc_TypeError, "WriteAge expects string, plAgeInfo");
-        return NULL;
+        PyErr_SetString(PyExc_TypeError, "WriteAge expects string or an os.PathLike object, plAgeInfo");
+        return nullptr;
     }
     try {
         self->fThis->WriteAge(filename, age->fThis);
     } catch (...) {
         PyErr_SetString(PyExc_IOError, "Error writing age");
-        return NULL;
+        return nullptr;
     }
     Py_RETURN_NONE;
 }
@@ -302,10 +330,10 @@ PY_METHOD_VA(ResManager, FindAge,
     const char* ageName;
     if (!PyArg_ParseTuple(args, "s", &ageName)) {
         PyErr_SetString(PyExc_TypeError, "FindAge expects a string");
-        return NULL;
+        return nullptr;
     }
     plAgeInfo* age = self->fThis->FindAge(ageName);
-    if (age == NULL) {
+    if (age == nullptr) {
         Py_RETURN_NONE;
     } else {
         return pyAgeInfo_FromAgeInfo(age);
@@ -320,7 +348,7 @@ PY_METHOD_VA(ResManager, UnloadAge,
     const char* ageName;
     if (!PyArg_ParseTuple(args, "s", &ageName)) {
         PyErr_SetString(PyExc_TypeError, "UnloadAge expects a string");
-        return NULL;
+        return nullptr;
     }
     self->fThis->UnloadAge(ageName);
     Py_RETURN_NONE;
@@ -333,11 +361,11 @@ PY_METHOD_VA(ResManager, ReadCreatable,
     pyStream* stream;
     if (!PyArg_ParseTuple(args, "O", &stream)) {
         PyErr_SetString(PyExc_TypeError, "ReadCreatable expects an hsStream");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream)) {
         PyErr_SetString(PyExc_TypeError, "ReadCreatable expects an hsStream");
-        return NULL;
+        return nullptr;
     }
     return ICreate(self->fThis->ReadCreatable(stream->fThis));
 }
@@ -351,11 +379,11 @@ PY_METHOD_VA(ResManager, ReadCreatableStub,
     int size;
     if (!PyArg_ParseTuple(args, "Oi", &stream, &size)) {
         PyErr_SetString(PyExc_TypeError, "ReadCreatable expects hsStream, int");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream)) {
         PyErr_SetString(PyExc_TypeError, "ReadCreatable expects hsStream, int");
-        return NULL;
+        return nullptr;
     }
     return ICreate(self->fThis->ReadCreatable(stream->fThis, true, (size_t)size));
 }
@@ -368,11 +396,11 @@ PY_METHOD_VA(ResManager, WriteCreatable,
     pyCreatable* cre;
     if (!PyArg_ParseTuple(args, "OO", &stream, &cre)) {
         PyErr_SetString(PyExc_TypeError, "WriteCreatable expects hsStream, plCreatable");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream) || !pyCreatable_Check((PyObject*)cre)) {
         PyErr_SetString(PyExc_TypeError, "WriteCreatable expects hsStream, plCreatable");
-        return NULL;
+        return nullptr;
     }
     self->fThis->WriteCreatable(stream->fThis, cre->fThis);
     Py_RETURN_NONE;
@@ -385,16 +413,17 @@ PY_METHOD_VA(ResManager, getSceneNode,
     pyLocation* loc;
     if (!PyArg_ParseTuple(args, "O", &loc)) {
         PyErr_SetString(PyExc_TypeError, "getSceneNode expects a plLocation");
-        return NULL;
+        return nullptr;
     }
     if (!pyLocation_Check((PyObject*)loc)) {
         PyErr_SetString(PyExc_TypeError, "getSceneNode expects a plLocation");
-        return NULL;
+        return nullptr;
     }
     return ICreate(self->fThis->getSceneNode(*loc->fThis));
 }
 
-PY_METHOD_NOARGS(ResManager, getLocations, "Returns a list of all loaded locations") {
+PY_METHOD_NOARGS(ResManager, getLocations, "Returns a list of all loaded locations")
+{
     std::vector<plLocation> locs = self->fThis->getLocations();
     PyObject* list = PyTuple_New(locs.size());
     for (size_t i=0; i<locs.size(); i++)
@@ -410,11 +439,11 @@ PY_METHOD_VA(ResManager, getTypes,
     char checkKeys = 0;
     if (!PyArg_ParseTuple(args, "O|b", &loc, &checkKeys)) {
         PyErr_SetString(PyExc_TypeError, "getTypes expects a plLocation");
-        return NULL;
+        return nullptr;
     }
     if (!pyLocation_Check((PyObject*)loc)) {
         PyErr_SetString(PyExc_TypeError, "getTypes expects a plLocation");
-        return NULL;
+        return nullptr;
     }
 
     std::vector<short> types = self->fThis->getTypes(*loc->fThis, (checkKeys != 0));
@@ -432,12 +461,12 @@ PY_METHOD_VA(ResManager, getKeys,
     int type;
     char checkKeys = 0;
     if (!PyArg_ParseTuple(args, "Oi|b", &loc, &type, &checkKeys)) {
-        PyErr_SetString(PyExc_TypeError, "getTypes expects plLocation, int");
-        return NULL;
+        PyErr_SetString(PyExc_TypeError, "getKeys expects plLocation, int");
+        return nullptr;
     }
     if (!pyLocation_Check((PyObject*)loc)) {
-        PyErr_SetString(PyExc_TypeError, "getTypes expects plLocation, int");
-        return NULL;
+        PyErr_SetString(PyExc_TypeError, "getKeys expects plLocation, int");
+        return nullptr;
     }
 
     std::vector<plKey> keys = self->fThis->getKeys(*loc->fThis, type, (checkKeys != 0));
@@ -455,11 +484,11 @@ PY_METHOD_VA(ResManager, AddObject,
     pyKeyedObject* obj;
     if (!PyArg_ParseTuple(args, "OO", &loc, &obj)) {
         PyErr_SetString(PyExc_TypeError, "AddObject expects plLocation, hsKeyedObject");
-        return NULL;
+        return nullptr;
     }
     if (!pyLocation_Check((PyObject*)loc) || !pyKeyedObject_Check((PyObject*)obj)) {
         PyErr_SetString(PyExc_TypeError, "AddObject expects plLocation, hsKeyedObject");
-        return NULL;
+        return nullptr;
     }
 
     self->fThis->AddObject(*loc->fThis, obj->fThis);
@@ -474,11 +503,11 @@ PY_METHOD_VA(ResManager, AddPage,
     pyPageInfo* page;
     if (!PyArg_ParseTuple(args, "O", &page)) {
         PyErr_SetString(PyExc_TypeError, "AddPage expects a plPageInfo");
-        return NULL;
+        return nullptr;
     }
     if (!pyPageInfo_Check((PyObject*)page)) {
         PyErr_SetString(PyExc_TypeError, "AddPage expects a plPageInfo");
-        return NULL;
+        return nullptr;
     }
 
     self->fThis->AddPage(page->fThis);
@@ -493,11 +522,11 @@ PY_METHOD_VA(ResManager, AddAge,
     pyAgeInfo* age;
     if (!PyArg_ParseTuple(args, "O", &age)) {
         PyErr_SetString(PyExc_TypeError, "AddAge expects a plAgeInfo");
-        return NULL;
+        return nullptr;
     }
     if (!pyAgeInfo_Check((PyObject*)age)) {
         PyErr_SetString(PyExc_TypeError, "AddAge expects a plAgeInfo");
-        return NULL;
+        return nullptr;
     }
 
     self->fThis->AddAge(age->fThis);
@@ -512,11 +541,11 @@ PY_METHOD_VA(ResManager, DelObject,
     pyKey* key;
     if (!PyArg_ParseTuple(args, "O", &key)) {
         PyErr_SetString(PyExc_TypeError, "DelObject expects a plKey");
-        return NULL;
+        return nullptr;
     }
     if (!pyKey_Check((PyObject*)key)) {
         PyErr_SetString(PyExc_TypeError, "DelObject expects a plKey");
-        return NULL;
+        return nullptr;
     }
 
     self->fThis->DelObject(*key->fThis);
@@ -530,11 +559,11 @@ PY_METHOD_VA(ResManager, DelPage,
     pyLocation* loc;
     if (!PyArg_ParseTuple(args, "O", &loc)) {
         PyErr_SetString(PyExc_TypeError, "DelPage expects a plLocation");
-        return NULL;
+        return nullptr;
     }
     if (!pyLocation_Check((PyObject*)loc)) {
         PyErr_SetString(PyExc_TypeError, "DelPage expects a plLocation");
-        return NULL;
+        return nullptr;
     }
 
     self->fThis->DelPage(*loc->fThis);
@@ -548,7 +577,7 @@ PY_METHOD_VA(ResManager, DelAge,
     const char* age;
     if (!PyArg_ParseTuple(args, "s", &age)) {
         PyErr_SetString(PyExc_TypeError, "DelAge expects a string");
-        return NULL;
+        return nullptr;
     }
 
     self->fThis->DelAge(age);
@@ -564,11 +593,11 @@ PY_METHOD_VA(ResManager, ChangeLocation,
     pyLocation* locTo;
     if (!PyArg_ParseTuple(args, "OO", &locFrom, &locTo)) {
         PyErr_SetString(PyExc_TypeError, "ChangeLocation expects plLocation, plLocation");
-        return NULL;
+        return nullptr;
     }
     if (!pyLocation_Check((PyObject*)locFrom) || !pyLocation_Check((PyObject*)locTo)) {
         PyErr_SetString(PyExc_TypeError, "ChangeLocation expects plLocation, plLocation");
-        return NULL;
+        return nullptr;
     }
 
     self->fThis->ChangeLocation(*locFrom->fThis, *locTo->fThis);
@@ -611,13 +640,14 @@ static PyMethodDef pyResManager_Methods[] = {
 
 PY_PLASMA_TYPE(ResManager, plResManager, "Resource Manager")
 
-PY_PLASMA_TYPE_INIT(ResManager) {
+PY_PLASMA_TYPE_INIT(ResManager)
+{
     pyResManager_Type.tp_dealloc = pyResManager_dealloc;
     pyResManager_Type.tp_init = pyResManager___init__;
     pyResManager_Type.tp_new = pyResManager_new;
     pyResManager_Type.tp_methods = pyResManager_Methods;
     if (PyType_CheckAndReady(&pyResManager_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyResManager_Type);
     return (PyObject*)&pyResManager_Type;

@@ -24,12 +24,13 @@ PY_PLASMA_NEW(EaseController, plEaseController)
 
 PY_PLASMA_TYPE(EaseController, plEaseController, "plEaseController wrapper")
 
-PY_PLASMA_TYPE_INIT(EaseController) {
+PY_PLASMA_TYPE_INIT(EaseController)
+{
     pyEaseController_Type.tp_init = pyEaseController___init__;
     pyEaseController_Type.tp_new = pyEaseController_new;
     pyEaseController_Type.tp_base = &pyLeafController_Type;
     if (PyType_CheckAndReady(&pyEaseController_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyEaseController_Type);
     return (PyObject*)&pyEaseController_Type;

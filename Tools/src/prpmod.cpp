@@ -22,7 +22,8 @@
 #include <string_theory/stdio>
 #include <cstring>
 
-void doHelp(const char* prgName) {
+static void doHelp(const char* prgName)
+{
     ST::printf("Usage: {} filename.prp action [options]\n", prgName);
     puts("");
     puts("actions:");
@@ -37,7 +38,9 @@ void doHelp(const char* prgName) {
     puts("");
 }
 
-plKey findObject(plResManager* mgr, const plLocation& loc, const ST::string& name, short type) {
+static plKey findObject(plResManager* mgr, const plLocation& loc,
+                        const ST::string& name, short type)
+{
     std::vector<plKey> keys = mgr->getKeys(loc, type);
     for (std::vector<plKey>::iterator it=keys.begin(); it != keys.end(); it++) {
         if ((*it)->getName() == name)
@@ -46,12 +49,14 @@ plKey findObject(plResManager* mgr, const plLocation& loc, const ST::string& nam
     return plKey();
 }
 
-enum {
+enum
+{
     kActionUnknown, kActionAdd, kActionDel, kActionExtract,
     kActionMask = 0xFF, kModePRC = 0x100
 };
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
     if (argc < 2) {
         doHelp(argv[0]);
         return 1;
@@ -133,7 +138,7 @@ int main(int argc, char* argv[]) {
                     objName = objName.substr(1, objName.size() - 2);
                 }
             } else {
-                if (prpFile.is_empty()) {
+                if (prpFile.empty()) {
                     prpFile = argv[i];
                 } else {
                     ST::printf(stderr, "Unknown action: {}\n"
@@ -143,7 +148,7 @@ int main(int argc, char* argv[]) {
             }
         }
     }
-    if ((action & kActionMask) == kActionUnknown || prpFile.is_empty()) {
+    if ((action & kActionMask) == kActionUnknown || prpFile.empty()) {
         doHelp(argv[0]);
         return 1;
     }
@@ -166,7 +171,7 @@ int main(int argc, char* argv[]) {
 
     if ((action & kActionMask) == kActionAdd) {
         hsFileStream in;
-        plCreatable* cre = NULL;
+        plCreatable* cre = nullptr;
 
         if (inFile.ends_with(".prc") || inFile.ends_with(".xml") || (action & kModePRC) != 0) {
             // Add PRC source
@@ -193,14 +198,14 @@ int main(int argc, char* argv[]) {
                 ST::printf(stderr, "{}:{}: {}\n", e.File(), e.Line(), e.what());
                 return 1;
             } catch (std::exception& e) {
-                ST::printf(stderr, "Caught Exception: {}wwwwwwwwwwwww\n", e.what());
+                ST::printf(stderr, "Caught Exception: {}\n", e.what());
                 return 1;
             }
         }
 
-        if (cre != NULL) {
+        if (cre) {
             hsKeyedObject* kobj = hsKeyedObject::Convert(cre);
-            if (kobj == NULL) {
+            if (kobj == nullptr) {
                 ST::printf(stderr, "Creatable '{}' is not a keyed object\n",
                            plFactory::ClassName(cre->ClassIndex()));
                 delete cre;
@@ -216,7 +221,7 @@ int main(int argc, char* argv[]) {
         resMgr.WritePage(prpFile, page);
     } else if ((action & kActionMask) == kActionDel) {
         plKey key = findObject(&resMgr, page->getLocation(), objName, objType);
-        if (!key.Exists() || key->getObj() == NULL) {
+        if (!key.Exists() || key->getObj() == nullptr) {
             ST::printf(stderr, "Could not find {}:{}\n",
                        plFactory::ClassName(objType), objName);
             return 1;
@@ -225,12 +230,12 @@ int main(int argc, char* argv[]) {
         resMgr.WritePage(prpFile, page);
     } else if ((action & kActionMask) == kActionExtract) {
         plKey key = findObject(&resMgr, page->getLocation(), objName, objType);
-        if (!key.Exists() || key->getObj() == NULL) {
+        if (!key.Exists() || key->getObj() == nullptr) {
             ST::printf(stderr, "Could not find {}:{}\n",
                        plFactory::ClassName(objType), objName);
             return 1;
         }
-        if (outFile.is_empty())
+        if (outFile.empty())
             outFile = ST::format("[{_04X}]{}.{}", objType, objName,
                                  (action & kModePRC) != 0 ? "prc" : "po");
         hsFileStream out;

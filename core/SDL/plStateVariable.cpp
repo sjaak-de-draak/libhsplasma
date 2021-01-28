@@ -21,25 +21,29 @@
 #include <cstring>
 
 /* plStateVarNotificationInfo */
-void plStateVarNotificationInfo::read(hsStream* S) {
+void plStateVarNotificationInfo::read(hsStream* S)
+{
     S->readByte();
     fHintString = S->readSafeStr();
 }
 
-void plStateVarNotificationInfo::write(hsStream* S) {
+void plStateVarNotificationInfo::write(hsStream* S)
+{
     S->writeByte(0);
     S->writeSafeStr(fHintString);
 }
 
 
 /* plStateVariable */
-void plStateVariable::read(hsStream* S, plResManager* mgr) {
+void plStateVariable::read(hsStream* S, plResManager* mgr)
+{
     fContents = S->readByte();
     if (fContents & plSDL::kHasNotificationInfo)
         fNotificationInfo.read(S);
 }
 
-void plStateVariable::write(hsStream* S, plResManager* mgr) {
+void plStateVariable::write(hsStream* S, plResManager* mgr)
+{
     S->writeByte(fContents);
     if (fContents & plSDL::kHasNotificationInfo)
         fNotificationInfo.write(S);
@@ -47,17 +51,20 @@ void plStateVariable::write(hsStream* S, plResManager* mgr) {
 
 
 /* plSDStateVariable */
-plSDStateVariable::~plSDStateVariable() {
+plSDStateVariable::~plSDStateVariable()
+{
     for (auto rec = fDataRecList.begin(); rec != fDataRecList.end(); ++rec)
         delete *rec;
 }
 
-void plSDStateVariable::setDescriptor(plVarDescriptor* desc) {
+void plSDStateVariable::setDescriptor(plVarDescriptor* desc)
+{
     fDescriptor = desc;
     resize(fDescriptor->getCount());
 }
 
-void plSDStateVariable::resize(size_t size) {
+void plSDStateVariable::resize(size_t size)
+{
     for (auto rec = fDataRecList.begin(); rec != fDataRecList.end(); ++rec)
         delete *rec;
     fCount = size;
@@ -68,7 +75,8 @@ void plSDStateVariable::resize(size_t size) {
     }
 }
 
-void plSDStateVariable::read(hsStream* S, plResManager* mgr) {
+void plSDStateVariable::read(hsStream* S, plResManager* mgr)
+{
     plStateVariable::read(S, mgr);
 
     S->readByte();
@@ -89,7 +97,8 @@ void plSDStateVariable::read(hsStream* S, plResManager* mgr) {
     }
 }
 
-void plSDStateVariable::write(hsStream* S, plResManager* mgr) {
+void plSDStateVariable::write(hsStream* S, plResManager* mgr)
+{
     plStateVariable::write(S, mgr);
 
     S->writeByte(0);
@@ -118,7 +127,8 @@ void plSDStateVariable::write(hsStream* S, plResManager* mgr) {
     }
 }
 
-void plSDStateVariable::SetFromDefault() {
+void plSDStateVariable::SetFromDefault()
+{
     for (size_t i=0; i<fCount; i++) {
         for (size_t j=0; j<fDataRecList[i]->getNumVars(); j++)
             fDataRecList[i]->get(j)->SetFromDefault();
@@ -126,7 +136,8 @@ void plSDStateVariable::SetFromDefault() {
     setDirty(false);
 }
 
-bool plSDStateVariable::isDefault(bool secondChance) const {
+bool plSDStateVariable::isDefault(bool secondChance) const
+{
     if (fCount != fDataRecList.size())
         return false;
     for (size_t i=0; i<fCount; i++) {
@@ -140,8 +151,9 @@ bool plSDStateVariable::isDefault(bool secondChance) const {
 
 
 /* plSimpleStateVariable */
-void plSimpleStateVariable::IDeAlloc() {
-    if (fGenPtr == NULL)
+void plSimpleStateVariable::IDeAlloc()
+{
+    if (fGenPtr == nullptr)
         return;
 
     switch (fDescriptor->getType()) {
@@ -212,16 +224,18 @@ void plSimpleStateVariable::IDeAlloc() {
     }
 }
 
-void plSimpleStateVariable::setDescriptor(plVarDescriptor* desc) {
+void plSimpleStateVariable::setDescriptor(plVarDescriptor* desc)
+{
     fDescriptor = desc;
     resize(fDescriptor->getCount());
 }
 
-void plSimpleStateVariable::resize(size_t size) {
+void plSimpleStateVariable::resize(size_t size)
+{
     IDeAlloc();
     fCount = size;
-    if (fDescriptor == NULL || fCount == 0) {
-        fGenPtr = NULL;
+    if (fDescriptor == nullptr || fCount == 0) {
+        fGenPtr = nullptr;
         return;
     }
 
@@ -247,7 +261,7 @@ void plSimpleStateVariable::resize(size_t size) {
     case plVarDescriptor::kCreatable:
         fCreatable = new plCreatable*[fCount];
         for (size_t i=0; i<fCount; i++)
-            fCreatable[i] = NULL;
+            fCreatable[i] = nullptr;
         break;
     case plVarDescriptor::kDouble:
         fDouble = new double[fCount];
@@ -293,7 +307,8 @@ void plSimpleStateVariable::resize(size_t size) {
     }
 }
 
-void plSimpleStateVariable::read(hsStream* S, plResManager* mgr) {
+void plSimpleStateVariable::read(hsStream* S, plResManager* mgr)
+{
     plStateVariable::read(S, mgr);
 
     fSimpleVarContents = S->readByte();
@@ -315,7 +330,8 @@ void plSimpleStateVariable::read(hsStream* S, plResManager* mgr) {
     }
 }
 
-void plSimpleStateVariable::write(hsStream* S, plResManager* mgr) {
+void plSimpleStateVariable::write(hsStream* S, plResManager* mgr)
+{
     plStateVariable::write(S, mgr);
 
     if (isDefault(true))
@@ -341,7 +357,8 @@ void plSimpleStateVariable::write(hsStream* S, plResManager* mgr) {
     }
 }
 
-void plSimpleStateVariable::IReadData(hsStream* S, plResManager* mgr, size_t idx) {
+void plSimpleStateVariable::IReadData(hsStream* S, plResManager* mgr, size_t idx)
+{
     switch (fDescriptor->getType()) {
     case plVarDescriptor::kInt:
         fInt[idx] = S->readInt();
@@ -372,11 +389,11 @@ void plSimpleStateVariable::IReadData(hsStream* S, plResManager* mgr, size_t idx
             if (hClass != 0x8000) {
                 unsigned int len = S->readInt();
                 fCreatable[idx] = plFactory::Create(hClass);
-                if (fCreatable[idx] == NULL)
+                if (fCreatable[idx] == nullptr)
                     fCreatable[idx] = new plCreatableStub(hClass, len);
                 fCreatable[idx]->read(S, mgr);
             } else {
-                fCreatable[idx] = NULL;
+                fCreatable[idx] = nullptr;
             }
         }
         break;
@@ -424,7 +441,8 @@ void plSimpleStateVariable::IReadData(hsStream* S, plResManager* mgr, size_t idx
     }
 }
 
-void plSimpleStateVariable::IWriteData(hsStream* S, plResManager* mgr, size_t idx) {
+void plSimpleStateVariable::IWriteData(hsStream* S, plResManager* mgr, size_t idx)
+{
     switch (fDescriptor->getType()) {
     case plVarDescriptor::kInt:
         S->writeInt(fInt[idx]);
@@ -451,7 +469,7 @@ void plSimpleStateVariable::IWriteData(hsStream* S, plResManager* mgr, size_t id
         break;
     case plVarDescriptor::kCreatable:
         {
-            if (fCreatable[idx] == NULL) {
+            if (fCreatable[idx] == nullptr) {
                 S->writeShort(0x8000);
             } else {
                 S->writeShort(fCreatable[idx]->ClassIndex());
@@ -509,33 +527,34 @@ void plSimpleStateVariable::IWriteData(hsStream* S, plResManager* mgr, size_t id
     }
 }
 
-void plSimpleStateVariable::SetFromDefault() {
-    if (fDescriptor == NULL)
+void plSimpleStateVariable::SetFromDefault()
+{
+    if (fDescriptor == nullptr)
         throw hsBadParamException(__FILE__, __LINE__);
     ST::string def = fDescriptor->getDefault().to_lower();
 
     for (size_t i=0; i<fDescriptor->getCount(); i++) {
         switch (fDescriptor->getType()) {
         case plVarDescriptor::kInt:
-            if (def.is_empty())
+            if (def.empty())
                 fInt[i] = 0;
             else
                 fInt[i] = def.to_int();
             break;
         case plVarDescriptor::kUint:
-            if (def.is_empty())
+            if (def.empty())
                 fUint[i] = 0;
             else
                 fUint[i] = def.to_uint();
             break;
         case plVarDescriptor::kFloat:
-            if (def.is_empty())
+            if (def.empty())
                 fFloat[i] = 0.0f;
             else
                 fFloat[i] = def.to_float();
             break;
         case plVarDescriptor::kBool:
-            if (def.is_empty())
+            if (def.empty())
                 fBool[i] = false;
             else
                 fBool[i] = def.to_bool();
@@ -547,10 +566,10 @@ void plSimpleStateVariable::SetFromDefault() {
             fUoid[i] = plUoid();
             break;
         case plVarDescriptor::kCreatable:
-            fCreatable[i] = NULL;
+            fCreatable[i] = nullptr;
             break;
         case plVarDescriptor::kDouble:
-            if (def.is_empty())
+            if (def.empty())
                 fDouble[i] = 0.0;
             else
                 fDouble[i] = def.to_double();
@@ -559,19 +578,19 @@ void plSimpleStateVariable::SetFromDefault() {
             fTime[i].toCurrentTime();
             break;
         case plVarDescriptor::kByte:
-            if (def.is_empty())
+            if (def.empty())
                 fByte[i] = 0;
             else
                 fByte[i] = def.to_uint();
             break;
         case plVarDescriptor::kChar:
-            if (def.is_empty())
+            if (def.empty())
                 fChar[i] = 0;
             else
                 fChar[i] = def.to_uint();
             break;
         case plVarDescriptor::kShort:
-            if (def.is_empty())
+            if (def.empty())
                 fShort[i] = 0;
             else
                 fShort[i] = def.to_int();
@@ -580,7 +599,7 @@ void plSimpleStateVariable::SetFromDefault() {
             break;
         case plVarDescriptor::kVector3:
         case plVarDescriptor::kPoint3:
-            if (def.is_empty()) {
+            if (def.empty()) {
                 fVector[i] = hsVector3(0.0f, 0.0f, 0.0f);
             } else {
                 ST::string parse = def;
@@ -599,7 +618,7 @@ void plSimpleStateVariable::SetFromDefault() {
             throw hsNotImplementedException(__FILE__, __LINE__, def);
             break;
         case plVarDescriptor::kQuaternion:
-            if (def.is_empty()) {
+            if (def.empty()) {
                 fQuat[i] = hsQuat(0.0f, 0.0f, 0.0f, 0.0f);
             } else {
                 ST::string parse = def;
@@ -614,7 +633,7 @@ void plSimpleStateVariable::SetFromDefault() {
             }
             break;
         case plVarDescriptor::kRGB8:
-            if (def.is_empty()) {
+            if (def.empty()) {
                 fColor32[i] = hsColor32(0xFF000000);
             } else {
                 ST::string parse = def;
@@ -627,7 +646,7 @@ void plSimpleStateVariable::SetFromDefault() {
             }
             break;
         case plVarDescriptor::kRGBA8:
-            if (def.is_empty()) {
+            if (def.empty()) {
                 fColor32[i] = hsColor32(0xFF000000);
             } else {
                 ST::string parse = def;
@@ -651,8 +670,9 @@ void plSimpleStateVariable::SetFromDefault() {
     setDirty(false);
 }
 
-bool plSimpleStateVariable::isDefault(bool secondChance) const {
-    if (fDescriptor == NULL)
+bool plSimpleStateVariable::isDefault(bool secondChance) const
+{
+    if (fDescriptor == nullptr)
         throw hsBadParamException(__FILE__, __LINE__);
     ST::string def = fDescriptor->getDefault().to_lower();
 
@@ -662,7 +682,7 @@ bool plSimpleStateVariable::isDefault(bool secondChance) const {
     for (size_t i=0; i<fDescriptor->getCount(); i++) {
         switch (fDescriptor->getType()) {
         case plVarDescriptor::kInt:
-            if (def.is_empty()) {
+            if (def.empty()) {
                 if (fInt[i] != 0)
                     return false;
             } else {
@@ -671,7 +691,7 @@ bool plSimpleStateVariable::isDefault(bool secondChance) const {
             }
             break;
         case plVarDescriptor::kUint:
-            if (def.is_empty()) {
+            if (def.empty()) {
                 if (fUint[i] != 0)
                     return false;
             } else {
@@ -680,7 +700,7 @@ bool plSimpleStateVariable::isDefault(bool secondChance) const {
             }
             break;
         case plVarDescriptor::kFloat:
-            if (def.is_empty()) {
+            if (def.empty()) {
                 if (fFloat[i] != 0.0f)
                     return false;
             } else {
@@ -689,7 +709,7 @@ bool plSimpleStateVariable::isDefault(bool secondChance) const {
             }
             break;
         case plVarDescriptor::kBool:
-            if (def.is_empty() || def == "false") {
+            if (def.empty() || def == "false") {
                 if (fBool[i] != false)
                     return false;
             } else if (def == "true") {
@@ -709,11 +729,11 @@ bool plSimpleStateVariable::isDefault(bool secondChance) const {
                 return false;
             break;
         case plVarDescriptor::kCreatable:
-            if (fCreatable[i] != NULL)
+            if (fCreatable[i])
                 return false;
             break;
         case plVarDescriptor::kDouble:
-            if (def.is_empty()) {
+            if (def.empty()) {
                 if (fDouble[i] != 0.0)
                     return false;
             } else {
@@ -725,7 +745,7 @@ bool plSimpleStateVariable::isDefault(bool secondChance) const {
             return false;
             break;
         case plVarDescriptor::kByte:
-            if (def.is_empty()) {
+            if (def.empty()) {
                 if (fByte[i] != 0)
                     return false;
             } else {
@@ -734,7 +754,7 @@ bool plSimpleStateVariable::isDefault(bool secondChance) const {
             }
             break;
         case plVarDescriptor::kChar:
-            if (def.is_empty()) {
+            if (def.empty()) {
                 if (fChar[i] != 0)
                     return false;
             } else {
@@ -743,7 +763,7 @@ bool plSimpleStateVariable::isDefault(bool secondChance) const {
             }
             break;
         case plVarDescriptor::kShort:
-            if (def.is_empty()) {
+            if (def.empty()) {
                 if (fShort[i] != 0)
                     return false;
             } else {
@@ -756,7 +776,7 @@ bool plSimpleStateVariable::isDefault(bool secondChance) const {
             break;
         case plVarDescriptor::kVector3:
         case plVarDescriptor::kPoint3:
-            if (def.is_empty()) {
+            if (def.empty()) {
                 if (fVector[i] == hsVector3(0.0f, 0.0f, 0.0f))
                     return false;
             } else {
@@ -779,7 +799,7 @@ bool plSimpleStateVariable::isDefault(bool secondChance) const {
             throw hsNotImplementedException(__FILE__, __LINE__);
             break;
         case plVarDescriptor::kQuaternion:
-            if (def.is_empty()) {
+            if (def.empty()) {
                 if (fQuat[i] != hsQuat(0.0f, 0.0f, 0.0f, 0.0f))
                     return false;
             } else {
@@ -798,7 +818,7 @@ bool plSimpleStateVariable::isDefault(bool secondChance) const {
             }
             break;
         case plVarDescriptor::kRGB8:
-            if (def.is_empty()) {
+            if (def.empty()) {
                 if (fColor32[i] != hsColor32(0xFF000000))
                     return false;
             } else {
@@ -815,7 +835,7 @@ bool plSimpleStateVariable::isDefault(bool secondChance) const {
             }
             break;
         case plVarDescriptor::kRGBA8:
-            if (def.is_empty()) {
+            if (def.empty()) {
                 if (fColor32[i] != hsColor32(0xFF000000))
                     return false;
             } else {

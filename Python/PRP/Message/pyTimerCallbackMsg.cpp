@@ -32,12 +32,13 @@ static PyGetSetDef pyTimerCallbackMsg_GetSet[] = {
 
 PY_PLASMA_TYPE(TimerCallbackMsg, plTimerCallbackMsg, "plTimerCallbackMsg wrapper")
 
-PY_PLASMA_TYPE_INIT(TimerCallbackMsg) {
+PY_PLASMA_TYPE_INIT(TimerCallbackMsg)
+{
     pyTimerCallbackMsg_Type.tp_new = pyTimerCallbackMsg_new;
     pyTimerCallbackMsg_Type.tp_getset = pyTimerCallbackMsg_GetSet;
     pyTimerCallbackMsg_Type.tp_base = &pyMessage_Type;
     if (PyType_CheckAndReady(&pyTimerCallbackMsg_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyTimerCallbackMsg_Type);
     return (PyObject*)&pyTimerCallbackMsg_Type;

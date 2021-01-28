@@ -35,12 +35,13 @@ static PyGetSetDef pyOfferLinkBookEventData_GetSet[] = {
 PY_PLASMA_TYPE(OfferLinkBookEventData, proOfferLinkBookEventData,
                "proOfferLinkBookEventData wrapper")
 
-PY_PLASMA_TYPE_INIT(OfferLinkBookEventData) {
+PY_PLASMA_TYPE_INIT(OfferLinkBookEventData)
+{
     pyOfferLinkBookEventData_Type.tp_new = pyOfferLinkBookEventData_new;
     pyOfferLinkBookEventData_Type.tp_getset = pyOfferLinkBookEventData_GetSet;
     pyOfferLinkBookEventData_Type.tp_base = &pyEventData_Type;
     if (PyType_CheckAndReady(&pyOfferLinkBookEventData_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyOfferLinkBookEventData_Type);
     return (PyObject*)&pyOfferLinkBookEventData_Type;

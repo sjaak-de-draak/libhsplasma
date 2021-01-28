@@ -28,11 +28,11 @@ PY_METHOD_VA(ImageLibMod, addImage,
     pyKey* key;
     if (!PyArg_ParseTuple(args, "O", &key)) {
         PyErr_SetString(PyExc_TypeError, "addImage expects a plKey");
-        return NULL;
+        return nullptr;
     }
     if (!pyKey_Check((PyObject*)key)) {
         PyErr_SetString(PyExc_TypeError, "addImage expects a plKey");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addImage(*key->fThis);
     Py_RETURN_NONE;
@@ -45,7 +45,7 @@ PY_METHOD_VA(ImageLibMod, delImage,
     int idx;
     if (!PyArg_ParseTuple(args, "i", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delImage expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->delImage(idx);
     Py_RETURN_NONE;
@@ -65,7 +65,8 @@ static PyMethodDef pyImageLibMod_Methods[] = {
     PY_METHOD_TERMINATOR
 };
 
-PY_GETSET_GETTER_DECL(ImageLibMod, images) {
+PY_GETSET_GETTER_DECL(ImageLibMod, images)
+{
     PyObject* list = PyTuple_New(self->fThis->getImages().size());
     for (size_t i = 0; i<self->fThis->getImages().size(); i++)
         PyTuple_SET_ITEM(list, i, pyPlasma_convert(self->fThis->getImages()[i]));
@@ -82,13 +83,14 @@ static PyGetSetDef pyImageLibMod_GetSet[] = {
 
 PY_PLASMA_TYPE(ImageLibMod, pfImageLibMod, "plImageLibMod wrapper")
 
-PY_PLASMA_TYPE_INIT(ImageLibMod) {
+PY_PLASMA_TYPE_INIT(ImageLibMod)
+{
     pyImageLibMod_Type.tp_new = pyImageLibMod_new;
     pyImageLibMod_Type.tp_methods = pyImageLibMod_Methods;
     pyImageLibMod_Type.tp_getset = pyImageLibMod_GetSet;
     pyImageLibMod_Type.tp_base = &pySingleModifier_Type;
     if (PyType_CheckAndReady(&pyImageLibMod_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyImageLibMod_Type);
     return (PyObject*)&pyImageLibMod_Type;

@@ -26,16 +26,16 @@ PY_METHOD_STATIC_VA(Debug, Init,
     "Initialize the debug logger")
 {
     int level = plDebug::kDLWarning;
-    pyStream* stream = NULL;
+    pyStream* stream = nullptr;
     if (!PyArg_ParseTuple(args, "|iO", &level, &stream)) {
         PyErr_SetString(PyExc_TypeError, "Init expects int, hsStream");
-        return NULL;
+        return nullptr;
     }
-    if (stream != NULL && !pyStream_Check((PyObject*)stream)) {
+    if (stream && !pyStream_Check((PyObject*)stream)) {
         PyErr_SetString(PyExc_TypeError, "Init expects int, hsStream");
-        return NULL;
+        return nullptr;
     }
-    plDebug::Init(level, (stream == NULL) ? NULL : stream->fThis);
+    plDebug::Init(level, (stream == nullptr) ? nullptr : stream->fThis);
     Py_RETURN_NONE;
 }
 
@@ -44,10 +44,10 @@ PY_METHOD_STATIC_VA(Debug, InitFile,
     "Initialize the debug logger to a file output")
 {
     int level = plDebug::kDLWarning;
-    const char* filename = "Plasma.log";
-    if (!PyArg_ParseTuple(args, "|is", &level, &filename)) {
-        PyErr_SetString(PyExc_TypeError, "InitFile expects int, string");
-        return NULL;
+    ST::string filename = ST_LITERAL("Plasma.log");
+    if (!PyArg_ParseTuple(args, "|iO&", &level, PyAnyString_PathDecoder, &filename)) {
+        PyErr_SetString(PyExc_TypeError, "InitFile expects int, string (or an os.PathLike object)");
+        return nullptr;
     }
     plDebug::InitFile(level, filename);
     Py_RETURN_NONE;
@@ -60,7 +60,7 @@ PY_METHOD_STATIC_VA(Debug, Error,
     const char* msg;
     if (!PyArg_ParseTuple(args, "s", &msg)) {
         PyErr_SetString(PyExc_TypeError, "Error expects a string");
-        return NULL;
+        return nullptr;
     }
     plDebug::Error(msg);
     Py_RETURN_NONE;
@@ -73,7 +73,7 @@ PY_METHOD_STATIC_VA(Debug, Warning,
     const char* msg;
     if (!PyArg_ParseTuple(args, "s", &msg)) {
         PyErr_SetString(PyExc_TypeError, "Warning expects a string");
-        return NULL;
+        return nullptr;
     }
     plDebug::Warning(msg);
     Py_RETURN_NONE;
@@ -86,7 +86,7 @@ PY_METHOD_STATIC_VA(Debug, Debug,
     const char* msg;
     if (!PyArg_ParseTuple(args, "s", &msg)) {
         PyErr_SetString(PyExc_TypeError, "Debug expects a string");
-        return NULL;
+        return nullptr;
     }
     plDebug::Debug(msg);
     Py_RETURN_NONE;
@@ -104,11 +104,12 @@ static PyMethodDef pyDebug_Methods[] = {
 typedef PyObject pyDebug;
 PY_PLASMA_TYPE(Debug, "plDebug", "Plasma debug logger class")
 
-PY_PLASMA_TYPE_INIT(Debug) {
+PY_PLASMA_TYPE_INIT(Debug)
+{
     pyDebug_Type.tp_new = pyDebug_new;
     pyDebug_Type.tp_methods = pyDebug_Methods;
     if (PyType_CheckAndReady(&pyDebug_Type) < 0)
-        return NULL;
+        return nullptr;
 
     PY_TYPE_ADD_CONST(Debug, "kDLNone", plDebug::kDLNone);
     PY_TYPE_ADD_CONST(Debug, "kDLError", plDebug::kDLError);

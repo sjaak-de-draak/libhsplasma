@@ -33,12 +33,13 @@ static PyGetSetDef pyPointControllerChannel_GetSet[] = {
 PY_PLASMA_TYPE(PointControllerChannel, plPointControllerChannel,
                "plPointControllerChannel wrapper")
 
-PY_PLASMA_TYPE_INIT(PointControllerChannel) {
+PY_PLASMA_TYPE_INIT(PointControllerChannel)
+{
     pyPointControllerChannel_Type.tp_new = pyPointControllerChannel_new;
     pyPointControllerChannel_Type.tp_getset = pyPointControllerChannel_GetSet;
     pyPointControllerChannel_Type.tp_base = &pyPointChannel_Type;
     if (PyType_CheckAndReady(&pyPointControllerChannel_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyPointControllerChannel_Type);
     return (PyObject*)&pyPointControllerChannel_Type;

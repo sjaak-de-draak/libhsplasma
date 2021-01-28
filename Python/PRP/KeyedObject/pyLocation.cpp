@@ -22,7 +22,8 @@
 
 PY_PLASMA_VALUE_DEALLOC(Location)
 
-PY_PLASMA_INIT_DECL(Location) {
+PY_PLASMA_INIT_DECL(Location)
+{
     int version = PlasmaVer::pvUnknown;
     if (!PyArg_ParseTuple(args, "|i", &version))
         return -1;
@@ -33,18 +34,21 @@ PY_PLASMA_INIT_DECL(Location) {
 
 PY_PLASMA_VALUE_NEW(Location, plLocation)
 
-PY_PLASMA_REPR_DECL(Location) {
+PY_PLASMA_REPR_DECL(Location)
+{
     ST::string repr = ST::format("<plLocation \"{}|{}\">",
                                  self->fThis->getSeqPrefix(),
                                  self->fThis->getPageNum());
     return pyPlasma_convert(repr);
 }
 
-PY_PLASMA_HASH_DECL(Location) {
+PY_PLASMA_HASH_DECL(Location)
+{
     return (long)self->fThis->unparse();
 }
 
-PY_PLASMA_RICHCOMPARE_DECL(Location) {
+PY_PLASMA_RICHCOMPARE_DECL(Location)
+{
     bool result = false;
 
     switch (op) {
@@ -70,7 +74,7 @@ PY_PLASMA_RICHCOMPARE_DECL(Location) {
         break;
     default:
         PyErr_SetString(PyExc_RuntimeError, "Comparison failed");
-        return NULL;
+        return nullptr;
     }
 
     return pyPlasma_convert(result);
@@ -83,11 +87,11 @@ PY_METHOD_VA(Location, read,
     pyStream* stream;
     if (!PyArg_ParseTuple(args, "O", &stream)) {
         PyErr_SetString(PyExc_TypeError, "read expects an hsStream");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream)) {
         PyErr_SetString(PyExc_TypeError, "read expects an hsStream");
-        return NULL;
+        return nullptr;
     }
     self->fThis->read(stream->fThis);
     Py_RETURN_NONE;
@@ -100,22 +104,24 @@ PY_METHOD_VA(Location, write,
     pyStream* stream;
     if (!PyArg_ParseTuple(args, "O", &stream)) {
         PyErr_SetString(PyExc_TypeError, "write expects an hsStream");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream)) {
         PyErr_SetString(PyExc_TypeError, "write expects an hsStream");
-        return NULL;
+        return nullptr;
     }
     self->fThis->write(stream->fThis);
     Py_RETURN_NONE;
 }
 
-PY_METHOD_NOARGS(Location, invalidate, "Invalidates the location") {
+PY_METHOD_NOARGS(Location, invalidate, "Invalidates the location")
+{
     self->fThis->invalidate();
     Py_RETURN_NONE;
 }
 
-PY_METHOD_NOARGS(Location, isValid, "Returns True if the location is valid") {
+PY_METHOD_NOARGS(Location, isValid, "Returns True if the location is valid")
+{
     return pyPlasma_convert(self->fThis->isValid());
 }
 
@@ -131,7 +137,8 @@ PY_METHOD_NOARGS(Location, isItinerant,
     return pyPlasma_convert(self->fThis->isItinerant());
 }
 
-PY_METHOD_NOARGS(Location, isVirtual, "Returns True if the location is virtual") {
+PY_METHOD_NOARGS(Location, isVirtual, "Returns True if the location is virtual")
+{
     return pyPlasma_convert(self->fThis->isVirtual());
 }
 
@@ -141,7 +148,8 @@ PY_METHOD_NOARGS(Location, isGlobal,
     return pyPlasma_convert(self->fThis->isGlobal());
 }
 
-PY_METHOD_NOARGS(Location, setVirtual, "Makes the location virtual") {
+PY_METHOD_NOARGS(Location, setVirtual, "Makes the location virtual")
+{
     self->fThis->setVirtual();
     Py_RETURN_NONE;
 }
@@ -153,7 +161,7 @@ PY_METHOD_VA(Location, parse,
     int loc;
     if (!PyArg_ParseTuple(args, "i", &loc)) {
         PyErr_SetString(PyExc_TypeError, "parse expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->parse(loc);
     Py_RETURN_NONE;
@@ -195,7 +203,8 @@ static PyGetSetDef pyLocation_GetSet[] = {
 
 PY_PLASMA_TYPE(Location, plLocation, "plLocation wrapper")
 
-PY_PLASMA_TYPE_INIT(Location) {
+PY_PLASMA_TYPE_INIT(Location)
+{
     pyLocation_Type.tp_dealloc = pyLocation_dealloc;
     pyLocation_Type.tp_init = pyLocation___init__;
     pyLocation_Type.tp_new = pyLocation_new;
@@ -205,7 +214,7 @@ PY_PLASMA_TYPE_INIT(Location) {
     pyLocation_Type.tp_methods = pyLocation_Methods;
     pyLocation_Type.tp_getset = pyLocation_GetSet;
     if (PyType_CheckAndReady(&pyLocation_Type) < 0)
-        return NULL;
+        return nullptr;
 
     PY_TYPE_ADD_CONST(Location, "kLocalOnly", plLocation::kLocalOnly);
     PY_TYPE_ADD_CONST(Location, "kVolatile", plLocation::kVolatile);

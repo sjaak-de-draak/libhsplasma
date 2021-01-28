@@ -35,12 +35,13 @@ PyGetSetDef pySwimRegionInterface_GetSet[] = {
 PY_PLASMA_TYPE(SwimRegionInterface, plSwimRegionInterface,
                "plSwimRegionInterface wrapper")
 
-PY_PLASMA_TYPE_INIT(SwimRegionInterface) {
+PY_PLASMA_TYPE_INIT(SwimRegionInterface)
+{
     pySwimRegionInterface_Type.tp_new = pySwimRegionInterface_new;
     pySwimRegionInterface_Type.tp_getset = pySwimRegionInterface_GetSet;
     pySwimRegionInterface_Type.tp_base = &pyObjInterface_Type;
     if (PyType_CheckAndReady(&pySwimRegionInterface_Type) < 0)
-        return NULL;
+        return nullptr;
 
     PY_TYPE_ADD_CONST(SwimRegionInterface, "kDisable", plSwimRegionInterface::kDisable);
 

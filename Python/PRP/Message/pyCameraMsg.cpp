@@ -51,11 +51,12 @@ static PyGetSetDef pyCameraConfig_GetSet[] = {
 
 PY_PLASMA_TYPE(CameraConfig, plCameraConfig, "plCameraConfig wrapper")
 
-PY_PLASMA_TYPE_INIT(CameraConfig) {
+PY_PLASMA_TYPE_INIT(CameraConfig)
+{
     pyCameraConfig_Type.tp_new = pyCameraConfig_new;
     pyCameraConfig_Type.tp_getset = pyCameraConfig_GetSet;
     if (PyType_CheckAndReady(&pyCameraConfig_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyCameraConfig_Type);
     return (PyObject*)&pyCameraConfig_Type;
@@ -67,21 +68,23 @@ PY_PLASMA_IFC_METHODS(CameraConfig, plCameraConfig)
 
 PY_PLASMA_NEW(CameraMsg, plCameraMsg)
 
-PY_METHOD_VA(CameraMsg, getCmd, "Params: idx") {
+PY_METHOD_VA(CameraMsg, getCmd, "Params: idx")
+{
     Py_ssize_t idx;
     if (!PyArg_ParseTuple(args, "n", &idx)) {
         PyErr_SetString(PyExc_TypeError, "getCmd expects an int");
-        return NULL;
+        return nullptr;
     }
     return pyPlasma_convert(self->fThis->getCmd((size_t)idx));
 }
 
-PY_METHOD_VA(CameraMsg, setCmd, "Params: cmd, value") {
+PY_METHOD_VA(CameraMsg, setCmd, "Params: cmd, value")
+{
     Py_ssize_t idx;
     Py_ssize_t value = 1;
     if (!PyArg_ParseTuple(args, "n|n", &idx, &value)) {
         PyErr_SetString(PyExc_TypeError, "setCmd expects int, bool");
-        return NULL;
+        return nullptr;
     }
     self->fThis->setCmd(idx, value != 0);
     Py_RETURN_NONE;
@@ -110,13 +113,14 @@ static PyGetSetDef pyCameraMsg_GetSet[] = {
 
 PY_PLASMA_TYPE(CameraMsg, plCameraMsg, "plCameraMsg wrapper")
 
-PY_PLASMA_TYPE_INIT(CameraMsg) {
+PY_PLASMA_TYPE_INIT(CameraMsg)
+{
     pyCameraMsg_Type.tp_new = pyCameraMsg_new;
     pyCameraMsg_Type.tp_methods = pyCameraMsg_Methods;
     pyCameraMsg_Type.tp_getset = pyCameraMsg_GetSet;
     pyCameraMsg_Type.tp_base = &pyMessage_Type;
     if (PyType_CheckAndReady(&pyCameraMsg_Type) < 0)
-        return NULL;
+        return nullptr;
 
     /* Konstants */
     PY_TYPE_ADD_CONST(CameraMsg, "kSetSubject", plCameraMsg::kSetSubject);
@@ -155,6 +159,8 @@ PY_PLASMA_TYPE_INIT(CameraMsg) {
     PY_TYPE_ADD_CONST(CameraMsg, "kUpdateCameras", plCameraMsg::kUpdateCameras);
     PY_TYPE_ADD_CONST(CameraMsg, "kResponderSetThirdPerson",
                      plCameraMsg::kResponderSetThirdPerson);
+    PY_TYPE_ADD_CONST(CameraMsg, "kResponderUndoThirdPerson",
+                     plCameraMsg::kResponderUndoThirdPerson);
     PY_TYPE_ADD_CONST(CameraMsg, "kNonPhysOn", plCameraMsg::kNonPhysOn);
     PY_TYPE_ADD_CONST(CameraMsg, "kNonPhysOff", plCameraMsg::kNonPhysOff);
     PY_TYPE_ADD_CONST(CameraMsg, "kResetPanning", plCameraMsg::kResetPanning);

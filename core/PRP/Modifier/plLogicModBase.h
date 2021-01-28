@@ -20,11 +20,13 @@
 #include "plModifier.h"
 #include "PRP/Message/plNotifyMsg.h"
 
-class PLASMA_DLL plLogicModBase : public plSingleModifier {
+class PLASMA_DLL plLogicModBase : public plSingleModifier
+{
     CREATABLE(plLogicModBase, kLogicModBase, plSingleModifier)
 
 public:
-    enum Flags {
+    enum Flags
+    {
         kLocalElement, kReset, kTriggered, kOneShot, kRequestingTrigger,
         kTypeActivator, kMultiTrigger
     };
@@ -37,7 +39,7 @@ protected:
 
 public:
     plLogicModBase();
-    virtual ~plLogicModBase();
+    ~plLogicModBase();
 
     void read(hsStream* S, plResManager* mgr) HS_OVERRIDE;
     void write(hsStream* S, plResManager* mgr) HS_OVERRIDE;
@@ -47,8 +49,8 @@ protected:
     void IPrcParse(const pfPrcTag* tag, plResManager* mgr) HS_OVERRIDE;
 
 public:
-    const std::vector<plMessage*> getCommands() const { return fCommandList; }
-    std::vector<plMessage*> getCommands() { return fCommandList; }
+    const std::vector<plMessage*>& getCommands() const { return fCommandList; }
+    std::vector<plMessage*>& getCommands() { return fCommandList; }
     void addCommand(plMessage* cmd) { fCommandList.push_back(cmd); }
     void delCommand(size_t idx);
     void clearCommands();

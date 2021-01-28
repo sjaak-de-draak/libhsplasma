@@ -22,12 +22,13 @@
 
 PY_PLASMA_VALUE_DEALLOC(Matrix44)
 
-PY_PLASMA_INIT_DECL(Matrix44) {
-    PyObject* init = NULL;
+PY_PLASMA_INIT_DECL(Matrix44)
+{
+    PyObject* init = nullptr;
     if (!PyArg_ParseTuple(args, "|O", &init))
         return -1;
 
-    if (init != NULL) {
+    if (init) {
         if (pyMatrix44_Check(init)) {
             (*self->fThis) = pyPlasma_get<hsMatrix44>(init);
         } else {
@@ -42,16 +43,18 @@ PY_PLASMA_INIT_DECL(Matrix44) {
 
 PY_PLASMA_VALUE_NEW(Matrix44, hsMatrix44)
 
-PY_PLASMA_SUBSCRIPT_DECL(Matrix44) {
+PY_PLASMA_SUBSCRIPT_DECL(Matrix44)
+{
     int i, j;
     if (!PyArg_ParseTuple(key, "ii", &i, &j)) {
         PyErr_SetString(PyExc_TypeError, "Matrix subscript expects int, int");
-        return NULL;
+        return nullptr;
     }
     return pyPlasma_convert((*self->fThis)(i, j));
 }
 
-PY_PLASMA_ASS_SUBSCRIPT_DECL(Matrix44) {
+PY_PLASMA_ASS_SUBSCRIPT_DECL(Matrix44)
+{
     int i, j;
     if (!PyArg_ParseTuple(key, "ii", &i, &j)) {
         PyErr_SetString(PyExc_TypeError, "Matrix subscript expects int, int");
@@ -65,7 +68,8 @@ PY_PLASMA_ASS_SUBSCRIPT_DECL(Matrix44) {
     return 0;
 }
 
-PY_GETSET_GETTER_DECL(Matrix44, mat) {
+PY_GETSET_GETTER_DECL(Matrix44, mat)
+{
     PyObject* t1 = PyTuple_New(4);
     PyObject* t2 = PyTuple_New(4);
     PyObject* t3 = PyTuple_New(4);
@@ -97,7 +101,8 @@ PY_GETSET_GETTER_DECL(Matrix44, mat) {
 
 PY_PROPERTY_GETSET_RO_DECL(Matrix44, mat)
 
-PY_GETSET_GETTER_DECL(Matrix44, glMat) {
+PY_GETSET_GETTER_DECL(Matrix44, glMat)
+{
     PyObject* mat = PyTuple_New(16);
     const float* glmat = self->fThis->glMatrix();
     PyTuple_SET_ITEM(mat, 0, pyPlasma_convert(glmat[0]));
@@ -127,7 +132,8 @@ PyGetSetDef pyMatrix44_GetSet[] = {
     PY_GETSET_TERMINATOR
 };
 
-PY_METHOD_STATIC_NOARGS(Matrix44, Identity, "Creates an identity matrix") {
+PY_METHOD_STATIC_NOARGS(Matrix44, Identity, "Creates an identity matrix")
+{
     return pyPlasma_convert(hsMatrix44::Identity());
 }
 
@@ -138,11 +144,11 @@ PY_METHOD_STATIC_VA(Matrix44, TranslateMat,
     pyVector3* vec;
     if (!PyArg_ParseTuple(args, "O", &vec)) {
         PyErr_SetString(PyExc_TypeError, "TranslateMat expects an hsVector3");
-        return NULL;
+        return nullptr;
     }
     if (!pyVector3_Check((PyObject*)vec)) {
         PyErr_SetString(PyExc_TypeError, "TranslateMat expects an hsVector3");
-        return NULL;
+        return nullptr;
     }
     return pyPlasma_convert(hsMatrix44::TranslateMat(*vec->fThis));
 }
@@ -155,7 +161,7 @@ PY_METHOD_STATIC_VA(Matrix44, RotateMat,
     float angle;
     if (!PyArg_ParseTuple(args, "if", &axis, &angle)) {
         PyErr_SetString(PyExc_TypeError, "RotateMat expects int, float");
-        return NULL;
+        return nullptr;
     }
     return pyPlasma_convert(hsMatrix44::RotateMat(axis, angle));
 }
@@ -167,16 +173,17 @@ PY_METHOD_STATIC_VA(Matrix44, ScaleMat,
     pyVector3* vec;
     if (!PyArg_ParseTuple(args, "O", &vec)) {
         PyErr_SetString(PyExc_TypeError, "ScaleMat expects an hsVector3");
-        return NULL;
+        return nullptr;
     }
     if (!pyVector3_Check((PyObject*)vec)) {
         PyErr_SetString(PyExc_TypeError, "ScaleMat expects an hsVector3");
-        return NULL;
+        return nullptr;
     }
     return pyPlasma_convert(hsMatrix44::ScaleMat(*vec->fThis));
 }
 
-PY_METHOD_NOARGS(Matrix44, inverse, "Returns the inverse of the matrix") {
+PY_METHOD_NOARGS(Matrix44, inverse, "Returns the inverse of the matrix")
+{
     return pyPlasma_convert(self->fThis->inverse());
 }
 
@@ -193,11 +200,11 @@ PY_METHOD_VA(Matrix44, translate,
     pyVector3* vec;
     if (!PyArg_ParseTuple(args, "O", &vec)) {
         PyErr_SetString(PyExc_TypeError, "translate expects an hsVector3");
-        return NULL;
+        return nullptr;
     }
     if (!pyVector3_Check((PyObject*)vec)) {
         PyErr_SetString(PyExc_TypeError, "translate expects an hsVector3");
-        return NULL;
+        return nullptr;
     }
     self->fThis->translate(*vec->fThis);
     Py_RETURN_NONE;
@@ -211,7 +218,7 @@ PY_METHOD_VA(Matrix44, rotate,
     float angle;
     if (!PyArg_ParseTuple(args, "if", &axis, &angle)) {
         PyErr_SetString(PyExc_TypeError, "rotate expects int, float");
-        return NULL;
+        return nullptr;
     }
     self->fThis->rotate(axis, angle);
     Py_RETURN_NONE;
@@ -224,11 +231,11 @@ PY_METHOD_VA(Matrix44, scale,
     pyVector3* vec;
     if (!PyArg_ParseTuple(args, "O", &vec)) {
         PyErr_SetString(PyExc_TypeError, "scale expects an hsVector3");
-        return NULL;
+        return nullptr;
     }
     if (!pyVector3_Check((PyObject*)vec)) {
         PyErr_SetString(PyExc_TypeError, "scale expects an hsVector3");
-        return NULL;
+        return nullptr;
     }
     self->fThis->scale(*vec->fThis);
     Py_RETURN_NONE;
@@ -241,11 +248,11 @@ PY_METHOD_VA(Matrix44, setTranslate,
     pyVector3* vec;
     if (!PyArg_ParseTuple(args, "O", &vec)) {
         PyErr_SetString(PyExc_TypeError, "setTranslate expects an hsVector3");
-        return NULL;
+        return nullptr;
     }
     if (!pyVector3_Check((PyObject*)vec)) {
         PyErr_SetString(PyExc_TypeError, "setTranslate expects an hsVector3");
-        return NULL;
+        return nullptr;
     }
     self->fThis->setTranslate(*vec->fThis);
     Py_RETURN_NONE;
@@ -259,7 +266,7 @@ PY_METHOD_VA(Matrix44, setRotate,
     float angle;
     if (!PyArg_ParseTuple(args, "if", &axis, &angle)) {
         PyErr_SetString(PyExc_TypeError, "setRotate expects int, float");
-        return NULL;
+        return nullptr;
     }
     self->fThis->setRotate(axis, angle);
     Py_RETURN_NONE;
@@ -272,11 +279,11 @@ PY_METHOD_VA(Matrix44, setScale,
     pyVector3* vec;
     if (!PyArg_ParseTuple(args, "O", &vec)) {
         PyErr_SetString(PyExc_TypeError, "setScale expects an hsVector3");
-        return NULL;
+        return nullptr;
     }
     if (!pyVector3_Check((PyObject*)vec)) {
         PyErr_SetString(PyExc_TypeError, "setScale expects an hsVector3");
-        return NULL;
+        return nullptr;
     }
     self->fThis->setScale(*vec->fThis);
     Py_RETURN_NONE;
@@ -289,11 +296,11 @@ PY_METHOD_VA(Matrix44, multPoint,
     pyVector3* vec;
     if (!PyArg_ParseTuple(args, "O", &vec)) {
         PyErr_SetString(PyExc_TypeError, "multPoint expects an hsVector3");
-        return NULL;
+        return nullptr;
     }
     if (!pyVector3_Check((PyObject*)vec)) {
         PyErr_SetString(PyExc_TypeError, "multPoint expects an hsVector3");
-        return NULL;
+        return nullptr;
     }
     hsVector3 result = self->fThis->multPoint(*vec->fThis);
     return pyPlasma_convert(result);
@@ -306,11 +313,11 @@ PY_METHOD_VA(Matrix44, multVector,
     pyVector3* vec;
     if (!PyArg_ParseTuple(args, "O", &vec)) {
         PyErr_SetString(PyExc_TypeError, "multVector expects an hsVector3");
-        return NULL;
+        return nullptr;
     }
     if (!pyVector3_Check((PyObject*)vec)) {
         PyErr_SetString(PyExc_TypeError, "multVector expects an hsVector3");
-        return NULL;
+        return nullptr;
     }
     hsVector3 result = self->fThis->multVector(*vec->fThis);
     return pyPlasma_convert(result);
@@ -323,11 +330,11 @@ PY_METHOD_VA(Matrix44, read,
     pyStream* stream;
     if (!PyArg_ParseTuple(args, "O", &stream)) {
         PyErr_SetString(PyExc_TypeError, "read expects a hsStream");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream)) {
         PyErr_SetString(PyExc_TypeError, "read expects a hsStream");
-        return NULL;
+        return nullptr;
     }
     self->fThis->read(stream->fThis);
     Py_RETURN_NONE;
@@ -340,11 +347,11 @@ PY_METHOD_VA(Matrix44, write,
     pyStream* stream;
     if (!PyArg_ParseTuple(args, "O", &stream)) {
         PyErr_SetString(PyExc_TypeError, "write expects a hsStream");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream)) {
         PyErr_SetString(PyExc_TypeError, "write expects a hsStream");
-        return NULL;
+        return nullptr;
     }
     self->fThis->write(stream->fThis);
     Py_RETURN_NONE;
@@ -370,10 +377,11 @@ PyMethodDef pyMatrix44_Methods[] = {
     PY_METHOD_TERMINATOR
 };
 
-PY_PLASMA_NB_BINARYFUNC_DECL(Matrix44, multiply) {
+PY_PLASMA_NB_BINARYFUNC_DECL(Matrix44, multiply)
+{
     if (!pyPlasma_check<hsMatrix44>(left) || !pyPlasma_check<hsMatrix44>(right)) {
         PyErr_SetString(PyExc_TypeError, "Multiplication operand is not another matrix");
-        return NULL;
+        return nullptr;
     }
     return pyPlasma_convert(pyPlasma_get<hsMatrix44>(left) * pyPlasma_get<hsMatrix44>(right));
 }
@@ -382,7 +390,8 @@ PY_PLASMA_TYPE(Matrix44, hsMatrix44, "hsMatrix44 wrapper")
 PY_PLASMA_TYPE_AS_NUMBER(Matrix44)
 PY_PLASMA_TYPE_AS_MAPPING(Matrix44)
 
-PY_PLASMA_TYPE_INIT(Matrix44) {
+PY_PLASMA_TYPE_INIT(Matrix44)
+{
     pyMatrix44_As_Number.nb_multiply = pyMatrix44_nb_multiply;
     pyMatrix44_As_Mapping.mp_subscript = pyMatrix44_mp_subscript;
     pyMatrix44_As_Mapping.mp_ass_subscript = pyMatrix44_mp_ass_subscript;
@@ -395,7 +404,7 @@ PY_PLASMA_TYPE_INIT(Matrix44) {
     pyMatrix44_Type.tp_getset = pyMatrix44_GetSet;
     pyMatrix44_Type.tp_flags |= Py_TPFLAGS_CHECKTYPES;
     if (PyType_CheckAndReady(&pyMatrix44_Type) < 0)
-        return NULL;
+        return nullptr;
 
     PY_TYPE_ADD_CONST(Matrix44, "kRight", hsMatrix44::kRight);
     PY_TYPE_ADD_CONST(Matrix44, "kUp", hsMatrix44::kUp);

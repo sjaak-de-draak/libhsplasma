@@ -22,7 +22,8 @@
 
 PY_PLASMA_NEW(LogicModifier, plLogicModifier)
 
-PY_METHOD_NOARGS(LogicModifier, clearConditions, "Remove all condition keys") {
+PY_METHOD_NOARGS(LogicModifier, clearConditions, "Remove all condition keys")
+{
     self->fThis->clearConditions();
     Py_RETURN_NONE;
 }
@@ -34,11 +35,11 @@ PY_METHOD_VA(LogicModifier, addCondition,
     pyKey* key;
     if (!PyArg_ParseTuple(args, "O", &key)) {
         PyErr_SetString(PyExc_TypeError, "addCondition expects a plKey");
-        return NULL;
+        return nullptr;
     }
     if (!pyKey_Check((PyObject*)key)) {
         PyErr_SetString(PyExc_TypeError, "addCondition expects a plKey");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addCondition(*key->fThis);
     Py_RETURN_NONE;
@@ -51,7 +52,7 @@ PY_METHOD_VA(LogicModifier, delCondition,
     int idx;
     if (!PyArg_ParseTuple(args, "i", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delCondition expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->delCondition(idx);
     Py_RETURN_NONE;
@@ -64,7 +65,8 @@ static PyMethodDef pyLogicModifier_Methods[] = {
     PY_METHOD_TERMINATOR
 };
 
-PY_GETSET_GETTER_DECL(LogicModifier, conditions) {
+PY_GETSET_GETTER_DECL(LogicModifier, conditions)
+{
     PyObject* list = PyTuple_New(self->fThis->getConditions().size());
     for (size_t i=0; i<self->fThis->getConditions().size(); i++)
         PyTuple_SET_ITEM(list, i, pyKey_FromKey(self->fThis->getConditions()[i]));
@@ -86,13 +88,14 @@ static PyGetSetDef pyLogicModifier_GetSet[] = {
 
 PY_PLASMA_TYPE(LogicModifier, plLogicModifier, "plLogicModifier wrapper")
 
-PY_PLASMA_TYPE_INIT(LogicModifier) {
+PY_PLASMA_TYPE_INIT(LogicModifier)
+{
     pyLogicModifier_Type.tp_new = pyLogicModifier_new;
     pyLogicModifier_Type.tp_methods = pyLogicModifier_Methods;
     pyLogicModifier_Type.tp_getset = pyLogicModifier_GetSet;
     pyLogicModifier_Type.tp_base = &pyLogicModBase_Type;
     if (PyType_CheckAndReady(&pyLogicModifier_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyLogicModifier_Type);
     return (PyObject*)&pyLogicModifier_Type;

@@ -20,7 +20,8 @@
 #include "pdUnifiedTypeMap.h"
 #include <functional>
 
-class PLASMA_DLL plFactory {
+class PLASMA_DLL plFactory
+{
 public:
     static class plCreatable* Create(short typeIdx);
     static class plCreatable* Create(short typeIdx, PlasmaVer ver);
@@ -31,7 +32,7 @@ public:
     static short ClassVersion(short typeIdx, PlasmaVer ver);
 
     typedef std::function<plCreatable* (short)> OverrideFunc;
-    static void SetOverride(OverrideFunc over) { fOverride = over; }
+    static void SetOverride(OverrideFunc over) { fOverride = std::move(over); }
     static void ClearOverride() { fOverride = OverrideFunc(); }
 
 private:

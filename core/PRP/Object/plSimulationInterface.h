@@ -19,11 +19,13 @@
 
 #include "plObjInterface.h"
 
-class PLASMA_DLL plSimulationInterface : public plObjInterface {
+class PLASMA_DLL plSimulationInterface : public plObjInterface
+{
     CREATABLE(plSimulationInterface, kSimulationInterface, plObjInterface)
 
 public:
-    enum plSimulationProperties {
+    enum plSimulationProperties
+    {
         kDisable, kWeightless, kPinned, kWarp, kUpright, kPassive,
         kRotationForces, kCameraAvoidObject, kPhysAnim, kStartInactive,
         kNoSynchronize, kSuppressed, kNoOwnershipChange, kAvAnimPushable,
@@ -46,7 +48,7 @@ protected:
 
 public:
     plKey getPhysical() const { return fPhysical; }
-    void setPhysical(plKey phys) { fPhysical = phys; }
+    void setPhysical(plKey phys) { fPhysical = std::move(phys); }
 };
 
 #endif

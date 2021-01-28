@@ -19,11 +19,13 @@
 
 #include "PRP/Modifier/plModifier.h"
 
-class PLASMA_DLL plFollowMod : public plSingleModifier {
+class PLASMA_DLL plFollowMod : public plSingleModifier
+{
     CREATABLE(plFollowMod, kFollowMod, plSingleModifier)
 
 public:
-    enum plFMFlags {
+    enum plFMFlags
+    {
         kPositionX = 0x1,
         kPositionY = 0x2,
         kPositionZ = 0x4,
@@ -32,7 +34,8 @@ public:
         kFullTransform = kPosition | kRotate
     };
 
-    enum FollowLeaderType {
+    enum FollowLeaderType
+    {
         kFollowPlayer, kFollowObject, kFollowCamera, kFollowListener
     };
 
@@ -59,7 +62,7 @@ public:
 
     void setLeaderType(FollowLeaderType leaderType)  { fLeaderType = leaderType; }
     void setMode(uint8_t mode) { fMode = mode; }
-    void setLeader(plKey obj) { fLeader = obj; }
+    void setLeader(plKey obj) { fLeader = std::move(obj); }
 
 };
 

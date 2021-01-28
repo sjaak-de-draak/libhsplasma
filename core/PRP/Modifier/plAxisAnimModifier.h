@@ -20,7 +20,8 @@
 #include "plModifier.h"
 #include "PRP/Message/plNotifyMsg.h"
 
-class PLASMA_DLL plAxisAnimModifier : public plSingleModifier {
+class PLASMA_DLL plAxisAnimModifier : public plSingleModifier
+{
     CREATABLE(plAxisAnimModifier, kAxisAnimModifier, plSingleModifier)
 
 private:
@@ -38,8 +39,8 @@ private:
     bool b60, b90, bb4, bb5;
 
 public:
-    plAxisAnimModifier() : fNotify(NULL), fAllOrNothing(false) { }
-    virtual ~plAxisAnimModifier();
+    plAxisAnimModifier() : fNotify(), fAllOrNothing() { }
+    ~plAxisAnimModifier();
 
     void read(hsStream* S, plResManager* mgr) HS_OVERRIDE;
     void write(hsStream* S, plResManager* mgr) HS_OVERRIDE;
@@ -56,9 +57,9 @@ public:
     ST::string getAnimLabel() const { return fAnimLabel; }
     bool getAllOrNothing() const { return fAllOrNothing; }
 
-    void setXAnim(plKey anim) { fXAnim = anim; }
-    void setYAnim(plKey anim) { fYAnim = anim; }
-    void setNotificationKey(plKey notify) { fNotificationKey = notify; }
+    void setXAnim(plKey anim) { fXAnim = std::move(anim); }
+    void setYAnim(plKey anim) { fYAnim = std::move(anim); }
+    void setNotificationKey(plKey notify) { fNotificationKey = std::move(notify); }
     void setAnimLabel(const ST::string& label) { fAnimLabel = label; }
     void setAllOrNothing(bool value) { fAllOrNothing = value; }
     void setNotify(plNotifyMsg* msg);

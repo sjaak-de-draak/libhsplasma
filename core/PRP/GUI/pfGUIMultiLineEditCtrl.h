@@ -19,7 +19,8 @@
 
 #include "pfGUIControlMod.h"
 
-class PLASMA_DLL pfGUIMultiLineEditCtrl : public pfGUIControlMod {
+class PLASMA_DLL pfGUIMultiLineEditCtrl : public pfGUIControlMod
+{
     CREATABLE(pfGUIMultiLineEditCtrl, kGUIMultiLineEditCtrl, pfGUIControlMod)
 
 protected:
@@ -35,7 +36,7 @@ protected:
 
 public:
     plKey getScrollCtrl() const { return fScrollCtrl; }
-    void setScrollCtrl(plKey ctrl) { fScrollCtrl = ctrl; }
+    void setScrollCtrl(plKey ctrl) { fScrollCtrl = std::move(ctrl); }
 };
 
 #endif

@@ -30,12 +30,13 @@ static PyGetSetDef pySubworldMsg_GetSet[] = {
 
 PY_PLASMA_TYPE(SubWorldMsg, plSubWorldMsg, "plSubWorldMsg wrapper")
 
-PY_PLASMA_TYPE_INIT(SubWorldMsg) {
+PY_PLASMA_TYPE_INIT(SubWorldMsg)
+{
     pySubWorldMsg_Type.tp_new = pySubWorldMsg_new;
     pySubWorldMsg_Type.tp_getset = pySubworldMsg_GetSet;
     pySubWorldMsg_Type.tp_base = &pySimulationMsg_Type;
     if (PyType_CheckAndReady(&pySubWorldMsg_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pySubWorldMsg_Type);
     return (PyObject*)&pySubWorldMsg_Type;

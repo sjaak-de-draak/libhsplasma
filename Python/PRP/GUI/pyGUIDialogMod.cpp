@@ -29,11 +29,11 @@ PY_METHOD_VA(GUIDialogMod, addControl,
     pyKey* control;
     if (!PyArg_ParseTuple(args, "O", &control)) {
         PyErr_SetString(PyExc_TypeError, "addControl expects a plKey");
-        return NULL;
+        return nullptr;
     }
     if (!pyKey_Check((PyObject*)control)) {
         PyErr_SetString(PyExc_TypeError, "addControl expects a plKey");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addControl(*control->fThis);
     Py_RETURN_NONE;
@@ -46,7 +46,7 @@ PY_METHOD_VA(GUIDialogMod, delControl,
     int idx;
     if (!PyArg_ParseTuple(args, "i", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delControl expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->delControl(idx);
     Py_RETURN_NONE;
@@ -74,7 +74,8 @@ PY_PROPERTY(plKey, GUIDialogMod, procReceiver, getProcReceiver, setProcReceiver)
 PY_PROPERTY(plKey, GUIDialogMod, sceneNode, getSceneNode, setSceneNode)
 PY_PROPERTY_PROXY(pfGUIColorScheme, GUIDialogMod, colorScheme, getColorScheme)
 
-PY_GETSET_GETTER_DECL(GUIDialogMod, controls) {
+PY_GETSET_GETTER_DECL(GUIDialogMod, controls)
+{
     PyObject* list = PyTuple_New(self->fThis->getControls().size());
     for (size_t i = 0; i < self->fThis->getControls().size(); i++)
         PyTuple_SET_ITEM(list, i, pyPlasma_convert(self->fThis->getControls()[i]));
@@ -97,13 +98,14 @@ static PyGetSetDef pyGUIDialogMod_GetSet[] = {
 
 PY_PLASMA_TYPE(GUIDialogMod, pfGUIDialogMod, "pfGUIDialogMod wrapper")
 
-PY_PLASMA_TYPE_INIT(GUIDialogMod) {
+PY_PLASMA_TYPE_INIT(GUIDialogMod)
+{
     pyGUIDialogMod_Type.tp_new = pyGUIDialogMod_new;
     pyGUIDialogMod_Type.tp_methods = pyGUIDialogMod_Methods;
     pyGUIDialogMod_Type.tp_getset = pyGUIDialogMod_GetSet;
     pyGUIDialogMod_Type.tp_base = &pySingleModifier_Type;
     if (PyType_CheckAndReady(&pyGUIDialogMod_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyGUIDialogMod_Type);
     return (PyObject*) &pyGUIDialogMod_Type;

@@ -20,15 +20,16 @@
 #include "Math/hsGeometry3.h"
 #include "plVertCoder.h"
 
-class PLASMA_DLL plGBufferCell {
+class PLASMA_DLL plGBufferCell
+{
 public:
     unsigned int fVtxStart, fColorStart, fLength;
 
 public:
-    plGBufferCell() : fVtxStart(0), fColorStart(0), fLength(0) { }
-    plGBufferCell(const plGBufferCell& init)
-        : fVtxStart(init.fVtxStart), fColorStart(init.fColorStart),
-          fLength(init.fLength) { }
+    plGBufferCell() : fVtxStart(), fColorStart(), fLength() { }
+    plGBufferCell(unsigned int vtxStart, unsigned int colorStart, unsigned int length)
+        : fVtxStart(vtxStart), fColorStart(colorStart), fLength(length)
+    { }
 
     void read(hsStream* S);
     void write(hsStream* S);
@@ -37,16 +38,14 @@ public:
 };
 
 
-class PLASMA_DLL plGBufferTriangle {
+class PLASMA_DLL plGBufferTriangle
+{
 public:
     unsigned short fIndex1, fIndex2, fIndex3, fSpanIndex;
     hsVector3 fCenter;
 
 public:
-    plGBufferTriangle() : fIndex1(0), fIndex2(0), fIndex3(0), fSpanIndex(0) { }
-    plGBufferTriangle(const plGBufferTriangle& init)
-        : fIndex1(init.fIndex1), fIndex2(init.fIndex2), fIndex3(init.fIndex3),
-          fSpanIndex(init.fSpanIndex), fCenter(init.fCenter) { }
+    plGBufferTriangle() : fIndex1(), fIndex2(), fIndex3(), fSpanIndex() { }
 
     void read(hsStream* S);
     void write(hsStream* S);
@@ -55,7 +54,8 @@ public:
 };
 
 
-class PLASMA_DLL plGBufferVertex {
+class PLASMA_DLL plGBufferVertex
+{
 public:
     hsVector3 fPos, fNormal;
     int fSkinIdx;
@@ -64,17 +64,15 @@ public:
     hsVector3 fUVWs[10];
 
 public:
-    plGBufferVertex() : fSkinIdx(0), fColor(0) {
-        fSkinWeights[0] = 0.0f;
-        fSkinWeights[1] = 0.0f;
-        fSkinWeights[2] = 0.0f;
-    }
+    plGBufferVertex() : fSkinIdx(), fSkinWeights(), fColor() { }
 };
 
 
-class PLASMA_DLL plGBufferGroup {
+class PLASMA_DLL plGBufferGroup
+{
 public:
-    enum Formats {
+    enum Formats
+    {
         kUVCountMask = 0xF,
         kSkinNoWeights = 0x0,
         kSkin1Weight = 0x10,
@@ -85,13 +83,20 @@ public:
         kEncoded = 0x80
     };
 
-    enum GeometryStorage {
+    enum GeometryStorage
+    {
         kStoreUncompressed = 0,
         kStoreCompV1 = 0x1,
         kStoreCompV2 = 0x2,
         kStoreCompV3 = 0x3,
         kStoreCompTypeMask = 0x3,
         kStoreIsDirty = 0x4
+    };
+
+    enum
+    {
+        kMaxVertsPerBuffer = 32000,
+        kMaxIndicesPerBuffer = 32000,
     };
 
 protected:
@@ -105,11 +110,18 @@ protected:
     unsigned int ICalcVertexSize(unsigned int& lStride);
     bool INeedVertRecompression(PlasmaVer ver) const;
 
+    void IPackVertexSpan(const class plGeometrySpan* geoSpan, class plVertexSpan* vSpan);
+    void IPackIcicle(const class plGeometrySpan* geoSpan, class plIcicle* ice);
+
 public:
-    plGBufferGroup(unsigned char fmt) : fGBuffStorageType(kStoreUncompressed) {
+    plGBufferGroup(unsigned char fmt) : fGBuffStorageType(kStoreUncompressed)
+    {
         setFormat(fmt);
     }
     ~plGBufferGroup();
+
+    plGBufferGroup(const plGBufferGroup&) = delete;
+    plGBufferGroup& operator=(const plGBufferGroup&) = delete;
 
     void read(hsStream* S);
     void write(hsStream* S);
@@ -120,6 +132,8 @@ public:
     std::vector<unsigned short> getIndices(size_t idx, size_t start = 0, size_t count = (size_t)-1, size_t offset = 0) const;
     std::vector<plGBufferCell> getCells(size_t idx) const { return fCells[idx]; }
 
+    unsigned int getNumVertices(size_t cell = 0) const;
+
     unsigned int getFormat() const { return fFormat; }
     size_t getSkinWeights() const { return (fFormat & kSkinWeightMask) >> 4; }
     size_t getNumUVs() const { return (fFormat & kUVCountMask); }
@@ -127,7 +141,8 @@ public:
 
     void addVertices(const std::vector<plGBufferVertex>& verts);
     void addIndices(const std::vector<unsigned short>& indices);
-    void addCells(const std::vector<plGBufferCell>& cells) { fCells.push_back(cells); }
+    void addCells(std::vector<plGBufferCell> cells) { fCells.emplace_back(std::move(cells)); }
+    void packGeoSpan(const class plGeometrySpan* geoSpan, class plIcicle* ice);
     void setFormat(unsigned int format);
     void setSkinWeights(size_t skinWeights);
     void setNumUVs(size_t numUVs);

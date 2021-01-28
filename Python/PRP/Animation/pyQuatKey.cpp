@@ -31,13 +31,14 @@ static PyGetSetDef pyQuatKey_GetSet[] = {
 
 PY_PLASMA_TYPE(QuatKey, hsQuatKey, "hsQuatKey wrapper")
 
-PY_PLASMA_TYPE_INIT(QuatKey) {
+PY_PLASMA_TYPE_INIT(QuatKey)
+{
     pyQuatKey_Type.tp_init = pyQuatKey___init__;
     pyQuatKey_Type.tp_new = pyQuatKey_new;
     pyQuatKey_Type.tp_getset = pyQuatKey_GetSet;
     pyQuatKey_Type.tp_base = &pyKeyFrame_Type;
     if (PyType_CheckAndReady(&pyQuatKey_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyQuatKey_Type);
     return (PyObject*)&pyQuatKey_Type;

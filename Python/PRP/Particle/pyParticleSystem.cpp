@@ -33,7 +33,7 @@ PY_METHOD_VA(ParticleSystem, allocEmitters,
     int count;
     if (!PyArg_ParseTuple(args, "i", &count)) {
         PyErr_SetString(PyExc_TypeError, "allocEmitters expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->allocEmitters(count);
     Py_RETURN_NONE;
@@ -46,7 +46,7 @@ PY_METHOD_VA(ParticleSystem, getEmitter,
     int idx;
     if (!PyArg_ParseTuple(args, "i", &idx)) {
         PyErr_SetString(PyExc_TypeError, "getEmitter expects an int");
-        return NULL;
+        return nullptr;
     }
     return ICreate(self->fThis->getEmitter(idx));
 }
@@ -59,11 +59,11 @@ PY_METHOD_VA(ParticleSystem, setEmitter,
     PyObject* emitter;
     if (!PyArg_ParseTuple(args, "iO", &idx, &emitter)) {
         PyErr_SetString(PyExc_TypeError, "setEmitter expects int, plParticleEmitter");
-        return NULL;
+        return nullptr;
     }
     if (!pyParticleEmitter_Check(emitter)) {
         PyErr_SetString(PyExc_TypeError, "setEmitter expects int, plParticleEmitter");
-        return NULL;
+        return nullptr;
     }
     self->fThis->setEmitter(idx, ((pyParticleEmitter*)emitter)->fThis);
     ((pyParticleEmitter*)emitter)->fPyOwned = false;
@@ -84,11 +84,11 @@ PY_METHOD_VA(ParticleSystem, addEmitter,
     PyObject* emitter;
     if (!PyArg_ParseTuple(args, "O", &emitter)) {
         PyErr_SetString(PyExc_TypeError, "addEmitter expects a plParticleEmitter");
-        return NULL;
+        return nullptr;
     }
     if (!pyParticleEmitter_Check(emitter)) {
         PyErr_SetString(PyExc_TypeError, "addEmitter expects a plParticleEmitter");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addEmitter(((pyParticleEmitter*)emitter)->fThis);
     ((pyParticleEmitter*)emitter)->fPyOwned = false;
@@ -102,7 +102,7 @@ PY_METHOD_VA(ParticleSystem, delEmitter,
     int idx;
     if (!PyArg_ParseTuple(args, "i", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delEmitter expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->delEmitter(idx);
     Py_RETURN_NONE;
@@ -122,11 +122,11 @@ PY_METHOD_VA(ParticleSystem, addForce,
     pyKey* key;
     if (!PyArg_ParseTuple(args, "O", &key)) {
         PyErr_SetString(PyExc_TypeError, "addForce expects a plKey");
-        return NULL;
+        return nullptr;
     }
     if (!pyKey_Check((PyObject*)key)) {
         PyErr_SetString(PyExc_TypeError, "addForce expects a plKey");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addForce(*key->fThis);
     Py_RETURN_NONE;
@@ -139,7 +139,7 @@ PY_METHOD_VA(ParticleSystem, delForce,
     int idx;
     if (!PyArg_ParseTuple(args, "i", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delForce expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->delForce(idx);
     Py_RETURN_NONE;
@@ -159,11 +159,11 @@ PY_METHOD_VA(ParticleSystem, addEffect,
     pyKey* key;
     if (!PyArg_ParseTuple(args, "O", &key)) {
         PyErr_SetString(PyExc_TypeError, "addEffect expects a plKey");
-        return NULL;
+        return nullptr;
     }
     if (!pyKey_Check((PyObject*)key)) {
         PyErr_SetString(PyExc_TypeError, "addEffect expects a plKey");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addEffect(*key->fThis);
     Py_RETURN_NONE;
@@ -176,7 +176,7 @@ PY_METHOD_VA(ParticleSystem, delEffect,
     int idx;
     if (!PyArg_ParseTuple(args, "i", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delEffect expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->delEffect(idx);
     Py_RETURN_NONE;
@@ -196,11 +196,11 @@ PY_METHOD_VA(ParticleSystem, addConstraint,
     pyKey* key;
     if (!PyArg_ParseTuple(args, "O", &key)) {
         PyErr_SetString(PyExc_TypeError, "addConstraint expects a plKey");
-        return NULL;
+        return nullptr;
     }
     if (!pyKey_Check((PyObject*)key)) {
         PyErr_SetString(PyExc_TypeError, "addConstraint expects a plKey");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addConstraint(*key->fThis);
     Py_RETURN_NONE;
@@ -213,7 +213,7 @@ PY_METHOD_VA(ParticleSystem, delConstraint,
     int idx;
     if (!PyArg_ParseTuple(args, "i", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delConstraint expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->delConstraint(idx);
     Py_RETURN_NONE;
@@ -233,11 +233,11 @@ PY_METHOD_VA(ParticleSystem, addPermaLight,
     pyKey* key;
     if (!PyArg_ParseTuple(args, "O", &key)) {
         PyErr_SetString(PyExc_TypeError, "addPermaLight expects a plKey");
-        return NULL;
+        return nullptr;
     }
     if (!pyKey_Check((PyObject*)key)) {
         PyErr_SetString(PyExc_TypeError, "addPermaLight expects a plKey");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addPermaLight(*key->fThis);
     Py_RETURN_NONE;
@@ -250,7 +250,7 @@ PY_METHOD_VA(ParticleSystem, delPermaLight,
     int idx;
     if (!PyArg_ParseTuple(args, "i", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delPermaLight expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->delPermaLight(idx);
     Py_RETURN_NONE;
@@ -302,7 +302,8 @@ PY_PROPERTY_CREATABLE(plController, Controller, ParticleSystem, heightCtl,
                       getHeightCtl, setHeightCtl)
 
 
-PY_GETSET_GETTER_DECL(ParticleSystem, forces) {
+PY_GETSET_GETTER_DECL(ParticleSystem, forces)
+{
     const auto& keys = self->fThis->getForces();
     PyObject* result = PyTuple_New(keys.size());
     for (size_t i = 0; i < keys.size(); ++i)
@@ -310,7 +311,8 @@ PY_GETSET_GETTER_DECL(ParticleSystem, forces) {
     return result;
 }
 
-PY_GETSET_SETTER_DECL(ParticleSystem, forces) {
+PY_GETSET_SETTER_DECL(ParticleSystem, forces)
+{
     PY_PROPERTY_CHECK_NULL(forces);
     pySequenceFastRef seq(value);
     if (!seq.isSequence()) {
@@ -333,7 +335,8 @@ PY_GETSET_SETTER_DECL(ParticleSystem, forces) {
 PY_PROPERTY_GETSET_DECL(ParticleSystem, forces)
 
 
-PY_GETSET_GETTER_DECL(ParticleSystem, effects) {
+PY_GETSET_GETTER_DECL(ParticleSystem, effects)
+{
     const auto& keys = self->fThis->getEffects();
     PyObject* result = PyTuple_New(keys.size());
     for (size_t i = 0; i < keys.size(); ++i)
@@ -341,7 +344,8 @@ PY_GETSET_GETTER_DECL(ParticleSystem, effects) {
     return result;
 }
 
-PY_GETSET_SETTER_DECL(ParticleSystem, effects) {
+PY_GETSET_SETTER_DECL(ParticleSystem, effects)
+{
     PY_PROPERTY_CHECK_NULL(effects);
     pySequenceFastRef seq(value);
     if (!seq.isSequence()) {
@@ -364,7 +368,8 @@ PY_GETSET_SETTER_DECL(ParticleSystem, effects) {
 PY_PROPERTY_GETSET_DECL(ParticleSystem, effects)
 
 
-PY_GETSET_GETTER_DECL(ParticleSystem, constraints) {
+PY_GETSET_GETTER_DECL(ParticleSystem, constraints)
+{
     const auto& keys = self->fThis->getConstraints();
     PyObject* result = PyTuple_New(keys.size());
     for (size_t i = 0; i < keys.size(); ++i)
@@ -372,7 +377,8 @@ PY_GETSET_GETTER_DECL(ParticleSystem, constraints) {
     return result;
 }
 
-PY_GETSET_SETTER_DECL(ParticleSystem, constraints) {
+PY_GETSET_SETTER_DECL(ParticleSystem, constraints)
+{
     PY_PROPERTY_CHECK_NULL(constraints);
     pySequenceFastRef seq(value);
     if (!seq.isSequence()) {
@@ -395,7 +401,8 @@ PY_GETSET_SETTER_DECL(ParticleSystem, constraints) {
 PY_PROPERTY_GETSET_DECL(ParticleSystem, constraints)
 
 
-PY_GETSET_GETTER_DECL(ParticleSystem, permaLights) {
+PY_GETSET_GETTER_DECL(ParticleSystem, permaLights)
+{
     const auto& keys = self->fThis->getPermaLights();
     PyObject* result = PyTuple_New(keys.size());
     for (size_t i = 0; i < keys.size(); ++i)
@@ -403,7 +410,8 @@ PY_GETSET_GETTER_DECL(ParticleSystem, permaLights) {
     return result;
 }
 
-PY_GETSET_SETTER_DECL(ParticleSystem, permaLights) {
+PY_GETSET_SETTER_DECL(ParticleSystem, permaLights)
+{
     PY_PROPERTY_CHECK_NULL(permaLights);
     pySequenceFastRef seq(value);
     if (!seq.isSequence()) {
@@ -450,13 +458,14 @@ static PyGetSetDef pyParticleSystem_GetSet[] = {
 
 PY_PLASMA_TYPE(ParticleSystem, plParticleSystem, "plParticleSystem wrapper")
 
-PY_PLASMA_TYPE_INIT(ParticleSystem) {
+PY_PLASMA_TYPE_INIT(ParticleSystem)
+{
     pyParticleSystem_Type.tp_new = pyParticleSystem_new;
     pyParticleSystem_Type.tp_methods = pyParticleSystem_Methods;
     pyParticleSystem_Type.tp_getset = pyParticleSystem_GetSet;
     pyParticleSystem_Type.tp_base = &pyModifier_Type;
     if (PyType_CheckAndReady(&pyParticleSystem_Type) < 0)
-        return NULL;
+        return nullptr;
 
     PY_TYPE_ADD_CONST(ParticleSystem, "kEffectForce", plParticleSystem::kEffectForce);
     PY_TYPE_ADD_CONST(ParticleSystem, "kEffectMisc", plParticleSystem::kEffectMisc);

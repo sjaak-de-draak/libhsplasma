@@ -31,12 +31,13 @@ static PyGetSetDef pyKeyPressConditionalObject_GetSet[] = {
 PY_PLASMA_TYPE(KeyPressConditionalObject, plKeyPressConditionalObject,
                "plKeyPressConditionalObject wrapper")
 
-PY_PLASMA_TYPE_INIT(KeyPressConditionalObject) {
+PY_PLASMA_TYPE_INIT(KeyPressConditionalObject)
+{
     pyKeyPressConditionalObject_Type.tp_new = pyKeyPressConditionalObject_new;
     pyKeyPressConditionalObject_Type.tp_getset = pyKeyPressConditionalObject_GetSet;
     pyKeyPressConditionalObject_Type.tp_base = &pyConditionalObject_Type;
     if (PyType_CheckAndReady(&pyKeyPressConditionalObject_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyKeyPressConditionalObject_Type);
     return (PyObject*)&pyKeyPressConditionalObject_Type;

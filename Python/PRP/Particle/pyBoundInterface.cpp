@@ -33,12 +33,13 @@ static PyGetSetDef pyBoundInterface_GetSet[] = {
 
 PY_PLASMA_TYPE(BoundInterface, plBoundInterface, "plBoundInterface wrapper")
 
-PY_PLASMA_TYPE_INIT(BoundInterface) {
+PY_PLASMA_TYPE_INIT(BoundInterface)
+{
     pyBoundInterface_Type.tp_new = pyBoundInterface_new;
     pyBoundInterface_Type.tp_getset = pyBoundInterface_GetSet;
     pyBoundInterface_Type.tp_base = &pyObjInterface_Type;
     if (PyType_CheckAndReady(&pyBoundInterface_Type) < 0)
-        return NULL;
+        return nullptr;
 
     PY_TYPE_ADD_CONST(BoundInterface, "kDisable", plBoundInterface::kDisable);
     PY_TYPE_ADD_CONST(BoundInterface, "kNumProps", plBoundInterface::kNumProps);

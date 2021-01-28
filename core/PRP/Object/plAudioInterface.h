@@ -19,7 +19,8 @@
 
 #include "plObjInterface.h"
 
-class PLASMA_DLL plAudioInterface : public plObjInterface {
+class PLASMA_DLL plAudioInterface : public plObjInterface
+{
     CREATABLE(plAudioInterface, kAudioInterface, plObjInterface)
 
 protected:
@@ -35,7 +36,7 @@ protected:
 
 public:
     plKey getAudible() const { return fAudible; }
-    void setAudible(plKey audible) { fAudible = audible; }
+    void setAudible(plKey audible) { fAudible = std::move(audible); }
 };
 
 #endif

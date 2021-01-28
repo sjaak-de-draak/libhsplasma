@@ -34,13 +34,14 @@ static PyGetSetDef pySimplePosController_GetSet[] = {
 PY_PLASMA_TYPE(SimplePosController, plSimplePosController,
                "plSimplePosController wrapper")
 
-PY_PLASMA_TYPE_INIT(SimplePosController) {
+PY_PLASMA_TYPE_INIT(SimplePosController)
+{
     pySimplePosController_Type.tp_init = pySimplePosController___init__;
     pySimplePosController_Type.tp_new = pySimplePosController_new;
     pySimplePosController_Type.tp_getset = pySimplePosController_GetSet;
     pySimplePosController_Type.tp_base = &pyPosController_Type;
     if (PyType_CheckAndReady(&pySimplePosController_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pySimplePosController_Type);
     return (PyObject*)&pySimplePosController_Type;

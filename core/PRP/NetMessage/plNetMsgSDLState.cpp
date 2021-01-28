@@ -18,7 +18,8 @@
 #include "SDL/plStateDataRecord.h"
 
 /* plNetMsgSDLState */
-void plNetMsgSDLState::read(hsStream* S, plResManager* mgr) {
+void plNetMsgSDLState::read(hsStream* S, plResManager* mgr)
+{
     plNetMsgStreamedObject::read(S, mgr);
 
     fIsInitialState = S->readBool();
@@ -26,7 +27,8 @@ void plNetMsgSDLState::read(hsStream* S, plResManager* mgr) {
     fIsAvatarState = S->readBool();
 }
 
-void plNetMsgSDLState::write(hsStream* S, plResManager* mgr) {
+void plNetMsgSDLState::write(hsStream* S, plResManager* mgr)
+{
     plNetMsgStreamedObject::write(S, mgr);
 
     S->writeBool(fIsInitialState);
@@ -34,8 +36,9 @@ void plNetMsgSDLState::write(hsStream* S, plResManager* mgr) {
     S->writeBool(fIsAvatarState);
 }
 
-void plNetMsgSDLState::IPrcWrite(pfPrcHelper* prc) {
-    if (fDescriptor != NULL) {
+void plNetMsgSDLState::IPrcWrite(pfPrcHelper* prc)
+{
+    if (fDescriptor) {
         // We have a loaded descriptor, so we can output actual
         // PRC data, instead of just a hex stream
         plNetMsgObject::IPrcWrite(prc);
@@ -43,7 +46,7 @@ void plNetMsgSDLState::IPrcWrite(pfPrcHelper* prc) {
         hsStream* blob = getStream();
         plStateDataRecord rec;
         rec.setDescriptor(fDescriptor);
-        rec.read(blob, NULL);
+        rec.read(blob, nullptr);
         prc->startTag("SDLStateDefinitions");
         prc->writeParam("DescName", fDescriptor->getName());
         prc->writeParam("DescVersion", fDescriptor->getVersion());
@@ -62,13 +65,14 @@ void plNetMsgSDLState::IPrcWrite(pfPrcHelper* prc) {
     prc->endTag(true);
 }
 
-void plNetMsgSDLState::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
+void plNetMsgSDLState::IPrcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     if (tag->getName() == "SDLStateParams") {
         fIsInitialState = tag->getParam("IsInitialState", "false").to_bool();
         fPersistOnServer = tag->getParam("PersistOnServer", "false").to_bool();
         fIsAvatarState = tag->getParam("IsAvatarState", "false").to_bool();
     } else {
-        if (fDescriptor != NULL)
+        if (fDescriptor)
             //TODO: Parse SDL as PRC
             plNetMsgObject::IPrcParse(tag, mgr);
         else
@@ -76,11 +80,12 @@ void plNetMsgSDLState::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
     }
 }
 
-bool plNetMsgSDLState::findDescriptor(plSDLMgr* sdl) {
+bool plNetMsgSDLState::findDescriptor(plSDLMgr* sdl)
+{
     hsStream* blob = getStream();
     ST::string descName;
     int descVersion = -1;
-    plStateDataRecord::ReadStreamHeader(blob, descName, descVersion, NULL);
+    plStateDataRecord::ReadStreamHeader(blob, descName, descVersion, nullptr);
     fDescriptor = sdl->GetDescriptor(descName, descVersion);
-    return (fDescriptor != NULL);
+    return (fDescriptor != nullptr);
 }

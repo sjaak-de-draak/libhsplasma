@@ -47,11 +47,12 @@ static PyGetSetDef pyGUIColorScheme_GetSet[] = {
 
 PY_PLASMA_TYPE(GUIColorScheme, pfGUIColorScheme, "pfGUIColorScheme wrapper")
 
-PY_PLASMA_TYPE_INIT(GUIColorScheme) {
+PY_PLASMA_TYPE_INIT(GUIColorScheme)
+{
     pyGUIColorScheme_Type.tp_new = pyGUIColorScheme_new;
     pyGUIColorScheme_Type.tp_getset = pyGUIColorScheme_GetSet;
     if (PyType_CheckAndReady(&pyGUIColorScheme_Type) < 0)
-        return NULL;
+        return nullptr;
 
     /* Konstants */
     PY_TYPE_ADD_CONST(GUIColorScheme, "kFontBold", pfGUIColorScheme::kFontBold);
@@ -68,7 +69,9 @@ PY_PLASMA_IFC_METHODS(GUIColorScheme, pfGUIColorScheme)
 /* pyGUIControlMod */
 PY_PLASMA_NEW(GUIControlMod, pfGUIControlMod)
 
-PY_METHOD_NOARGS(GUIControlMod, clearSoundIndices, "Remove all sound indices from the control") {
+PY_METHOD_NOARGS(GUIControlMod, clearSoundIndices,
+    "Remove all sound indices from the control")
+{
     self->fThis->clearSoundIndices();
     Py_RETURN_NONE;
 }
@@ -78,14 +81,16 @@ static PyMethodDef pyGUIControlMod_Methods[] = {
     PY_METHOD_TERMINATOR
 };
 
-PY_GETSET_GETTER_DECL(GUIControlMod, soundIndices) {
+PY_GETSET_GETTER_DECL(GUIControlMod, soundIndices)
+{
     PyObject* list = PyTuple_New(self->fThis->getSoundIndices().size());
     for (size_t i = 0; i<self->fThis->getSoundIndices().size(); i++)
         PyTuple_SET_ITEM(list, i, pyPlasma_convert(self->fThis->getSoundIndices()[i]));
     return list;
 }
 
-PY_GETSET_SETTER_DECL(GUIControlMod, soundIndices) {
+PY_GETSET_SETTER_DECL(GUIControlMod, soundIndices)
+{
     PY_PROPERTY_CHECK_NULL(soundIndices)
     if (value == Py_None) {
         self->fThis->setSoundIndices(std::vector<int>());
@@ -109,13 +114,15 @@ PY_GETSET_SETTER_DECL(GUIControlMod, soundIndices) {
     return 0;
 }
 
-PY_GETSET_GETTER_DECL(GUIControlMod, colorScheme) {
+PY_GETSET_GETTER_DECL(GUIControlMod, colorScheme)
+{
     return pyPlasma_convert(self->fThis->getColorScheme());
 }
 
-PY_GETSET_SETTER_DECL(GUIControlMod, colorScheme) {
+PY_GETSET_SETTER_DECL(GUIControlMod, colorScheme)
+{
     if (value == Py_None) {
-        self->fThis->setColorScheme(NULL);
+        self->fThis->setColorScheme(nullptr);
         return 0;
     }
     if (!pyPlasma_check<pfGUIColorScheme>(value)) {
@@ -151,13 +158,14 @@ static PyGetSetDef pyGUIControlMod_GetSet[] = {
 
 PY_PLASMA_TYPE(GUIControlMod, pfGUIControlMod, "pfGUIControlMod wrapper")
 
-PY_PLASMA_TYPE_INIT(GUIControlMod) {
+PY_PLASMA_TYPE_INIT(GUIControlMod)
+{
     pyGUIControlMod_Type.tp_new = pyGUIControlMod_new;
     pyGUIControlMod_Type.tp_methods = pyGUIControlMod_Methods;
     pyGUIControlMod_Type.tp_getset = pyGUIControlMod_GetSet;
     pyGUIControlMod_Type.tp_base = &pySingleModifier_Type;
     if (PyType_CheckAndReady(&pyGUIControlMod_Type) < 0)
-        return NULL;
+        return nullptr;
 
     /* Konstants */
     PY_TYPE_ADD_CONST(GUIControlMod, "kWantsInterest", pfGUIControlMod::kWantsInterest);

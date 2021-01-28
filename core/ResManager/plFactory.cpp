@@ -26,6 +26,7 @@
 #include "PRP/Animation/pfObjectFlocker.h"
 #include "PRP/Animation/plStereizer.h"
 #include "PRP/Animation/plViewFaceModifier.h"
+#include "PRP/Animation/plWindBoneMod.h"
 #include "PRP/Audio/plAudible.h"
 #include "PRP/Audio/plCrossfade.h"
 #include "PRP/Audio/plDirectMusicSound.h"
@@ -110,6 +111,7 @@
 #include "PRP/Message/plSwimMsg.h"
 #include "PRP/Message/plTimerCallbackMsg.h"
 #include "PRP/Message/plTransitionMsg.h"
+#include "PRP/Message/plWarpMsg.h"
 #include "PRP/Misc/plFogEnvironment.h"
 #include "PRP/Modifier/plAliasModifier.h"
 #include "PRP/Modifier/plAnimEventModifier.h"
@@ -173,23 +175,28 @@
 // End type includes
 
 #define ABSTRACT(x) \
-    plDebug::Warning("Warning: Attempted to create abstract class %s", ClassName(x)); \
-    return NULL
+    do { \
+        plDebug::Warning("Warning: Attempted to create abstract class %s", ClassName(x)); \
+        return nullptr; \
+    } while (0)
 
 #define NOTIMPL(x) \
-    plDebug::Warning("Warning: class %s is not implemented", ClassName(x)); \
-    return NULL
+    do { \
+        plDebug::Warning("Warning: class %s is not implemented", ClassName(x)); \
+        return nullptr; \
+    } while (0)
 
 plFactory::OverrideFunc plFactory::fOverride;
 
-plCreatable* plFactory::Create(short typeIdx) {
+plCreatable* plFactory::Create(short typeIdx)
+{
     if (typeIdx < 0)
-        return NULL;
+        return nullptr;
 
     if (fOverride) {
         plCreatable* over_cre;
         over_cre = fOverride(typeIdx);
-        if (over_cre != NULL)
+        if (over_cre)
             return over_cre;
     }
 
@@ -512,7 +519,7 @@ plCreatable* plFactory::Create(short typeIdx) {
         case kCrossfade: return new plCrossfade();
         case kParticleFadeOutEffect: return new plParticleFadeOutEffect();
         //case kSecurePreloader: return new pfSecurePreloader();
-        //case kWindBoneMod: return new plWindBoneMod();
+        case kWindBoneMod: return new plWindBoneMod();
         case kCameraBrain_NovicePlus: return new plCameraBrain_NovicePlus();
         //case kSubtitleMgr: return new pfSubtitleMgr();
         case kPythonFileModConditionalObject: return new plPythonFileModConditionalObject();
@@ -642,7 +649,7 @@ plCreatable* plFactory::Create(short typeIdx) {
         //case kSpawnRequestMsg: return new plSpawnRequestMsg();
         case kLoadCloneMsg: return new plLoadCloneMsg();
         case kEnableMsg: return new plEnableMsg();
-        //case kWarpMsg: return new plWarpMsg();
+        case kWarpMsg: return new plWarpMsg();
         //case kAttachMsg: return new plAttachMsg();
         //case kConsole: return new pfConsole();
         //case kRenderMsg: return new plRenderMsg();
@@ -1251,35 +1258,44 @@ plCreatable* plFactory::Create(short typeIdx) {
         case kAvBrainRideAnimatedPhysical: return new plAvBrainRideAnimatedPhysical();
 
         // Got an invalid or unsupported ClassIndex //
-        default: return NULL;
+        default: return nullptr;
     }
 }
 
-plCreatable* plFactory::Create(short typeIdx, PlasmaVer ver) {
-    if (typeIdx < 0) return NULL;
+plCreatable* plFactory::Create(short typeIdx, PlasmaVer ver)
+{
+    if (typeIdx < 0)
+        return nullptr;
     if (!ver.isValid())
         throw hsBadVersionException(__FILE__, __LINE__);
     return Create(pdUnifiedTypeMap::PlasmaToMapped(typeIdx, ver));
 }
 
-plCreatable* plFactory::Create(const char* typeName) {
+plCreatable* plFactory::Create(const char* typeName)
+{
     return Create(pdUnifiedTypeMap::ClassIndex(typeName));
 }
 
-const char* plFactory::ClassName(short typeIdx) {
-    if (typeIdx < 0) return NULL;
+const char* plFactory::ClassName(short typeIdx)
+{
+    if (typeIdx < 0)
+        return nullptr;
     return pdUnifiedTypeMap::ClassName(typeIdx);
 }
 
-const char* plFactory::ClassName(short typeIdx, PlasmaVer ver) {
-    if (typeIdx < 0) return NULL;
+const char* plFactory::ClassName(short typeIdx, PlasmaVer ver)
+{
+    if (typeIdx < 0)
+        return nullptr;
     return pdUnifiedTypeMap::ClassName(typeIdx, ver);
 }
 
-short plFactory::ClassIndex(const char* typeName) {
+short plFactory::ClassIndex(const char* typeName)
+{
     return pdUnifiedTypeMap::ClassIndex(typeName);
 }
 
-short plFactory::ClassVersion(short typeIdx, PlasmaVer ver) {
+short plFactory::ClassVersion(short typeIdx, PlasmaVer ver)
+{
     return pdUnifiedTypeMap::ClassVersion(typeIdx, ver);
 }

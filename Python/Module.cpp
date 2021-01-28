@@ -22,10 +22,16 @@
 #include "Math/pyGeometry3.h"
 #include "Math/pyMatrix.h"
 #include "ResManager/pyResManager.h"
+#include "SDL/pySDL.h"
+#include "Stream/pyPrcHelper.h"
 #include "Stream/pyStream.h"
 #include "Sys/pyColor.h"
+#include "Sys/pyUnifiedTime.h"
 #include "Util/pyBitVector.h"
 #include "Util/pyDDSurface.h"
+#include "Vault/pyServerGuid.h"
+#include "Vault/pyVaultNode.h"
+#include "Vault/pyVaultStore.h"
 
 #include "PRP/pyCreatable.h"
 #include "PRP/pySceneNode.h"
@@ -50,6 +56,7 @@
 #include "PRP/Avatar/pyClothingItem.h"
 #include "PRP/Avatar/pyLadderModifier.h"
 #include "PRP/Avatar/pyMultistageBehMod.h"
+#include "PRP/Avatar/pySeekPointMod.h"
 #include "PRP/Avatar/pySittingModifier.h"
 #include "PRP/Audio/pyAudible.h"
 #include "PRP/Audio/pySound.h"
@@ -73,6 +80,7 @@
 #include "PRP/Geometry/pyGBufferGroup.h"
 #include "PRP/Geometry/pyGeometrySpan.h"
 #include "PRP/Geometry/pyOccluder.h"
+#include "PRP/Geometry/pySharedMesh.h"
 #include "PRP/Geometry/pySpaceTree.h"
 #include "PRP/Geometry/pySpan.h"
 #include "PRP/Geometry/pySpanInstance.h"
@@ -119,6 +127,7 @@
 #include "PRP/Message/pySoundMsg.h"
 #include "PRP/Message/pySwimMsg.h"
 #include "PRP/Message/pyTimerCallbackMsg.h"
+#include "PRP/Message/pyWarpMsg.h"
 #include "PRP/Misc/pyRenderLevel.h"
 #include "PRP/Misc/pyAgeLinkInfo.h"
 #include "PRP/Misc/pyFogEnvironment.h"
@@ -158,25 +167,29 @@
 #include "PRP/Surface/pyBitmap.h"
 #include "PRP/Surface/pyCubicEnvironmap.h"
 #include "PRP/Surface/pyDistOpacityMod.h"
+#include "PRP/Surface/pyDynaDecalMgr.h"
+#include "PRP/Surface/pyDynaRippleMgr.h"
 #include "PRP/Surface/pyDynamicEnvMap.h"
 #include "PRP/Surface/pyDynamicTextMap.h"
 #include "PRP/Surface/pyFadeOpacityMod.h"
 #include "PRP/Surface/pyFixedWaterState7.h"
+#include "PRP/Surface/pyFont.h"
 #include "PRP/Surface/pyGMaterial.h"
 #include "PRP/Surface/pyGMatState.h"
+#include "PRP/Surface/pyGrassShaderMod.h"
 #include "PRP/Surface/pyLayer.h"
 #include "PRP/Surface/pyLayerAnimation.h"
 #include "PRP/Surface/pyLayerMovie.h"
+#include "PRP/Surface/pyPrintShape.h"
 #include "PRP/Surface/pyRenderTarget.h"
 #include "PRP/Surface/pyShader.h"
 #include "PRP/Surface/pyWaveSet.h"
 
 /* For compatibility with plString's CleanFileName utility */
-static ST::string CleanFileName(const ST::string& fname, bool allowPathChars) {
-    ST::char_buffer result;
-    char* buf = result.create_writable_buffer(fname.size());
-    memcpy(buf, fname.c_str(), fname.size() + 1);
-    for (char* bp = buf; *bp; bp++) {
+static ST::string CleanFileName(const ST::string& fname, bool allowPathChars)
+{
+    ST::char_buffer result = fname.to_utf8();
+    for (char* bp = result.data(); *bp; bp++) {
         if (*bp == '?' || *bp == '*' || *bp == '<' || *bp == '>' ||
             *bp == '"' || *bp == '|' || *bp < (char)0x20)
             *bp = '_';
@@ -195,7 +208,7 @@ PY_METHOD_GLOBAL_VA(PyHSPlasma, CleanFileName,
     unsigned char allowPathChars = 0;
     if (!PyArg_ParseTuple(args, "s|b", &fname, &allowPathChars)) {
         PyErr_SetString(PyExc_TypeError, "CleanFileName expects a string");
-        return NULL;
+        return nullptr;
     }
     return pyPlasma_convert(CleanFileName(fname, allowPathChars != 0));
 }
@@ -212,14 +225,15 @@ static PyModuleDef PyHSPlasma_Module = {
     "Python libHSPlasma interface module",  /* m_doc */
     0,                          /* m_size */
     PyHSPlasma_Methods,         /* m_methods */
-    NULL,                       /* m_reload */
-    NULL,                       /* m_traverse */
-    NULL,                       /* m_clear */
-    NULL,                       /* m_free */
+    nullptr,                    /* m_reload */
+    nullptr,                    /* m_traverse */
+    nullptr,                    /* m_clear */
+    nullptr,                    /* m_free */
 };
 #endif
 
-static void initPyHSPlasma_Constants(PyObject* module) {
+static void initPyHSPlasma_Constants(PyObject* module)
+{
     /* Generic constants */
     PyModule_AddIntConstant(module, "pvUnknown", PlasmaVer::pvUnknown);
     PyModule_AddIntConstant(module, "pvPrime", PlasmaVer::pvPrime);
@@ -439,11 +453,13 @@ static void initPyHSPlasma_Constants(PyObject* module) {
 }
 
 #if PY_MAJOR_VERSION >= 3
-PyMODINIT_FUNC PyInit_PyHSPlasma() {
+PyMODINIT_FUNC PyInit_PyHSPlasma()
+{
     PyObject* module = PyModule_Create(&PyHSPlasma_Module);
 
 #else
-PyMODINIT_FUNC initPyHSPlasma() {
+PyMODINIT_FUNC initPyHSPlasma()
+{
     PyObject* module = Py_InitModule3("PyHSPlasma", PyHSPlasma_Methods,
                                       "libHSPlasma Python Interface Module");
 
@@ -453,19 +469,50 @@ PyMODINIT_FUNC initPyHSPlasma() {
     /* Debug */
     PyModule_AddObject(module, "plDebug", Init_pyDebug_Type());
 
+    /* SDL */
+    PyModule_AddObject(module, "plSDLMgr", Init_pySDLMgr_Type());
+    PyModule_AddObject(module, "plVarDescriptor", Init_pyVarDescriptor_Type());
+    PyModule_AddObject(module, "plStateDescriptor", Init_pyStateDescriptor_Type());
+
     /* Stream */
     PyModule_AddObject(module, "hsStream", Init_pyStream_Type());
     PyModule_AddObject(module, "hsFileStream", Init_pyFileStream_Type());
     PyModule_AddObject(module, "plEncryptedStream", Init_pyEncryptedStream_Type());
     PyModule_AddObject(module, "hsRAMStream", Init_pyRAMStream_Type());
+    PyModule_AddObject(module, "pfPrcHelper", Init_pyPrcHelper_Type());
 
     /* Util */
     PyModule_AddObject(module, "hsBitVector", Init_pyBitVector_Type());
     PyModule_AddObject(module, "plDDSurface", Init_pyDDSurface_Type());
 
-    /* pyColor */
+    /* Vault */
+    PyModule_AddObject(module, "plServerGuid", Init_pyServerGuid_Type());
+    PyModule_AddObject(module, "plVaultStore", Init_pyVaultStore_Type());
+    PyModule_AddObject(module, "plVault", Init_pyVault_Type());
+    PyModule_AddObject(module, "plVaultNode", Init_pyVaultNode_Type());
+    PyModule_AddObject(module, "plVaultPlayerNode", Init_pyVaultPlayerNode_Type());
+    PyModule_AddObject(module, "plVaultAgeNode", Init_pyVaultAgeNode_Type());
+    PyModule_AddObject(module, "plVaultGameServerNode", Init_pyVaultGameServerNode_Type());
+    PyModule_AddObject(module, "plVaultAdminNode", Init_pyVaultAdminNode_Type());
+    PyModule_AddObject(module, "plVaultServerNode", Init_pyVaultServerNode_Type());
+    PyModule_AddObject(module, "plVaultFolderNode", Init_pyVaultFolderNode_Type());
+    PyModule_AddObject(module, "plVaultPlayerInfoNode", Init_pyVaultPlayerInfoNode_Type());
+    PyModule_AddObject(module, "plVaultSystemNode", Init_pyVaultSystemNode_Type());
+    PyModule_AddObject(module, "plVaultImageNode", Init_pyVaultImageNode_Type());
+    PyModule_AddObject(module, "plVaultTextNoteNode", Init_pyVaultTextNoteNode_Type());
+    PyModule_AddObject(module, "plVaultSDLNode", Init_pyVaultSDLNode_Type());
+    PyModule_AddObject(module, "plVaultAgeLinkNode", Init_pyVaultAgeLinkNode_Type());
+    PyModule_AddObject(module, "plVaultChronicleNode", Init_pyVaultChronicleNode_Type());
+    PyModule_AddObject(module, "plVaultPlayerInfoListNode", Init_pyVaultPlayerInfoListNode_Type());
+    PyModule_AddObject(module, "plVaultMarkerNode", Init_pyVaultMarkerNode_Type());
+    PyModule_AddObject(module, "plVaultAgeInfoNode", Init_pyVaultAgeInfoNode_Type());
+    PyModule_AddObject(module, "plVaultAgeInfoListNode", Init_pyVaultAgeInfoListNode_Type());
+    PyModule_AddObject(module, "plVaultMarkerListNode", Init_pyVaultMarkerListNode_Type());
+
+    /* Sys */
     PyModule_AddObject(module, "hsColorRGBA", Init_pyColorRGBA_Type());
     PyModule_AddObject(module, "hsColor32", Init_pyColor32_Type());
+    PyModule_AddObject(module, "plUnifiedTime", Init_pyUnifiedTime_Type());
 
     /* Math */
     PyModule_AddObject(module, "hsVector3", Init_pyVector3_Type());
@@ -556,6 +603,8 @@ PyMODINIT_FUNC initPyHSPlasma() {
     PyModule_AddObject(module, "plSpawnPointInfo", Init_pySpawnPointInfo_Type());
     PyModule_AddObject(module, "plFixedWaterState7", Init_pyFixedWaterState7_Type());
     PyModule_AddObject(module, "plCameraConfig", Init_pyCameraConfig_Type());
+    PyModule_AddObject(module, "plAgeLinkEffects", Init_pyAgeLinkEffects_Type());
+    PyModule_AddObject(module, "plGrassWave", Init_pyGrassWave_Type());
 
     /* Creatables */
     PyModule_AddObject(module, "plCreatable", Init_pyCreatable_Type());
@@ -695,6 +744,7 @@ PyMODINIT_FUNC initPyHSPlasma() {
     PyModule_AddObject(module, "plImageLibMod", Init_pyImageLibMod_Type());
     PyModule_AddObject(module, "plWaveSetBase", Init_pyWaveSetBase_Type());
     PyModule_AddObject(module, "plWaveSet7", Init_pyWaveSet7_Type());
+    PyModule_AddObject(module, "plSeekPointMod", Init_pySeekPointMod_Type());
     PyModule_AddObject(module, "plSoftVolume", Init_pySoftVolume_Type());
     PyModule_AddObject(module, "plSoftVolumeSimple", Init_pySoftVolumeSimple_Type());
     PyModule_AddObject(module, "plSoftVolumeComplex", Init_pySoftVolumeComplex_Type());
@@ -747,7 +797,21 @@ PyMODINIT_FUNC initPyHSPlasma() {
     PyModule_AddObject(module, "plHKSubWorld", Init_pyHKSubWorld_Type());
     PyModule_AddObject(module, "plFilterCoordInterface", Init_pyFilterCoordInterface_Type());
     PyModule_AddObject(module, "plRidingAnimatedPhysicalDetector", Init_pyRidingAnimatedPhysicalDetector_Type());
+    PyModule_AddObject(module, "plDynaDecalMgr", Init_pyDynaDecalMgr_Type());
+    PyModule_AddObject(module, "plDynaBulletMgr", Init_pyDynaBulletMgr_Type());
+    PyModule_AddObject(module, "plDynaFootMgr", Init_pyDynaFootMgr_Type());
+    PyModule_AddObject(module, "plDynaRippleMgr", Init_pyDynaRippleMgr_Type());
+    PyModule_AddObject(module, "plDynaRippleVSMgr", Init_pyDynaRippleVSMgr_Type());
+    PyModule_AddObject(module, "plDynaTorpedoMgr", Init_pyDynaTorpedoMgr_Type());
+    PyModule_AddObject(module, "plDynaTorpedoVSMgr", Init_pyDynaTorpedoVSMgr_Type());
+    PyModule_AddObject(module, "plDynaPuddleMgr", Init_pyDynaPuddleMgr_Type());
+    PyModule_AddObject(module, "plDynaWakeMgr", Init_pyDynaWakeMgr_Type());
+    PyModule_AddObject(module, "plFont", Init_pyFont_Type());
+    PyModule_AddObject(module, "plPrintShape", Init_pyPrintShape_Type());
+    PyModule_AddObject(module, "plActivePrintShape", Init_pyActivePrintShape_Type());
+    PyModule_AddObject(module, "plGrassShaderMod", Init_pyGrassShaderMod_Type());
 
+    PyModule_AddObject(module, "plSharedMesh", Init_pySharedMesh_Type());
     PyModule_AddObject(module, "plSpaceTree", Init_pySpaceTree_Type());
     PyModule_AddObject(module, "plController", Init_pyController_Type());
     PyModule_AddObject(module, "plCompoundController", Init_pyCompoundController_Type());
@@ -828,6 +892,7 @@ PyMODINIT_FUNC initPyHSPlasma() {
     PyModule_AddObject(module, "plMessageWithCallbacks", Init_pyMessageWithCallbacks_Type());
     PyModule_AddObject(module, "plAnimCmdMsg", Init_pyAnimCmdMsg_Type());
     PyModule_AddObject(module, "plTimerCallbackMsg", Init_pyTimerCallbackMsg_Type());
+    PyModule_AddObject(module, "plWarpMsg", Init_pyWarpMsg_Type());
     PyModule_AddObject(module, "plEnableMsg", Init_pyEnableMsg_Type());
     PyModule_AddObject(module, "plExcludeRegionMsg", Init_pyExcludeRegionMsg_Type());
     PyModule_AddObject(module, "plVolumeIsect", Init_pyVolumeIsect_Type());
@@ -848,6 +913,7 @@ PyMODINIT_FUNC initPyHSPlasma() {
     PyModule_AddObject(module, "plSimulationMsg", Init_pySimulationMsg_Type());
     PyModule_AddObject(module, "plSubWorldMsg", Init_pySubWorldMsg_Type());
     PyModule_AddObject(module, "plRideAnimatedPhysMsg", Init_pyRideAnimatedPhysMsg_Type());
+    PyModule_AddObject(module, "plSimSuppressMsg", Init_pySimSuppressMsg_Type());
 
 #if PY_MAJOR_VERSION >= 3
     return module;

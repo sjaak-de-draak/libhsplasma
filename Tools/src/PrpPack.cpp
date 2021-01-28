@@ -33,7 +33,8 @@
   #define DIRENT dirent*
 #endif
 
-void doHelp() {
+static void doHelp()
+{
     puts("Usage: PrpPack [-x|-r] filename.prp");
     puts("       PrpPack [-c] filename.prd");
     puts("");
@@ -60,7 +61,8 @@ void doHelp() {
 
 typedef enum { kCreate, kExtract, kRepack } eDirection;
 
-ST::string filenameConvert(const ST::string& filename, eDirection dir) {
+static ST::string filenameConvert(const ST::string& filename, eDirection dir)
+{
     if (dir == kRepack) {
         fputs("Zrax broke me!\n", stderr);
         abort();
@@ -85,7 +87,8 @@ ST::string filenameConvert(const ST::string& filename, eDirection dir) {
     return newName;
 }
 
-ST::string getOutputDir(const ST::string& filename, plPageInfo* page) {
+static ST::string getOutputDir(const ST::string& filename, plPageInfo* page)
+{
     ST::string odir = filename;
     ST_ssize_t sepLoc = odir.find_last(PATHSEP);
     if (sepLoc < 0)
@@ -95,11 +98,10 @@ ST::string getOutputDir(const ST::string& filename, plPageInfo* page) {
     return odir + ST::format("{}_{}_PRP" PATHSEPSTR, page->getAge(), page->getPage());
 }
 
-ST::string CleanFileName(const ST::string& fname) {
-    ST::char_buffer result;
-    char* buf = result.create_writable_buffer(fname.size());
-    memcpy(buf, fname.c_str(), fname.size() + 1);
-    for (char* bp = buf; *bp; bp++) {
+static ST::string CleanFileName(const ST::string& fname)
+{
+    ST::char_buffer result = fname.to_utf8();
+    for (char* bp = result.data(); *bp; bp++) {
         if (*bp == '?' || *bp == '*' || *bp == '<' || *bp == '>' ||
             *bp == '"' || *bp == '|' || *bp < (char)0x20)
             *bp = '_';
@@ -110,16 +112,19 @@ ST::string CleanFileName(const ST::string& fname) {
 }
 
 #ifndef _WIN32
-int selPO(DIRENT de) {
+static int selPO(DIRENT de)
+{
     return strcmp(strrchr(de->d_name, '.'), ".po") == 0;
 }
 
-int selAll(DIRENT de) {
+static int selAll(DIRENT de)
+{
     return 1;
 }
 #endif
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
     if (argc < 2 || argc > 3) {
         doHelp();
         return 0;
@@ -186,7 +191,7 @@ int main(int argc, char* argv[]) {
 
         std::vector<short> types = rm.getTypes(loc);
       #ifdef _WIN32
-        CreateDirectoryW(getOutputDir(filename, page).to_wchar().data(), NULL);
+        CreateDirectoryW(getOutputDir(filename, page).to_wchar().data(), nullptr);
       #else
         mkdir(getOutputDir(filename, page).c_str(), S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH);
       #endif
@@ -258,7 +263,7 @@ int main(int argc, char* argv[]) {
         ST::string pattern = ST::format("{}*.po", getOutputDir(filename, page));
         WIN32_FIND_DATAW fd;
         HANDLE fr = FindFirstFileW(pattern.to_wchar().data(), &fd);
-        if (fr != NULL) {
+        if (fr != INVALID_HANDLE_VALUE) {
             do {
                 ST::string po_file = getOutputDir(filename, page) + fd.cFileName;
                 inFiles.push_back(po_file);
@@ -353,7 +358,7 @@ int main(int argc, char* argv[]) {
         ST::string pattern = ST::format("{}*.po", getOutputDir(filename, page));
         WIN32_FIND_DATAW rfd;
         HANDLE rfr = FindFirstFileW(pattern.to_wchar().data(), &rfd);
-        if (rfr != NULL) {
+        if (rfr) {
             do {
                 ST::string po_file = getOutputDir(filename, page) + rfd.cFileName;
                 DeleteFileW(po_file.to_wchar().data());

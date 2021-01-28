@@ -29,7 +29,7 @@ PY_METHOD_VA(SoftVolumeComplex, addSubVolume,
     PyObject* key;
     if (!(PyArg_ParseTuple(args, "O", &key) && pyKey_Check(key))) {
         PyErr_SetString(PyExc_TypeError, "addSubVolume expects a plKey");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addSubVolume(pyPlasma_get<plKey>(key));
     Py_RETURN_NONE;
@@ -49,11 +49,11 @@ PY_METHOD_VA(SoftVolumeComplex, delSubVolume,
     Py_ssize_t idx;
     if (!PyArg_ParseTuple(args, "n", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delSubVolume expects an int");
-        return NULL;
+        return nullptr;
     }
     if (size_t(idx) >= self->fThis->getSubVolumes().size()) {
         PyErr_SetNone(PyExc_IndexError);
-        return NULL;
+        return nullptr;
     }
     self->fThis->delSubVolume((size_t)idx);
     Py_RETURN_NONE;
@@ -66,7 +66,8 @@ static PyMethodDef pySoftVolumeComplex_Methods[] = {
     PY_METHOD_TERMINATOR
 };
 
-PY_GETSET_GETTER_DECL(SoftVolumeComplex, subVolumes) {
+PY_GETSET_GETTER_DECL(SoftVolumeComplex, subVolumes)
+{
     const std::vector<plKey>& sv = self->fThis->getSubVolumes();
     PyObject* tup = PyTuple_New(sv.size());
     for (size_t i = 0; i < sv.size(); ++i)
@@ -84,13 +85,14 @@ PyGetSetDef pySoftVolumeComplex_GetSet[] = {
 
 PY_PLASMA_TYPE(SoftVolumeComplex, plSoftVolumeComplex, "plSoftVolumeComplex wrapper")
 
-PY_PLASMA_TYPE_INIT(SoftVolumeComplex) {
+PY_PLASMA_TYPE_INIT(SoftVolumeComplex)
+{
     pySoftVolumeComplex_Type.tp_new = pySoftVolumeComplex_new;
     pySoftVolumeComplex_Type.tp_methods = pySoftVolumeComplex_Methods;
     pySoftVolumeComplex_Type.tp_getset = pySoftVolumeComplex_GetSet;
     pySoftVolumeComplex_Type.tp_base = &pySoftVolume_Type;
     if (PyType_CheckAndReady(&pySoftVolumeComplex_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pySoftVolumeComplex_Type);
     return (PyObject*)&pySoftVolumeComplex_Type;

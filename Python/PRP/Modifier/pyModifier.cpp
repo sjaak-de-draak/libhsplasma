@@ -24,11 +24,12 @@ PY_PLASMA_NEW_MSG(Modifier, "plModifier is abstract")
 
 PY_PLASMA_TYPE(Modifier, plModifier, "plModifier wrapper")
 
-PY_PLASMA_TYPE_INIT(Modifier) {
+PY_PLASMA_TYPE_INIT(Modifier)
+{
     pyModifier_Type.tp_new = pyModifier_new;
     pyModifier_Type.tp_base = &pySynchedObject_Type;
     if (PyType_CheckAndReady(&pyModifier_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyModifier_Type);
     return (PyObject*)&pyModifier_Type;

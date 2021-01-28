@@ -18,21 +18,25 @@
 #include "Debug/plDebug.h"
 
 /* plResponderModifier::plResponderState */
-plResponderModifier::plResponderState::~plResponderState() {
+plResponderModifier::plResponderState::~plResponderState()
+{
     for (auto cmd = fCmds.begin(); cmd != fCmds.end(); ++cmd)
         delete *cmd;
 }
 
-void plResponderModifier::plResponderState::addCommand(plMessage* msg, int8_t waitOn) {
+void plResponderModifier::plResponderState::addCommand(plMessage* msg, int8_t waitOn)
+{
     fCmds.push_back(new plResponderCmd(msg, waitOn));
 }
 
-void plResponderModifier::plResponderState::delCommand(size_t idx) {
+void plResponderModifier::plResponderState::delCommand(size_t idx)
+{
     delete fCmds[idx];
     fCmds.erase(fCmds.begin() + idx);
 }
 
-void plResponderModifier::plResponderState::clearCommands() {
+void plResponderModifier::plResponderState::clearCommands()
+{
     for (auto cmd = fCmds.begin(); cmd != fCmds.end(); ++cmd)
         delete *cmd;
     fCmds.clear();
@@ -40,12 +44,14 @@ void plResponderModifier::plResponderState::clearCommands() {
 
 
 /* plResponderModifier */
-plResponderModifier::~plResponderModifier() {
+plResponderModifier::~plResponderModifier()
+{
     for (auto state = fStates.begin(); state != fStates.end(); ++state)
         delete *state;
 }
 
-void plResponderModifier::read(hsStream* S, plResManager* mgr) {
+void plResponderModifier::read(hsStream* S, plResManager* mgr)
+{
     plSingleModifier::read(S, mgr);
 
     clearStates();
@@ -56,10 +62,10 @@ void plResponderModifier::read(hsStream* S, plResManager* mgr) {
         fStates[i]->fSwitchToState = S->readByte();
         fStates[i]->fCmds.resize(S->readByte());
         for (size_t j=0; j<fStates[i]->fCmds.size(); j++) {
-            plMessage* msg = plMessage::Convert(mgr->ReadCreatable(S));
+            auto msg = mgr->ReadCreatableC<plMessage>(S);
             int8_t waitOn = S->readByte();
             fStates[i]->fCmds[j] = new plResponderCmd(msg, waitOn);
-            if (msg == NULL)
+            if (msg == nullptr)
                 throw hsNotImplementedException(__FILE__, __LINE__, "Responder Message");
         }
         size_t count = S->readByte();
@@ -80,7 +86,8 @@ void plResponderModifier::read(hsStream* S, plResManager* mgr) {
     fFlags = S->readByte();
 }
 
-void plResponderModifier::write(hsStream* S, plResManager* mgr) {
+void plResponderModifier::write(hsStream* S, plResManager* mgr)
+{
     plSingleModifier::write(S, mgr);
 
     S->writeByte(fStates.size());
@@ -105,7 +112,8 @@ void plResponderModifier::write(hsStream* S, plResManager* mgr) {
     S->writeByte(fFlags);
 }
 
-void plResponderModifier::IPrcWrite(pfPrcHelper* prc) {
+void plResponderModifier::IPrcWrite(pfPrcHelper* prc)
+{
     plSingleModifier::IPrcWrite(prc);
 
     prc->startTag("ResponderModParams");
@@ -147,7 +155,8 @@ void plResponderModifier::IPrcWrite(pfPrcHelper* prc) {
     prc->closeTag();    // States
 }
 
-void plResponderModifier::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
+void plResponderModifier::IPrcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     if (tag->getName() == "ResponderModParams") {
         fCurState = tag->getParam("CurState", "0").to_int();
         fEnabled = tag->getParam("Enabled", "false").to_bool();
@@ -164,21 +173,21 @@ void plResponderModifier::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
             fStates[i]->fSwitchToState = state->getParam("SwitchToState", "-1").to_int();
 
             const pfPrcTag* child = state->getFirstChild();
-            while (child != NULL) {
+            while (child) {
                 if (child->getName() == "Commands") {
                     fStates[i]->fCmds.resize(child->countChildren());
                     const pfPrcTag* cmdChild = child->getFirstChild();
                     for (size_t j=0; j<fStates[i]->fCmds.size(); j++) {
                         if (cmdChild->getName() != "Command")
                             throw pfPrcTagException(__FILE__, __LINE__, cmdChild->getName());
-                        plMessage* msg = NULL;
+                        plMessage* msg = nullptr;
                         int8_t waitOn = -1;
                         const pfPrcTag* subChild = cmdChild->getFirstChild();
-                        while (subChild != NULL) {
+                        while (subChild) {
                             if (subChild->getName() == "WaitOn") {
                                 waitOn = subChild->getParam("value", "-1").to_int();
                             } else {
-                                msg = plMessage::Convert(mgr->prcParseCreatable(subChild));
+                                msg = mgr->prcParseCreatableC<plMessage>(subChild);
                             }
                             subChild = subChild->getNextSibling();
                         }
@@ -207,12 +216,14 @@ void plResponderModifier::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
     }
 }
 
-void plResponderModifier::delState(size_t idx) {
+void plResponderModifier::delState(size_t idx)
+{
     delete fStates[idx];
     fStates.erase(fStates.begin() + idx);
 }
 
-void plResponderModifier::clearStates() {
+void plResponderModifier::clearStates()
+{
     for (auto state = fStates.begin(); state != fStates.end(); ++state)
         delete *state;
     fStates.clear();
@@ -220,17 +231,20 @@ void plResponderModifier::clearStates() {
 
 
 /* plResponderEnableMsg */
-void plResponderEnableMsg::read(hsStream* S, plResManager* mgr) {
+void plResponderEnableMsg::read(hsStream* S, plResManager* mgr)
+{
     plMessage::read(S, mgr);
     fEnable = S->readBool();
 }
 
-void plResponderEnableMsg::write(hsStream* S, plResManager* mgr) {
+void plResponderEnableMsg::write(hsStream* S, plResManager* mgr)
+{
     plMessage::write(S, mgr);
     S->writeBool(fEnable);
 }
 
-void plResponderEnableMsg::IPrcWrite(pfPrcHelper* prc) {
+void plResponderEnableMsg::IPrcWrite(pfPrcHelper* prc)
+{
     plMessage::IPrcWrite(prc);
 
     prc->startTag("ResponderParams");
@@ -238,7 +252,8 @@ void plResponderEnableMsg::IPrcWrite(pfPrcHelper* prc) {
     prc->endTag(true);
 }
 
-void plResponderEnableMsg::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
+void plResponderEnableMsg::IPrcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     if (tag->getName() == "ResponderParams") {
         fEnable = tag->getParam("Enable", "true").to_bool();
     } else {

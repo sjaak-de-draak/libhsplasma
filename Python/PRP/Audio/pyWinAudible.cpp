@@ -29,11 +29,11 @@ PY_METHOD_VA(WinAudible, addSound,
     pyKey* key;
     if (!PyArg_ParseTuple(args, "O", &key)) {
         PyErr_SetString(PyExc_TypeError, "addSound expects a plKey");
-        return NULL;
+        return nullptr;
     }
     if (!pyKey_Check((PyObject*)key)) {
         PyErr_SetString(PyExc_TypeError, "addSound expects a plKey");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addSound(*key->fThis);
     Py_RETURN_NONE;
@@ -46,13 +46,14 @@ PY_METHOD_VA(WinAudible, delSound,
     int idx;
     if (!PyArg_ParseTuple(args, "i", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delSound expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->delSound(idx);
     Py_RETURN_NONE;
 }
 
-PY_METHOD_VA(WinAudible, clearSounds, "Remove all sound objects from the Audible") {
+PY_METHOD_VA(WinAudible, clearSounds, "Remove all sound objects from the Audible")
+{
     self->fThis->clearSounds();
     Py_RETURN_NONE;
 }
@@ -64,7 +65,8 @@ static PyMethodDef pyWinAudible_Methods[] = {
     PY_METHOD_TERMINATOR
 };
 
-PY_GETSET_GETTER_DECL(WinAudible, sounds) {
+PY_GETSET_GETTER_DECL(WinAudible, sounds)
+{
     const std::vector<plKey>& sounds = self->fThis->getSounds();
     PyObject* list = PyTuple_New(sounds.size());
     for (size_t i=0; i<sounds.size(); i++)
@@ -85,13 +87,14 @@ static PyGetSetDef pyWinAudible_GetSet[] = {
 
 PY_PLASMA_TYPE(WinAudible, plWinAudible, "plWinAudible wrapper")
 
-PY_PLASMA_TYPE_INIT(WinAudible) {
+PY_PLASMA_TYPE_INIT(WinAudible)
+{
     pyWinAudible_Type.tp_new = pyWinAudible_new;
     pyWinAudible_Type.tp_methods = pyWinAudible_Methods;
     pyWinAudible_Type.tp_getset = pyWinAudible_GetSet;
     pyWinAudible_Type.tp_base = &pyAudible_Type;
     if (PyType_CheckAndReady(&pyWinAudible_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyWinAudible_Type);
     return (PyObject*)&pyWinAudible_Type;

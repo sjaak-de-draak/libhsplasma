@@ -41,12 +41,13 @@ static PyGetSetDef pyShadowMaster_GetSet[] = {
 
 PY_PLASMA_TYPE(ShadowMaster, plShadowMaster, "plShadowMaster wrapper")
 
-PY_PLASMA_TYPE_INIT(ShadowMaster) {
+PY_PLASMA_TYPE_INIT(ShadowMaster)
+{
     pyShadowMaster_Type.tp_new = pyShadowMaster_new;
     pyShadowMaster_Type.tp_getset = pyShadowMaster_GetSet;
     pyShadowMaster_Type.tp_base = &pyObjInterface_Type;
     if (PyType_CheckAndReady(&pyShadowMaster_Type) < 0)
-        return NULL;
+        return nullptr;
 
     PY_TYPE_ADD_CONST(ShadowMaster, "kDisable", plShadowMaster::kDisable);
     PY_TYPE_ADD_CONST(ShadowMaster, "kSelfShadow", plShadowMaster::kSelfShadow);

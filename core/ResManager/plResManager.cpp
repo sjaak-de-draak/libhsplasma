@@ -23,7 +23,8 @@
 #include "Stream/pfPrcParser.h"
 #include "Stream/plEncryptedStream.h"
 
-plResManager::~plResManager() {
+plResManager::~plResManager()
+{
     if (ages.size() > 0 || pages.size() > 0)
         plDebug::Debug("~plResManager: cleaning up {} ages and {} pages",
                        ages.size(), pages.size());
@@ -33,12 +34,14 @@ plResManager::~plResManager() {
         UnloadPage(pages[0]->getLocation());
 }
 
-void plResManager::setVer(PlasmaVer pv, bool force) {
+void plResManager::setVer(PlasmaVer pv, bool force)
+{
     if (fPlasmaVer == PlasmaVer::pvUnknown || force)
         fPlasmaVer = pv;
 }
 
-plKey plResManager::readKey(hsStream* S) {
+plKey plResManager::readKey(hsStream* S)
+{
     if (getVer() != S->getVer())
         throw hsVersionMismatchException(__FILE__, __LINE__);
 
@@ -52,13 +55,15 @@ plKey plResManager::readKey(hsStream* S) {
     }
 }
 
-plKey plResManager::readKeyNotify(hsStream* S, plKeyData::AfterLoadCallback callback) {
+plKey plResManager::readKeyNotify(hsStream* S, plKeyData::AfterLoadCallback callback)
+{
     plKey key = readKey(S);
-    key->addCallback(callback);
+    key->addCallback(std::move(callback));
     return key;
 }
 
-plKey plResManager::readUoid(hsStream* S) {
+plKey plResManager::readUoid(hsStream* S)
+{
     if (getVer() != S->getVer())
         throw hsVersionMismatchException(__FILE__, __LINE__);
 
@@ -69,7 +74,8 @@ plKey plResManager::readUoid(hsStream* S) {
     return AddKey(k);
 }
 
-void plResManager::writeKey(hsStream* S, plKey key) {
+void plResManager::writeKey(hsStream* S, const plKey& key)
+{
     if (getVer() != S->getVer())
         throw hsVersionMismatchException(__FILE__, __LINE__);
 
@@ -80,11 +86,13 @@ void plResManager::writeKey(hsStream* S, plKey key) {
         writeUoid(S, key);
 }
 
-void plResManager::writeKey(hsStream* S, hsKeyedObject* ko) {
+void plResManager::writeKey(hsStream* S, hsKeyedObject* ko)
+{
     writeKey(S, ko->getKey());
 }
 
-void plResManager::writeUoid(hsStream* S, plKey key) {
+void plResManager::writeUoid(hsStream* S, const plKey& key)
+{
     if (getVer() != S->getVer())
         throw hsVersionMismatchException(__FILE__, __LINE__);
 
@@ -96,24 +104,29 @@ void plResManager::writeUoid(hsStream* S, plKey key) {
     }
 }
 
-void plResManager::writeUoid(hsStream* S, hsKeyedObject* ko) {
+void plResManager::writeUoid(hsStream* S, hsKeyedObject* ko)
+{
     writeUoid(S, ko->getKey());
 }
 
-plKey plResManager::prcParseKey(const pfPrcTag* tag) {
+plKey plResManager::prcParseKey(const pfPrcTag* tag)
+{
     plKey k = plKeyData::PrcParse(tag);
     if (k.Exists())
         return AddKey(k);
     return k;
 }
 
-plKey plResManager::prcParseKeyNotify(const pfPrcTag* tag, plKeyData::AfterLoadCallback callback) {
+plKey plResManager::prcParseKeyNotify(const pfPrcTag* tag,
+                                      plKeyData::AfterLoadCallback callback)
+{
     plKey key = prcParseKey(tag);
-    key->addCallback(callback);
+    key->addCallback(std::move(callback));
     return key;
 }
 
-void plResManager::PrcWriteKey(pfPrcHelper* prc, plKey key) {
+void plResManager::PrcWriteKey(pfPrcHelper* prc, const plKey& key)
+{
     if (!key.Exists() || !key->getLocation().isValid()) {
         prc->startTag("plKey");
         prc->writeParam("NULL", true);
@@ -123,18 +136,21 @@ void plResManager::PrcWriteKey(pfPrcHelper* prc, plKey key) {
     }
 }
 
-void plResManager::PrcWriteKey(pfPrcHelper* prc, hsKeyedObject* ko) {
+void plResManager::PrcWriteKey(pfPrcHelper* prc, hsKeyedObject* ko)
+{
     PrcWriteKey(prc, ko->getKey());
 }
 
-hsKeyedObject* plResManager::getObject(plKey key) {
+hsKeyedObject* plResManager::getObject(const plKey& key)
+{
     plKey fk = keys.findKey(key);
     if (!fk.Exists())
-        return NULL;
+        return nullptr;
     return fk->getObj();
 }
 
-plPageInfo* plResManager::ReadPage(const ST::string& filename, bool stub) {
+plPageInfo* plResManager::ReadPage(const ST::string& filename, bool stub)
+{
     bool packed = true;
     ST::string file(filename);
 
@@ -156,44 +172,55 @@ plPageInfo* plResManager::ReadPage(const ST::string& filename, bool stub) {
         }
     }
 
-    hsFileStream* S = new hsFileStream();
-    if (!S->open(file, fmRead))
-        throw hsFileReadException(__FILE__, __LINE__, file.c_str());
+    if (packed) {
+        hsFileStream prpS;
+        if (!prpS.open(file, fmRead))
+            throw hsFileReadException(__FILE__, __LINE__, file.c_str());
+        // hsFileStream destructor closes the file
+        return ReadPage(&prpS, &prpS, stub);
+    } else {
+        hsFileStream prxS;
+        if (!prxS.open(file, fmRead))
+            throw hsFileReadException(__FILE__, __LINE__, file.c_str());
+        file = file.before_last('.') + ".prm";
+        hsFileStream prmS;
+        if (!prmS.open(file, fmRead))
+            throw hsFileReadException(__FILE__, __LINE__, file.c_str());
+        // hsFileStream destructor closes the file
+        return ReadPage(&prxS, &prmS, stub);
+    }
+}
+
+plPageInfo* plResManager::ReadPage(hsStream* prxS, hsStream* prmS, bool stub)
+{
     plPageInfo* page = new plPageInfo();
-    page->read(S);
+    page->read(prxS);
 
     const plLocation& loc = page->getLocation();
     UnloadPage(loc);
 
     pages.push_back(page);
-    setVer(S->getVer(), true);
-    S->seek(page->getIndexStart());
-    ReadKeyring(S, loc);
-    if (!packed) {
-        S->close();
-        delete S;
-        file = file.before_last('.') + ".prm";
-        S = new hsFileStream();
-        S->setVer(getVer());
-        if (!S->open(file, fmRead))
-            throw hsFileReadException(__FILE__, __LINE__, file.c_str());
-    }
+    setVer(prxS->getVer(), true);
+    prxS->seek(page->getIndexStart());
+    ReadKeyring(prxS, loc);
+
+    if (!prmS)
+        prmS = prxS;
     mustStub = stub;
-    page->setNumObjects(ReadObjects(S, loc));
+    page->setNumObjects(ReadObjects(prmS, loc));
     mustStub = false;
-    S->close();
-    delete S;
     return page;
 }
 
-plPageInfo* plResManager::ReadPagePrc(const pfPrcTag* root) {
+plPageInfo* plResManager::ReadPagePrc(const pfPrcTag* root)
+{
     plPageInfo* page = new plPageInfo();
     page->prcParse(root);
 
     const pfPrcTag* tag = root->getFirstChild();
-    while (tag != NULL) {
-        hsKeyedObject* ko = hsKeyedObject::Convert(prcParseCreatable(tag));
-        if (ko != NULL)
+    while (tag) {
+        hsKeyedObject* ko = prcParseCreatableC<hsKeyedObject>(tag);
+        if (ko)
             ko->getKey()->setObj(ko);
         tag = tag->getNextSibling();
     }
@@ -203,9 +230,16 @@ plPageInfo* plResManager::ReadPagePrc(const pfPrcTag* root) {
     return page;
 }
 
-void plResManager::WritePage(const ST::string& filename, plPageInfo* page) {
-    hsFileStream* S = new hsFileStream();
-    S->open(filename, fmWrite);
+void plResManager::WritePage(const ST::string& filename, plPageInfo* page)
+{
+    hsFileStream S;
+    S.open(filename, fmWrite);
+    WritePage(&S, page);
+    S.close();
+}
+
+void plResManager::WritePage(hsStream* S, plPageInfo* page)
+{
     S->setVer(getVer());
     std::vector<short> types = keys.getTypes(page->getLocation());
     page->setClassList(types);
@@ -220,11 +254,10 @@ void plResManager::WritePage(const ST::string& filename, plPageInfo* page) {
     else
         page->setChecksum(S->pos() - page->getDataStart());
     page->writeSums(S);
-    S->close();
-    delete S;
 }
 
-void plResManager::WritePagePrc(pfPrcHelper* prc, plPageInfo* page) {
+void plResManager::WritePagePrc(pfPrcHelper* prc, plPageInfo* page)
+{
     page->prcWrite(prc); // starts <Page>
 
     // Objects:
@@ -232,7 +265,7 @@ void plResManager::WritePagePrc(pfPrcHelper* prc, plPageInfo* page) {
     for (unsigned int i=0; i<types.size(); i++) {
         std::vector<plKey> kList = keys.getKeys(page->getLocation(), types[i]);
         for (unsigned int j=0; j<kList.size(); j++) {
-            if (kList[j]->getObj() != NULL)
+            if (kList[j]->getObj())
                 kList[j]->getObj()->prcWrite(prc);
         }
     }
@@ -240,23 +273,25 @@ void plResManager::WritePagePrc(pfPrcHelper* prc, plPageInfo* page) {
     prc->closeTag();
 }
 
-plPageInfo* plResManager::FindPage(const plLocation& loc) {
+plPageInfo* plResManager::FindPage(const plLocation& loc)
+{
     std::vector<plPageInfo*>::iterator pi = pages.begin();
     while (pi != pages.end()) {
         if ((*pi)->getLocation() == loc)
             return *pi;
         pi++;
     }
-    return NULL;
+    return nullptr;
 }
 
-void plResManager::UnloadPage(const plLocation& loc) {
+void plResManager::UnloadPage(const plLocation& loc)
+{
     // Make a copy, in case someone passed us the page's getLocation() reference
     plLocation pageLoc = loc;
 
     for (auto it = pages.begin(); it != pages.end(); it++) {
         if ((*it)->getLocation() == loc) {
-            if (pageUnloadFunc !=  NULL)
+            if (pageUnloadFunc)
                 pageUnloadFunc(loc);
             delete *it;
             pages.erase(it);
@@ -266,7 +301,8 @@ void plResManager::UnloadPage(const plLocation& loc) {
     }
 }
 
-unsigned int plResManager::ReadPage(hsStream* S, std::vector<plPageInfo*>& agepages) {
+unsigned int plResManager::ReadPage(hsStream* S, std::vector<plPageInfo*>& agepages)
+{
     plPageInfo* page = new plPageInfo();
     page->read(S);
     plLocation loc = page->getLocation();
@@ -278,7 +314,8 @@ unsigned int plResManager::ReadPage(hsStream* S, std::vector<plPageInfo*>& agepa
     return ReadKeyring(S, loc);
 }
 
-plAgeInfo* plResManager::ReadAge(const ST::string& filename, bool readPages) {
+plAgeInfo* plResManager::ReadAge(const ST::string& filename, bool readPages)
+{
     plAgeInfo* age = new plAgeInfo();
     age->readFromFile(filename);
 
@@ -312,7 +349,7 @@ plAgeInfo* plResManager::ReadAge(const ST::string& filename, bool readPages) {
             }
         }
 
-        hsFileStream* S = NULL;
+        hsFileStream* S = nullptr;
         std::vector<plPageInfo*> agepages;
 
         for (size_t i=0; i<age->getNumCommonPages(ageVer); i++) {
@@ -363,7 +400,8 @@ plAgeInfo* plResManager::ReadAge(const ST::string& filename, bool readPages) {
     return age;
 }
 
-plAgeInfo* plResManager::ReadAgePrc(const pfPrcTag* root) {
+plAgeInfo* plResManager::ReadAgePrc(const pfPrcTag* root)
+{
     plAgeInfo* age = new plAgeInfo();
     age->prcParse(root);
 
@@ -380,7 +418,8 @@ plAgeInfo* plResManager::ReadAgePrc(const pfPrcTag* root) {
     return age;
 }
 
-void plResManager::WriteAge(const ST::string& filename, plAgeInfo* age) {
+void plResManager::WriteAge(const ST::string& filename, plAgeInfo* age)
+{
     ST::string ageName = filename.after_last(PATHSEP);
     ST_ssize_t dot = ageName.find_last('.');
     if (dot >= 0)
@@ -389,26 +428,29 @@ void plResManager::WriteAge(const ST::string& filename, plAgeInfo* age) {
     age->writeToFile(filename, getVer());
 }
 
-void plResManager::WriteAgePrc(pfPrcHelper* prc, plAgeInfo* age) {
+void plResManager::WriteAgePrc(pfPrcHelper* prc, plAgeInfo* age)
+{
     age->prcWrite(prc);
 }
 
-plAgeInfo* plResManager::FindAge(const ST::string& name) {
+plAgeInfo* plResManager::FindAge(const ST::string& name)
+{
     std::vector<plAgeInfo*>::iterator ai = ages.begin();
     while (ai != ages.end()) {
         if ((*ai)->getAgeName() == name)
             return *ai;
         ai++;
     }
-    return NULL;
+    return nullptr;
 }
 
-void plResManager::UnloadAge(const ST::string& name) {
+void plResManager::UnloadAge(const ST::string& name)
+{
     std::vector<plPageInfo*>::iterator pi = pages.begin();
     while (pi != pages.end()) {
         if ((*pi)->getAge() == name) {
             const plLocation& loc = (*pi)->getLocation();
-            if (pageUnloadFunc != NULL)
+            if (pageUnloadFunc)
                 pageUnloadFunc(loc);
             keys.delAll(loc);
             delete *pi;
@@ -429,7 +471,8 @@ void plResManager::UnloadAge(const ST::string& name) {
     }
 }
 
-unsigned int plResManager::ReadKeyring(hsStream* S, const plLocation& loc) {
+unsigned int plResManager::ReadKeyring(hsStream* S, const plLocation& loc)
+{
 #ifdef RMTRACE
     plDebug::Debug("* Reading Keyring");
 #endif
@@ -466,7 +509,8 @@ unsigned int plResManager::ReadKeyring(hsStream* S, const plLocation& loc) {
     return pageKeys;
 }
 
-void plResManager::WriteKeyring(hsStream* S, const plLocation& loc) {
+void plResManager::WriteKeyring(hsStream* S, const plLocation& loc)
+{
     std::vector<short> types = keys.getTypes(loc, true);
     S->writeInt(types.size());
     for (unsigned int i=0; i<types.size(); i++) {
@@ -489,7 +533,8 @@ void plResManager::WriteKeyring(hsStream* S, const plLocation& loc) {
     }
 }
 
-unsigned int plResManager::ReadObjects(hsStream* S, const plLocation& loc) {
+unsigned int plResManager::ReadObjects(hsStream* S, const plLocation& loc)
+{
     std::vector<short> types = keys.getTypes(loc);
     unsigned int nRead = 0;
 
@@ -500,8 +545,8 @@ unsigned int plResManager::ReadObjects(hsStream* S, const plLocation& loc) {
         totalKeys += kList.size();
     }
 
-    plPageInfo *page = 0;
-    if (progressFunc != NULL) {
+    plPageInfo *page = nullptr;
+    if (progressFunc) {
         for (size_t i = 0; i < pages.size(); ++i) {
             if (pages[i]->getLocation() == loc)
                 page = pages[i];
@@ -529,7 +574,7 @@ unsigned int plResManager::ReadObjects(hsStream* S, const plLocation& loc) {
             pfSizedStream *subStream = new pfSizedStream(S, len);
             try {
                 plCreatable* pCre = ReadCreatable(subStream, true, len);
-                if (pCre != NULL && pCre->isStub()) {
+                if (pCre && pCre->isStub()) {
                     plCreatableStub* stub = (plCreatableStub*)pCre;
                     hsKeyedObjectStub* ko = new hsKeyedObjectStub();
                     hsRAMStream RS(subStream->getVer());
@@ -540,7 +585,7 @@ unsigned int plResManager::ReadObjects(hsStream* S, const plLocation& loc) {
                 } else {
                     kList[j]->setObj(hsKeyedObject::Convert(pCre));
                 }
-                if (kList[j]->getObj() != NULL) {
+                if (kList[j]->getObj()) {
                     nRead++;
                     if (!subStream->eof()) {
                         plDebug::Warning("[{_04X}:{}] Size-Read difference: {} bytes left after reading",
@@ -568,14 +613,15 @@ unsigned int plResManager::ReadObjects(hsStream* S, const plLocation& loc) {
             delete subStream;
         }
 
-        if (progressFunc != NULL)
+        if (progressFunc)
             progressFunc(page, processedKeys, totalKeys);
     }
 
     return nRead;
 }
 
-unsigned int plResManager::WriteObjects(hsStream* S, const plLocation& loc) {
+unsigned int plResManager::WriteObjects(hsStream* S, const plLocation& loc)
+{
     std::vector<short> types = keys.getTypes(loc);
     unsigned int nWritten = 0;
 
@@ -587,10 +633,10 @@ unsigned int plResManager::WriteObjects(hsStream* S, const plLocation& loc) {
         for (unsigned int j=0; j<kList.size(); j++) {
             kList[j]->setFileOff(S->pos());
             kList[j]->setID(j + 1);
-            if (kList[j]->getObj() != NULL) {
+            if (kList[j]->getObj()) {
                 try {
 #ifdef RMTRACE
-                    plDebug::Debug("  * ({}) Writing {} @ 0x{_08X}", j, kList[j].getName(),
+                    plDebug::Debug("  * ({}) Writing {} @ 0x{_08X}", j, kList[j]->getName(),
                                    kList[j]->getFileOff());
 #endif
                     WriteCreatable(S, kList[j]->getObj());
@@ -607,7 +653,7 @@ unsigned int plResManager::WriteObjects(hsStream* S, const plLocation& loc) {
                                    kList[j].toString());
                 }
             } else {
-                WriteCreatable(S, NULL);
+                WriteCreatable(S, nullptr);
                 plDebug::Warning("Object for {} does not exist", kList[j].toString());
             }
             kList[j]->setObjSize(S->pos() - kList[j]->getFileOff());
@@ -617,7 +663,8 @@ unsigned int plResManager::WriteObjects(hsStream* S, const plLocation& loc) {
     return nWritten;
 }
 
-plCreatable* plResManager::ReadCreatable(hsStream* S, bool canStub, int stubLen) {
+plCreatable* plResManager::ReadCreatable(hsStream* S, bool canStub, int stubLen)
+{
     unsigned short type = S->readShort();
     plCreatable* pCre;
     if (mustStub) {
@@ -625,7 +672,7 @@ plCreatable* plResManager::ReadCreatable(hsStream* S, bool canStub, int stubLen)
         pCre->read(S, this);
     } else {
         pCre = plFactory::Create(type, S->getVer());
-        if (pCre != NULL) {
+        if (pCre) {
             pCre->read(S, this);
         } else if (type != 0x8000) {
             if (canStub) {
@@ -645,8 +692,9 @@ plCreatable* plResManager::ReadCreatable(hsStream* S, bool canStub, int stubLen)
     return pCre;
 }
 
-void plResManager::WriteCreatable(hsStream* S, plCreatable* pCre) {
-    if (pCre == NULL) {
+void plResManager::WriteCreatable(hsStream* S, plCreatable* pCre)
+{
+    if (pCre == nullptr) {
         S->writeShort(0x8000);
     } else {
         short classIdx = pCre->ClassIndex(S->getVer());
@@ -661,37 +709,45 @@ void plResManager::WriteCreatable(hsStream* S, plCreatable* pCre) {
     }
 }
 
-plCreatable* plResManager::prcParseCreatable(const pfPrcTag* tag) {
+plCreatable* plResManager::prcParseCreatable(const pfPrcTag* tag)
+{
     plCreatable* pCre = plFactory::Create(tag->getName().c_str());
-    if (pCre != NULL)
+    if (pCre)
         pCre->prcParse(tag, this);
+    else
+        throw pfPrcTagException(__FILE__, __LINE__, tag->getName());
     return pCre;
 }
 
-plSceneNode* plResManager::getSceneNode(const plLocation& loc) {
+plSceneNode* plResManager::getSceneNode(const plLocation& loc)
+{
     std::vector<plKey> kList = keys.getKeys(loc, kSceneNode);
-    if (kList.size() < 1)
-        return NULL;
+    if (kList.empty())
+        return nullptr;
     return plSceneNode::Convert(kList[0]->getObj());
 }
 
-std::vector<plLocation> plResManager::getLocations() {
+std::vector<plLocation> plResManager::getLocations()
+{
     std::vector<plLocation> locArr;
     for (size_t i=0; i<pages.size(); i++)
         locArr.push_back(pages[i]->getLocation());
     return locArr;
 }
 
-std::vector<short> plResManager::getTypes(const plLocation& loc, bool checkKeys) {
+std::vector<short> plResManager::getTypes(const plLocation& loc, bool checkKeys)
+{
     return keys.getTypes(loc, checkKeys);
 }
 
 std::vector<plKey> plResManager::getKeys(const plLocation& loc, short type,
-                                         bool checkKeys) {
+                                         bool checkKeys)
+{
     return keys.getKeys(loc, type, checkKeys);
 }
 
-std::vector<plKey> plResManager::getKeys(short type, bool checkKeys) {
+std::vector<plKey> plResManager::getKeys(short type, bool checkKeys)
+{
     std::vector<plKey> kList;
     for (size_t i=0; i<pages.size(); i++) {
         std::vector<plKey> kPageKeys = keys.getKeys(pages[i]->getLocation(), type, checkKeys);
@@ -700,7 +756,8 @@ std::vector<plKey> plResManager::getKeys(short type, bool checkKeys) {
     return kList;
 }
 
-plKey plResManager::AddKey(plKey key) {
+plKey plResManager::AddKey(const plKey& key)
+{
     plKey xkey = keys.findKey(key);
     if (xkey.Exists()) {
         return xkey;
@@ -710,12 +767,14 @@ plKey plResManager::AddKey(plKey key) {
     }
 }
 
-void plResManager::AddObject(const plLocation& loc, hsKeyedObject* obj) {
+void plResManager::AddObject(const plLocation& loc, hsKeyedObject* obj)
+{
     obj->getKey()->setLocation(loc);
     AddKey(obj->getKey());
 }
 
-void plResManager::DelPage(const plLocation& loc) {
+void plResManager::DelPage(const plLocation& loc)
+{
     std::vector<plPageInfo*>::iterator pi = pages.begin();
     while (pi != pages.end()) {
         if ((*pi)->getLocation() == loc) {
@@ -728,7 +787,8 @@ void plResManager::DelPage(const plLocation& loc) {
     }
 }
 
-void plResManager::DelAge(const ST::string& name) {
+void plResManager::DelAge(const ST::string& name)
+{
     std::vector<plAgeInfo*>::iterator ai = ages.begin();
     while (ai != ages.end()) {
         if ((*ai)->getAgeName() == name) {
@@ -741,7 +801,8 @@ void plResManager::DelAge(const ST::string& name) {
     }
 }
 
-void plResManager::ChangeLocation(plLocation from, plLocation to) {
+void plResManager::ChangeLocation(plLocation from, plLocation to)
+{
     to.setVer(from.getVer());
     std::vector<plPageInfo*>::iterator pi;
     for (pi = pages.begin(); pi != pages.end(); pi++) {
@@ -751,14 +812,16 @@ void plResManager::ChangeLocation(plLocation from, plLocation to) {
     keys.ChangeLocation(from, to);
 }
 
-LoadProgressCallback plResManager::SetProgressFunc(LoadProgressCallback newFunc) {
+LoadProgressCallback plResManager::SetProgressFunc(LoadProgressCallback newFunc)
+{
     LoadProgressCallback old = progressFunc;
-    progressFunc = newFunc;
+    progressFunc = std::move(newFunc);
     return old;
 }
 
-PageUnloadCallback plResManager::SetPageUnloadFunc(PageUnloadCallback newFunc) {
+PageUnloadCallback plResManager::SetPageUnloadFunc(PageUnloadCallback newFunc)
+{
     PageUnloadCallback old = pageUnloadFunc;
-    pageUnloadFunc = newFunc;
+    pageUnloadFunc = std::move(newFunc);
     return old;
 }

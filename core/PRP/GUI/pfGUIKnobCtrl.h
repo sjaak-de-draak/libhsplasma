@@ -20,11 +20,13 @@
 #include "pfGUIValueCtrl.h"
 #include "Math/hsGeometry3.h"
 
-class PLASMA_DLL pfGUIKnobCtrl : public pfGUIValueCtrl {
+class PLASMA_DLL pfGUIKnobCtrl : public pfGUIValueCtrl
+{
     CREATABLE(pfGUIKnobCtrl, kGUIKnobCtrl, pfGUIValueCtrl)
 
 public:
-    enum KnobFlags {
+    enum KnobFlags
+    {
         kReverseValues = kDerivedFlagsStart, kLeftRightOrientation,
         kMapToScreenRange, kTriggerOnlyOnMouseUp, kMapToAnimationRange
     };
@@ -49,7 +51,7 @@ protected:
 public:
     const std::vector<plKey>& getAnimationKeys() const { return fAnimationKeys; }
     std::vector<plKey>& getAnimationKeys() { return fAnimationKeys; }
-    void addAnimationKey(plKey key) { fAnimationKeys.push_back(key); }
+    void addAnimationKey(plKey key) { fAnimationKeys.emplace_back(std::move(key)); }
     void delAnimationKey(size_t idx) { fAnimationKeys.erase(fAnimationKeys.begin() + idx); }
     void clearAnimationKeys() { fAnimationKeys.clear(); }
 

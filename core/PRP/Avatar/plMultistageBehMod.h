@@ -20,7 +20,8 @@
 #include "PRP/Modifier/plModifier.h"
 #include "plAnimStage.h"
 
-class PLASMA_DLL plMultistageBehMod : public plSingleModifier {
+class PLASMA_DLL plMultistageBehMod : public plSingleModifier
+{
     CREATABLE(plMultistageBehMod, kMultistageBehMod, plSingleModifier)
 
 protected:
@@ -29,9 +30,9 @@ protected:
     std::vector<plKey> fReceivers;
 
 public:
-    plMultistageBehMod() : fFreezePhys(false), fSmartSeek(false),
-                           fReverseFBControlsOnRelease(false) { }
-    virtual ~plMultistageBehMod();
+    plMultistageBehMod()
+        : fFreezePhys(), fSmartSeek(), fReverseFBControlsOnRelease() { }
+    ~plMultistageBehMod();
 
     void read(hsStream* S, plResManager* mgr) HS_OVERRIDE;
     void write(hsStream* S, plResManager* mgr) HS_OVERRIDE;
@@ -49,7 +50,7 @@ public:
 
     const std::vector<plKey>& getReceivers() const { return fReceivers; }
     std::vector<plKey>& getReceivers() { return fReceivers; }
-    void addReceiver(plKey receiver) { fReceivers.push_back(receiver); }
+    void addReceiver(plKey receiver) { fReceivers.emplace_back(std::move(receiver)); }
     void delReceiver(size_t idx) { fReceivers.erase(fReceivers.begin() + idx); }
     void clearReceivers() { fReceivers.clear(); }
 

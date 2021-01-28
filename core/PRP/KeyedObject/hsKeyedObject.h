@@ -18,6 +18,7 @@
 #define _HSKEYEDOBJECT_H
 
 #include "PRP/plCreatable.h"
+#include "ResManager/plResManager.h"
 #include "plKey.h"
 
 /**
@@ -29,7 +30,8 @@
  * Class IDs, hsKeyedObject classes will always be in the < 0x0200 range,
  * whereas non-keyed classes are >= 0x0200.
  */
-class PLASMA_DLL hsKeyedObject : public plCreatable {
+class PLASMA_DLL hsKeyedObject : public plCreatable
+{
     CREATABLE(hsKeyedObject, kKeyedObject, plCreatable)
 
 private:
@@ -46,6 +48,15 @@ public:
 
     void read(hsStream* S, plResManager* mgr) HS_OVERRIDE;
     void write(hsStream* S, plResManager* mgr) HS_OVERRIDE;
+
+    /**
+     * Determine if this object's key should be ordered after the specified
+     * object's key (for use in plKey list sorting).
+     * Important Note:  This is not a strict ordering -- that is, if
+     * key A is not ordered after key B, it does not necessarily imply that
+     * key B should be ordered after key A.
+     */
+    virtual bool orderAfter(const hsKeyedObject*) const { return false; }
 
 protected:
     void IPrcWrite(pfPrcHelper* prc) HS_OVERRIDE;
@@ -74,23 +85,24 @@ public:
  * highly recommended you use this instead of a normal plCreatableStub!
  * \sa plCreatableStub
  */
-class PLASMA_DLL hsKeyedObjectStub : public hsKeyedObject {
+class PLASMA_DLL hsKeyedObjectStub : public hsKeyedObject
+{
 private:
     plCreatableStub* fStub;
 
 public:
-    hsKeyedObjectStub() : fStub(NULL) { }
-    virtual ~hsKeyedObjectStub();
+    hsKeyedObjectStub() : fStub() { }
+    ~hsKeyedObjectStub();
 
-    short ClassIndex() const HS_FINAL { return fStub->ClassIndex(); }
-    const char* ClassName() const HS_FINAL { return "hsKeyedObjectStub"; }
-    bool isStub() const HS_FINAL { return true; }
+    short ClassIndex() const HS_FINAL_OVERRIDE { return fStub->ClassIndex(); }
+    const char* ClassName() const HS_FINAL_OVERRIDE { return "hsKeyedObjectStub"; }
+    bool isStub() const HS_FINAL_OVERRIDE { return true; }
 
-    void write(hsStream* S, plResManager* mgr) HS_FINAL;
+    void write(hsStream* S, plResManager* mgr) HS_FINAL_OVERRIDE;
 
 protected:
-    void IPrcWrite(pfPrcHelper* prc) HS_FINAL;
-    void IPrcParse(const pfPrcTag* tag, plResManager* mgr) HS_FINAL;
+    void IPrcWrite(pfPrcHelper* prc) HS_FINAL_OVERRIDE;
+    void IPrcParse(const pfPrcTag* tag, plResManager* mgr) HS_FINAL_OVERRIDE;
 
 public:
     /** Returns the underlying plCreatableStub object of this stub */

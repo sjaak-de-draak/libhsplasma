@@ -21,7 +21,8 @@
 
 PY_PLASMA_DEALLOC(GBufferGroup)
 
-PY_PLASMA_INIT_DECL(GBufferGroup) {
+PY_PLASMA_INIT_DECL(GBufferGroup)
+{
     int fmt;
     if (!PyArg_ParseTuple(args, "i", &fmt))
         return -1;
@@ -38,11 +39,11 @@ PY_METHOD_VA(GBufferGroup, read,
     pyStream* stream;
     if (!PyArg_ParseTuple(args, "O", &stream)) {
         PyErr_SetString(PyExc_TypeError, "read expects an hsStream");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream)) {
         PyErr_SetString(PyExc_TypeError, "read expects an hsStream");
-        return NULL;
+        return nullptr;
     }
     self->fThis->read(stream->fThis);
     Py_RETURN_NONE;
@@ -55,11 +56,11 @@ PY_METHOD_VA(GBufferGroup, write,
     pyStream* stream;
     if (!PyArg_ParseTuple(args, "O", &stream)) {
         PyErr_SetString(PyExc_TypeError, "write expects an hsStream");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream)) {
         PyErr_SetString(PyExc_TypeError, "write expects an hsStream");
-        return NULL;
+        return nullptr;
     }
     self->fThis->write(stream->fThis);
     Py_RETURN_NONE;
@@ -72,7 +73,7 @@ PY_METHOD_VA(GBufferGroup, getVertices,
     int idx, start = 0, len = -1;
     if (!PyArg_ParseTuple(args, "i|ii", &idx, &start, &len)) {
         PyErr_SetString(PyExc_TypeError, "getVertices expects an int");
-        return NULL;
+        return nullptr;
     }
 
     std::vector<plGBufferVertex> verts;
@@ -93,7 +94,7 @@ PY_METHOD_VA(GBufferGroup, getIndices,
     int idx, start = 0, len = -1;
     if (!PyArg_ParseTuple(args, "i|ii", &idx, &start, &len)) {
         PyErr_SetString(PyExc_TypeError, "getIndices expects an int");
-        return NULL;
+        return nullptr;
     }
 
     std::vector<unsigned short> indices;
@@ -114,7 +115,7 @@ PY_METHOD_VA(GBufferGroup, getCells,
     int idx;
     if (!PyArg_ParseTuple(args, "i", &idx)) {
         PyErr_SetString(PyExc_TypeError, "getCells expects an int");
-        return NULL;
+        return nullptr;
     }
 
     std::vector<plGBufferCell> cells = self->fThis->getCells(idx);
@@ -131,12 +132,12 @@ PY_METHOD_VA(GBufferGroup, addVertices,
     PyObject* seqObj;
     if (!PyArg_ParseTuple(args, "O", &seqObj)) {
         PyErr_SetString(PyExc_TypeError, "addVertices expects a sequence of plGBufferVertex objects");
-        return NULL;
+        return nullptr;
     }
     pySequenceFastRef list(seqObj);
     if (!list.isSequence()) {
         PyErr_SetString(PyExc_TypeError, "addVertices expects a sequence of plGBufferVertex objects");
-        return NULL;
+        return nullptr;
     }
 
     std::vector<plGBufferVertex> verts(list.size());
@@ -144,7 +145,7 @@ PY_METHOD_VA(GBufferGroup, addVertices,
         PyObject* item = list.get(i);
         if (!pyGBufferVertex_Check(item)) {
             PyErr_SetString(PyExc_TypeError, "addVertices expects a sequence of plGBufferVertex objects");
-            return NULL;
+            return nullptr;
         }
         verts[i] = *((pyGBufferVertex*)item)->fThis;
     }
@@ -159,12 +160,12 @@ PY_METHOD_VA(GBufferGroup, addIndices,
     PyObject* seqObj;
     if (!PyArg_ParseTuple(args, "O", &seqObj)) {
         PyErr_SetString(PyExc_TypeError, "addIndices expects a sequence of ints");
-        return NULL;
+        return nullptr;
     }
     pySequenceFastRef list(seqObj);
     if (!list.isSequence()) {
         PyErr_SetString(PyExc_TypeError, "addIndices expects a sequence of ints");
-        return NULL;
+        return nullptr;
     }
 
     std::vector<unsigned short> indices(list.size());
@@ -172,7 +173,7 @@ PY_METHOD_VA(GBufferGroup, addIndices,
         PyObject* item = list.get(i);
         if (!pyPlasma_check<unsigned short>(item)) {
             PyErr_SetString(PyExc_TypeError, "addVertices expects a sequence of ints");
-            return NULL;
+            return nullptr;
         }
         indices[i] = pyPlasma_get<unsigned short>(item);
     }
@@ -187,12 +188,12 @@ PY_METHOD_VA(GBufferGroup, addCells,
     PyObject* seqObj;
     if (!PyArg_ParseTuple(args, "O", &seqObj)) {
         PyErr_SetString(PyExc_TypeError, "addCells expects a sequence of plGBufferCell objects");
-        return NULL;
+        return nullptr;
     }
     pySequenceFastRef list(seqObj);
     if (!list.isSequence()) {
         PyErr_SetString(PyExc_TypeError, "addCells expects a sequence of plGBufferCell objects");
-        return NULL;
+        return nullptr;
     }
 
     std::vector<plGBufferCell> cells(list.size());
@@ -200,7 +201,7 @@ PY_METHOD_VA(GBufferGroup, addCells,
         PyObject* item = list.get(i);
         if (!pyGBufferCell_Check(item)) {
             PyErr_SetString(PyExc_TypeError, "addCells expects a sequence of plGBufferCell objects");
-            return NULL;
+            return nullptr;
         }
         cells[i] = *((pyGBufferCell*)item)->fThis;
     }
@@ -215,7 +216,7 @@ PY_METHOD_VA(GBufferGroup, delVertices,
     int idx;
     if (!PyArg_ParseTuple(args, "i", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delVertices expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->delVertices(idx);
     Py_RETURN_NONE;
@@ -228,7 +229,7 @@ PY_METHOD_VA(GBufferGroup, delIndices,
     int idx;
     if (!PyArg_ParseTuple(args, "i", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delIndices expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->delIndices(idx);
     Py_RETURN_NONE;
@@ -241,23 +242,26 @@ PY_METHOD_VA(GBufferGroup, delCells,
     int idx;
     if (!PyArg_ParseTuple(args, "i", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delCells expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->delCells(idx);
     Py_RETURN_NONE;
 }
 
-PY_METHOD_NOARGS(GBufferGroup, clearVertices, "Remove all Vertex buffers") {
+PY_METHOD_NOARGS(GBufferGroup, clearVertices, "Remove all Vertex buffers")
+{
     self->fThis->clearVertices();
     Py_RETURN_NONE;
 }
 
-PY_METHOD_NOARGS(GBufferGroup, clearIndices, "Remove all Face Index buffers") {
+PY_METHOD_NOARGS(GBufferGroup, clearIndices, "Remove all Face Index buffers")
+{
     self->fThis->clearIndices();
     Py_RETURN_NONE;
 }
 
-PY_METHOD_NOARGS(GBufferGroup, clearCells, "Remove all Cell buffers") {
+PY_METHOD_NOARGS(GBufferGroup, clearCells, "Remove all Cell buffers")
+{
     self->fThis->clearCells();
     Py_RETURN_NONE;
 }
@@ -281,7 +285,7 @@ PY_METHOD_VA(GBufferGroup, getVertBufferStorage,
     int idx;
     if (!PyArg_ParseTuple(args, "i", &idx)) {
         PyErr_SetString(PyExc_TypeError, "getVertBufferStorage expects an int");
-        return NULL;
+        return nullptr;
     }
     return PyBytes_FromStringAndSize((const char*)self->fThis->getVertBufferStorage(idx),
                                      self->fThis->getVertBufferSize(idx));
@@ -294,7 +298,7 @@ PY_METHOD_VA(GBufferGroup, getIdxBufferStorage,
     int idx;
     if (!PyArg_ParseTuple(args, "i", &idx)) {
         PyErr_SetString(PyExc_TypeError, "getIdxBufferStorage expects an int");
-        return NULL;
+        return nullptr;
     }
     size_t count = self->fThis->getIdxBufferCount(idx);
     const unsigned short* indices = self->fThis->getIdxBufferStorage(idx);
@@ -311,7 +315,7 @@ PY_METHOD_VA(GBufferGroup, getVertBufferSize,
     int idx;
     if (!PyArg_ParseTuple(args, "i", &idx)) {
         PyErr_SetString(PyExc_TypeError, "getVertBufferSize expects an int");
-        return NULL;
+        return nullptr;
     }
     return pyPlasma_convert(self->fThis->getVertBufferSize(idx));
 }
@@ -323,7 +327,7 @@ PY_METHOD_VA(GBufferGroup, getIdxBufferCount,
     int idx;
     if (!PyArg_ParseTuple(args, "i", &idx)) {
         PyErr_SetString(PyExc_TypeError, "getIdxBufferCount expects an int");
-        return NULL;
+        return nullptr;
     }
     return pyPlasma_convert(self->fThis->getIdxBufferCount(idx));
 }
@@ -369,14 +373,15 @@ static PyGetSetDef pyGBufferGroup_GetSet[] = {
 
 PY_PLASMA_TYPE(GBufferGroup, plGBufferGroup, "plGBufferGroup wrapper")
 
-PY_PLASMA_TYPE_INIT(GBufferGroup) {
+PY_PLASMA_TYPE_INIT(GBufferGroup)
+{
     pyGBufferGroup_Type.tp_dealloc = pyGBufferGroup_dealloc;
     pyGBufferGroup_Type.tp_init = pyGBufferGroup___init__;
     pyGBufferGroup_Type.tp_new = pyGBufferGroup_new;
     pyGBufferGroup_Type.tp_methods = pyGBufferGroup_Methods;
     pyGBufferGroup_Type.tp_getset = pyGBufferGroup_GetSet;
     if (PyType_CheckAndReady(&pyGBufferGroup_Type) < 0)
-        return NULL;
+        return nullptr;
 
     // Formats
     PY_TYPE_ADD_CONST(GBufferGroup, "kUVCountMask", plGBufferGroup::kUVCountMask);

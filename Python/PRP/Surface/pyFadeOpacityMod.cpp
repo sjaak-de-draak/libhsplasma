@@ -25,11 +25,13 @@ PY_PROPERTY(float, FadeOpacityMod, fadeUp, getFadeUp, setFadeUp)
 PY_PROPERTY(float, FadeOpacityMod, fadeDown, getFadeDown, setFadeDown)
 
 /* Shortcut for self.{get,set}Flag(plFadeOpacityMod.kBoundsCenter) */
-PY_GETSET_GETTER_DECL(FadeOpacityMod, boundsCenter) {
+PY_GETSET_GETTER_DECL(FadeOpacityMod, boundsCenter)
+{
     return pyPlasma_convert(self->fThis->getFlag(plFadeOpacityMod::kBoundsCenter));
 }
 
-PY_GETSET_SETTER_DECL(FadeOpacityMod, boundsCenter) {
+PY_GETSET_SETTER_DECL(FadeOpacityMod, boundsCenter)
+{
     PY_PROPERTY_CHECK_NULL(boundsCenter)
     if (!pyPlasma_check<bool>(value)) {
         PyErr_SetString(PyExc_TypeError, "boundsCenter should be a bool");
@@ -50,12 +52,13 @@ static PyGetSetDef pyFadeOpacityMod_GetSet [] = {
 
 PY_PLASMA_TYPE(FadeOpacityMod, plFadeOpacityMod, "plFadeOpacityMod wrapper")
 
-PY_PLASMA_TYPE_INIT(FadeOpacityMod) {
+PY_PLASMA_TYPE_INIT(FadeOpacityMod)
+{
     pyFadeOpacityMod_Type.tp_new = pyFadeOpacityMod_new;
     pyFadeOpacityMod_Type.tp_getset = pyFadeOpacityMod_GetSet;
     pyFadeOpacityMod_Type.tp_base = &pySingleModifier_Type;
     if (PyType_CheckAndReady(&pyFadeOpacityMod_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyFadeOpacityMod_Type);
     return (PyObject*) &pyFadeOpacityMod_Type;

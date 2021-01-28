@@ -16,6 +16,7 @@
 
 #include "pnGateKeeperClient.h"
 #include "GateKeeperMessages.h"
+#include "Stream/hsRAMStream.h"
 #include "Debug/plDebug.h"
 #include "crypt/pnBigInteger.h"
 #include "crypt/pnSha1.h"
@@ -27,7 +28,7 @@ bool pnGateKeeperClient::Dispatch::dispatch(pnSocket* sock)
     uint16_t msgId;
     sock->recv(&msgId, sizeof(uint16_t));
     const pnNetMsg* msgDesc = GET_GateKeeper2Cli(msgId);
-    if (msgDesc == NULL) {
+    if (msgDesc == nullptr) {
         plDebug::Error("Got invalid message ID ({})", msgId);
         return false;
     }
@@ -99,29 +100,29 @@ void pnGateKeeperClient::disconnect()
     delete fIface;
     delete fDispatch;
     delete fSock;
-    fIface = NULL;
-    fSock = NULL;
-    fDispatch = NULL;
+    fIface = nullptr;
+    fSock = nullptr;
+    fDispatch = nullptr;
 }
 
 ENetError pnGateKeeperClient::performConnect()
 {
-    uint8_t connectHeader[51];  // ConnectHeader + GateKeeperConnectHeader
+    hsRAMStream connectHeader;
     /* Begin ConnectHeader */
-    *(uint8_t* )(connectHeader     ) = kConnTypeCliToGateKeeper;
-    *(uint16_t*)(connectHeader +  1) = 31;
-    *(uint32_t*)(connectHeader +  3) = fBuildId;
-    *(uint32_t*)(connectHeader +  7) = fBuildType;
-    *(uint32_t*)(connectHeader + 11) = fBranchId;
-    fProductId.write(connectHeader + 15);
+    connectHeader.writeByte(kConnTypeCliToGateKeeper);
+    connectHeader.writeShort(31);
+    connectHeader.writeInt(fBuildId);
+    connectHeader.writeInt(fBuildType);
+    connectHeader.writeInt(fBranchId);
+    fProductId.write(&connectHeader);
     /* Begin GateKeeperConnectHeader */
-    *(uint32_t*)(connectHeader + 31) = 20;
-    memset(connectHeader + 35, 0, 16);
-    fSock->send(connectHeader, 51);
+    connectHeader.writeInt(20);
+    plUuid::Null.write(&connectHeader);
+    fSock->send(connectHeader.data(), connectHeader.size());
 
     if (!fSock->isConnected()) {
         delete fSock;
-        fSock = NULL;
+        fSock = nullptr;
         plDebug::Error("Error establishing GateKeeper connection");
         return kNetErrConnectFailed;
     }
@@ -138,16 +139,16 @@ ENetError pnGateKeeperClient::performConnect()
         serverSeed.getData(y_data, 64);
     }
 
-    uint8_t cryptHeader[66];
-    *(uint8_t*)(cryptHeader    ) = kNetCliCli2SrvConnect;
-    *(uint8_t*)(cryptHeader + 1) = 66;
-    memcpy(cryptHeader + 2, y_data, 64);
-    fSock->send(cryptHeader, 66);
+    hsRAMStream cryptHeader;
+    cryptHeader.writeByte(kNetCliCli2SrvConnect);
+    cryptHeader.writeByte(66);
+    cryptHeader.write(64, y_data);
+    fSock->send(cryptHeader.data(), cryptHeader.size());
 
     uint8_t msg, len;
     if (fSock->recv(&msg, 1) <= 0 || fSock->recv(&len, 1) <= 0) {
         delete fSock;
-        fSock = NULL;
+        fSock = nullptr;
         plDebug::Error("Error negotiating GateKeeper connection");
         return kNetErrConnectFailed;
     }
@@ -164,13 +165,13 @@ ENetError pnGateKeeperClient::performConnect()
         uint32_t errorCode;
         fSock->recv(&errorCode, sizeof(uint32_t));
         delete fSock;
-        fSock = NULL;
+        fSock = nullptr;
         plDebug::Error("Error connecting to GateKeeper server: {}",
                        GetNetErrorString(errorCode));
         return (ENetError)errorCode;
     } else {
         delete fSock;
-        fSock = NULL;
+        fSock = nullptr;
         plDebug::Error("Got junk response from server");
         return kNetErrConnectFailed;
     }
@@ -191,7 +192,7 @@ uint32_t pnGateKeeperClient::sendPingRequest(uint32_t pingTimeMs)
     msg[0].fUint = pingTimeMs;
     msg[1].fUint = transId;
     msg[2].fUint = 0;
-    msg[3].fData = NULL;
+    msg[3].fData = nullptr;
     fSock->sendMsg(msg, desc);
     NCFreeMessage(msg, desc);
     return transId;

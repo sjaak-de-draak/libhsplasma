@@ -31,11 +31,13 @@
  * provide fully working physical objects for all 3 engines.
  **************/
 
-class PLASMA_DLL plGenericPhysical : public plPhysical {
+class PLASMA_DLL plGenericPhysical : public plPhysical
+{
     CREATABLE(plGenericPhysical, kGenericPhysical, plPhysical)
 
 public:
-    enum PhysType {
+    enum PhysType
+    {
         kPhysNone, kPhysHavok, kPhysODE, kPhysX, kNumPhysTypes
     };
 
@@ -80,7 +82,7 @@ protected:
 
 public:
     plGenericPhysical();
-    virtual ~plGenericPhysical();
+    ~plGenericPhysical();
 
     void read(hsStream* S, plResManager* mgr) HS_OVERRIDE;
     void write(hsStream* S, plResManager* mgr) HS_OVERRIDE;
@@ -134,10 +136,10 @@ public:
     void setCollideEnabled(bool enable) { fDisableCollide = !enable; }
     void setLOSDBs(unsigned short los) { fLOSDBs = los; }
 
-    void setObject(plKey object) { fObjectKey = object; }
-    void setSceneNode(plKey node) { fSceneNode = node; }
-    void setSubWorld(plKey world) { fSubWorld = world; }
-    void setSoundGroup(plKey group) { fSoundGroup = group; }
+    void setObject(plKey object) { fObjectKey = std::move(object); }
+    void setSceneNode(plKey node) { fSceneNode = std::move(node); }
+    void setSubWorld(plKey world) { fSubWorld = std::move(world); }
+    void setSoundGroup(plKey group) { fSoundGroup = std::move(group); }
     void setPos(const hsVector3& pos) { fPos = pos; }
     void setRot(const hsQuat& rot) { fRot = rot; }
 

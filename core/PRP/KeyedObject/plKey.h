@@ -18,16 +18,17 @@
 #define _PLKEY_H
 
 #include "plUoid.h"
+#include <cstddef>
 #include <functional>
 #include <list>
 
 #define GET_KEY_OBJECT(key, classname) \
     ((key.Exists() && key.isLoaded()) \
-     ? classname::Convert(key->getObj()) \
-     : NULL)
+        ? classname::Convert(key->getObj()) \
+        : nullptr)
 
 #define GET_OBJECT_KEY(obj) \
-    (obj == NULL ? plKey() : obj->getKey())
+    (obj == nullptr ? plKey() : obj->getKey())
 
 /**
  * \brief Contains plKey data.
@@ -37,7 +38,8 @@
  * but rather keep it contained in a plKey object, and use plKeyData's members
  * through the plKey's overloaded pointer operators.
  */
-class PLASMA_DLL plKeyData {
+class PLASMA_DLL plKeyData
+{
 private:
     plUoid fUoid;
     class hsKeyedObject* fObjPtr;
@@ -50,16 +52,7 @@ public:
      * Construct key data for an empty object.  The key will need to be
      * filled in with meaningful data before it is useful.
      */
-    plKeyData() : fUoid(), fObjPtr(NULL), fFileOff(0), fObjSize(0),
-                  fRefCnt(0) { }
-
-    /**
-     * Don't ever use this directly (i.e., don't ever allocate plKeyData
-     * objects on the stack).  The key will be automatically deleted
-     * once its ref count is zero (meaning there are no more keys that
-     * own references to this KeyData).
-     */
-    ~plKeyData() { }
+    plKeyData() : fObjPtr(), fFileOff(), fObjSize(), fRefCnt() { }
 
     /** Return the number of active "owners" of this key. */
     uint32_t CountRefs() const { return fRefCnt; }
@@ -68,6 +61,14 @@ public:
 
 private:
     std::list<AfterLoadCallback> fCallbacks;
+
+    /**
+     * Don't ever use this directly (i.e., don't ever allocate plKeyData
+     * objects on the stack).  The key will be automatically deleted
+     * once its ref count is zero (meaning there are no more keys that
+     * own references to this KeyData).
+     */
+    ~plKeyData() { }
 
     void Ref() { ++fRefCnt; }
     void UnRef();
@@ -138,6 +139,9 @@ public:
 
     /** Returns a pointer to the object referenced by this key */
     class hsKeyedObject* getObj() { return fObjPtr; }
+
+    /** Returns a const pointer to the object referenced by this key */
+    const class hsKeyedObject* getObj() const { return fObjPtr; }
 
     /** Sets the object referenced by this key. */
     void setObj(class hsKeyedObject* obj);
@@ -236,7 +240,7 @@ public:
      */
     void addCallback(AfterLoadCallback callback);
 
-     /** Remove all callbacks, without executing */
+    /** Remove all callbacks, without executing */
     void clearCallbacks() { fCallbacks.clear(); }
 };
 
@@ -251,16 +255,23 @@ public:
  * plKey's members, with the addition of Exists() and isLoaded(), which
  * are direct members of the plKey container.
  */
-class PLASMA_DLL plKey {
+class PLASMA_DLL plKey HS_FINAL
+{
 private:
     plKeyData* fKeyData;
 
 public:
     /** Constructs a NULL plKey.  This will return false for Exists() */
-    plKey() : fKeyData(NULL) { }
+    plKey() : fKeyData() { }
 
     /** Copy constructor */
     plKey(const plKey& init);
+
+    /** Move constructor */
+    plKey(plKey&& move) HS_NOEXCEPT : fKeyData(move.fKeyData)
+    {
+        move.fKeyData = nullptr;
+    }
 
     /**
      * Copy constructor for plKeyData pointers.  Usually you won't ever
@@ -268,6 +279,10 @@ public:
      * the plResManager.
      */
     plKey(plKeyData* init);
+
+    // Prevent unintentional conversions
+    plKey(std::nullptr_t) = delete;
+    plKey& operator=(std::nullptr_t) = delete;
 
     /**
      * Removes a reference to the key.  When there are no more references
@@ -277,7 +292,7 @@ public:
      * the object yourself.  However, if the object is registered with the
      * plResManager, you should not delete the object.
      */
-    virtual ~plKey();
+    ~plKey();
 
     /** Allows for *(plKey) usage as a pointer. */
     plKeyData& operator*() const { return *fKeyData; }
@@ -289,10 +304,18 @@ public:
     operator plKeyData*() const { return fKeyData; }
 
     /** Copies and refs the key data in other */
-    virtual plKey& operator=(const plKey& other);
+    plKey& operator=(const plKey& other);
+
+    /** Moves the key ref into this key */
+    plKey& operator=(plKey&& other) HS_NOEXCEPT
+    {
+        fKeyData = other.fKeyData;
+        other.fKeyData = nullptr;
+        return *this;
+    }
 
     /** Refs the key data and stores it in this key */
-    virtual plKey& operator=(plKeyData* other);
+    plKey& operator=(plKeyData* other);
 
     /** Returns true if the keys point to the same plKeyData */
     bool operator==(const plKey& other) const { return fKeyData == other.fKeyData; }
@@ -308,14 +331,23 @@ public:
 
     /** Provides sorting functionality for STL containers */
     bool operator<(const plKey& other) const
-    { return fKeyData->getUoid() < other->getUoid(); }
+    {
+        return fKeyData->getUoid() < other->getUoid();
+    }
 
     /**
      * Tests to see if the key refers to an object (not NULL key).
      * This will return false for empty keys, so it should be checked
      * any place where an empty key can be specified.
      */
-    bool Exists() const { return (fKeyData != NULL); }
+    bool Exists() const { return (fKeyData != nullptr); }
+
+    // Prevent unintentional use of some comparison operators when Exists()
+    // should be used instead
+    bool operator==(std::nullptr_t) const = delete;
+    bool operator!=(std::nullptr_t) const = delete;
+    operator bool() const = delete;
+    bool operator!() const = delete;
 
     /**
      * Returns whether the object referenced by the key is currently
@@ -332,6 +364,18 @@ public:
      * \sa plUoid::toString()
      */
     ST::string toString() const;
+
+    /**
+     * Determine if this key should be ordered after the specified key.
+     * Important Note:  This only works if both keys' referenced objects
+     * are loaded.  Also, this is not a strict ordering -- that is, if
+     * key A is not ordered after key B, it does not necessarily imply that
+     * key B should be ordered after key A.
+     */
+    bool orderAfter(const plKey& other) const;
 };
+
+/** Order a vector of keys for writing in the correct load order. */
+std::vector<plKey> hsOrderKeys(const std::vector<plKey>& keys);
 
 #endif

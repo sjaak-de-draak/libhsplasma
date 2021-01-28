@@ -28,15 +28,15 @@ PY_METHOD_STATIC_VA(GUICtrlProcWriteableObject, Read,
     pyStream* stream;
     if (!PyArg_ParseTuple(args, "O", &stream)) {
         PyErr_SetString(PyExc_TypeError, "Read expects an hsStream");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream)) {
         PyErr_SetString(PyExc_TypeError, "Read expects an hsStream");
-        return NULL;
+        return nullptr;
     }
     pfGUICtrlProcWriteableObject* proc = pfGUICtrlProcWriteableObject::Read(stream->fThis);
-    PyObject* pyproc = NULL;
-    if (proc == NULL) {
+    PyObject* pyproc = nullptr;
+    if (proc == nullptr) {
         Py_RETURN_NONE;
     } else if (proc->getType() == pfGUICtrlProcWriteableObject::kConsoleCmd) {
         pyproc = pyGUIConsoleCmdProc_FromGUIConsoleCmdProc((pfGUIConsoleCmdProc*)proc);
@@ -62,11 +62,11 @@ PY_METHOD_STATIC_VA(GUICtrlProcWriteableObject, Write,
     pyGUICtrlProcWriteableObject* proc;
     if (!PyArg_ParseTuple(args, "OO", &stream, &proc)) {
         PyErr_SetString(PyExc_TypeError, "Write expects hsStream, pfGUICtrlProcWriteableObject");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream) || !pyGUICtrlProcWriteableObject_Check((PyObject*)proc)) {
         PyErr_SetString(PyExc_TypeError, "Write expects hsStream, pfGUICtrlProcWriteableObject");
-        return NULL;
+        return nullptr;
     }
     pfGUICtrlProcWriteableObject::Write(stream->fThis, proc->fThis);
     Py_RETURN_NONE;
@@ -88,13 +88,14 @@ static PyGetSetDef pyGUICtrlProcWriteableObject_GetSet[] = {
 PY_PLASMA_TYPE(GUICtrlProcWriteableObject, pfGUICtrlProcWriteableObject,
                "pfGUICtrlProcWriteableObject wrapper")
 
-PY_PLASMA_TYPE_INIT(GUICtrlProcWriteableObject) {
+PY_PLASMA_TYPE_INIT(GUICtrlProcWriteableObject)
+{
     pyGUICtrlProcWriteableObject_Type.tp_new = pyGUICtrlProcWriteableObject_new;
     pyGUICtrlProcWriteableObject_Type.tp_methods = pyGUICtrlProcWriteableObject_Methods;
     pyGUICtrlProcWriteableObject_Type.tp_getset = pyGUICtrlProcWriteableObject_GetSet;
     pyGUICtrlProcWriteableObject_Type.tp_base = &pyGUICtrlProcObject_Type;
     if (PyType_CheckAndReady(&pyGUICtrlProcWriteableObject_Type) < 0)
-        return NULL;
+        return nullptr;
 
     PY_TYPE_ADD_CONST(GUICtrlProcWriteableObject, "kNull",
                       pfGUICtrlProcWriteableObject::kNull);

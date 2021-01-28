@@ -32,7 +32,8 @@
 #endif
 #include <sys/stat.h>
 
-void doHelp() {
+static void doHelp()
+{
     puts("Usage: PrcExtract [options] filename.prp");
     puts("");
     puts("Objects are written to Age_PRC\\filename.prc");
@@ -44,7 +45,8 @@ void doHelp() {
     puts("");
 }
 
-ST::string filenameConvert(const ST::string& filename) {
+static ST::string filenameConvert(const ST::string& filename)
+{
     ST::string name = filename;
     if (name.find_last('.') >= 0)
         name = name.left(name.find_last('.')) + ".prc";
@@ -56,7 +58,8 @@ ST::string filenameConvert(const ST::string& filename) {
         return name;
 }
 
-ST::string getOutputDir(const ST::string& filename, plPageInfo* page) {
+static ST::string getOutputDir(const ST::string& filename, plPageInfo* page)
+{
     ST::string name = filename;
     if (name.find_last(SLASH) >= 0)
         name = name.left(name.find_last(SLASH) + 1);
@@ -65,7 +68,8 @@ ST::string getOutputDir(const ST::string& filename, plPageInfo* page) {
     return name + page->getAge() + "_PRC" SLASH_S;
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
     if (argc < 2) {
         doHelp();
         return 0;
@@ -119,7 +123,7 @@ int main(int argc, char* argv[]) {
         outDir = getOutputDir(fFiles[i], page);
         outFile = outDir + filenameConvert(fFiles[i]);
       #ifdef _WIN32
-        CreateDirectoryW(outDir.to_wchar().data(), NULL);
+        CreateDirectoryW(outDir.to_wchar().data(), nullptr);
       #else
         mkdir(outDir.c_str(), S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH);
       #endif
@@ -139,7 +143,7 @@ int main(int argc, char* argv[]) {
         if (!noHdr) {
             prc.writeComment("Generator: PrcExtract");
             prc.writeComment(("Source: " + fFiles[i]).c_str());
-            time_t ts = time(NULL);
+            time_t ts = time(nullptr);
             char buf[256];
             strftime(buf, 256, "Created: %Y/%m/%d %H:%M:%S", localtime(&ts));
             prc.writeComment(buf);

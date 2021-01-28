@@ -19,7 +19,8 @@
 
 #include "pfGUIControlMod.h"
 
-class PLASMA_DLL pfGUIRadioGroupCtrl : public pfGUIControlMod {
+class PLASMA_DLL pfGUIRadioGroupCtrl : public pfGUIControlMod
+{
     CREATABLE(pfGUIRadioGroupCtrl, kGUIRadioGroupCtrl, pfGUIControlMod)
 
 public:
@@ -30,7 +31,8 @@ protected:
     int fDefaultValue;
 
 public:
-    pfGUIRadioGroupCtrl() : fDefaultValue(0) {
+    pfGUIRadioGroupCtrl() : fDefaultValue()
+    {
         fFlags.setName(kAllowNoSelection, "kAllowNoSelection");
     }
 
@@ -44,7 +46,7 @@ protected:
 public:
     const std::vector<plKey>& getControls() const { return fControls; }
     std::vector<plKey>& getControls() { return fControls; }
-    void addControl(plKey ctrl) { fControls.push_back(ctrl); }
+    void addControl(plKey ctrl) { fControls.emplace_back(std::move(ctrl)); }
     void delControl(size_t idx) { fControls.erase(fControls.begin() + idx); }
     void clearControls() { fControls.clear(); }
 

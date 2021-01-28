@@ -17,7 +17,8 @@
 #include "plGeometrySpan.h"
 #include "Debug/plDebug.h"
 
-unsigned int plGeometrySpan::CalcVertexSize(unsigned char format) {
+unsigned int plGeometrySpan::CalcVertexSize(unsigned char format)
+{
     unsigned int size = ((format & kUVCountMask) + 2) * 12;
     size += ((format & kSkinWeightMask) >> 4) * sizeof(float);
     if (format & kSkinIndices)
@@ -25,7 +26,8 @@ unsigned int plGeometrySpan::CalcVertexSize(unsigned char format) {
     return size;
 }
 
-void plGeometrySpan::read(hsStream* S) {
+void plGeometrySpan::read(hsStream* S)
+{
     fLocalToWorld.read(S);
     fWorldToLocal.read(S);
     fLocalBounds.read(S);
@@ -50,7 +52,7 @@ void plGeometrySpan::read(hsStream* S) {
     }
     fProps = S->readInt();
     fNumVerts = S->readInt();
-    fNumIndices = S->readInt();
+    uint32_t numIndices = S->readInt();
     if (!S->getVer().isHexIsle()) {
         S->readInt();  // Discarded
         S->readByte(); // Discarded
@@ -83,9 +85,9 @@ void plGeometrySpan::read(hsStream* S) {
         fSpecularRGBA.clear();
     }
 
-    if (fNumIndices > 0) {
-        fIndexData.resize(fNumIndices);
-        S->readShorts(fNumIndices, (uint16_t*)&fIndexData[0]);
+    if (numIndices > 0) {
+        fIndexData.resize(numIndices);
+        S->readShorts(numIndices, (uint16_t*)&fIndexData[0]);
     } else {
         fIndexData.clear();
     }
@@ -97,7 +99,8 @@ void plGeometrySpan::read(hsStream* S) {
     }
 }
 
-void plGeometrySpan::write(hsStream* S) {
+void plGeometrySpan::write(hsStream* S)
+{
     fLocalToWorld.write(S);
     fWorldToLocal.write(S);
     fLocalBounds.write(S);
@@ -114,7 +117,7 @@ void plGeometrySpan::write(hsStream* S) {
     S->writeByte(fFormat);
     S->writeInt(fProps);
     S->writeInt(fNumVerts);
-    S->writeInt(fNumIndices);
+    S->writeInt(fIndexData.size());
     S->writeInt(0);
     S->writeByte(0);
     S->writeInt(fDecalLevel);
@@ -132,8 +135,8 @@ void plGeometrySpan::write(hsStream* S) {
         S->writeInts(fNumVerts, (uint32_t*)&fSpecularRGBA[0]);
 
     }
-    if (fNumIndices > 0)
-        S->writeShorts(fNumIndices, (uint16_t*)&fIndexData[0]);
+    if (!fIndexData.empty())
+        S->writeShorts(fIndexData.size(), (uint16_t*)&fIndexData[0]);
 
     S->writeInt(fInstanceGroup);
     if (fInstanceGroup != 0) {
@@ -142,7 +145,8 @@ void plGeometrySpan::write(hsStream* S) {
     }
 }
 
-void plGeometrySpan::prcWrite(pfPrcHelper* prc) {
+void plGeometrySpan::prcWrite(pfPrcHelper* prc)
+{
     prc->startTag("plGeometrySpan");
     prc->writeParam("BaseMatrix", fBaseMatrix);
     prc->writeParam("NumMatrices", fNumMatrices);
@@ -211,7 +215,7 @@ void plGeometrySpan::prcWrite(pfPrcHelper* prc) {
         prc->closeTag();
 
         prc->writeSimpleTag("Triangles");
-        for (size_t i=0; i<fNumIndices; i += 3) {
+        for (size_t i=0; i<fIndexData.size(); i += 3) {
             prc->writeTagNoBreak("Triangle");
             prc->directWrite(ST::format("{} {} {}",
                              fIndexData[i], fIndexData[i+1], fIndexData[i+2]));
@@ -230,7 +234,8 @@ void plGeometrySpan::prcWrite(pfPrcHelper* prc) {
     prc->closeTag();    // plGeometrySpan
 }
 
-void plGeometrySpan::prcParse(const pfPrcTag* tag) {
+void plGeometrySpan::prcParse(const pfPrcTag* tag)
+{
     if (tag->getName() != "plGeometrySpan")
         throw pfPrcTagException(__FILE__, __LINE__, tag->getName());
 
@@ -254,7 +259,7 @@ void plGeometrySpan::prcParse(const pfPrcTag* tag) {
     fIndexData.clear();
 
     const pfPrcTag* child = tag->getFirstChild();
-    while (child != NULL) {
+    while (child) {
         if (child->getName() == "Vertices") {
             fNumVerts = child->countChildren();
             std::vector<TempVertex> verts(fNumVerts);
@@ -263,7 +268,7 @@ void plGeometrySpan::prcParse(const pfPrcTag* tag) {
                 if (vertChild->getName() != "Vertex")
                     throw pfPrcTagException(__FILE__, __LINE__, vertChild->getName());
                 const pfPrcTag* subChild = vertChild->getFirstChild();
-                while (subChild != NULL) {
+                while (subChild) {
                     if (subChild->getName() == "Position") {
                         if (subChild->hasChildren())
                             verts[i].fPosition.prcParse(subChild->getFirstChild());
@@ -335,10 +340,10 @@ void plGeometrySpan::prcParse(const pfPrcTag* tag) {
                 clrChild = clrChild->getNextSibling();
             }
         } else if (child->getName() == "Triangles") {
-            fNumIndices = child->countChildren() * 3;
-            fIndexData.resize(fNumIndices);
+            size_t numIndices = child->countChildren() * 3;
+            fIndexData.resize(numIndices);
             const pfPrcTag* triChild = child->getFirstChild();
-            for (size_t i=0; i<fNumIndices; i += 3) {
+            for (size_t i=0; i<numIndices; i += 3) {
                 if (triChild->getName() != "Triangle")
                     throw pfPrcTagException(__FILE__, __LINE__, triChild->getName());
                 std::list<ST::string> idxList = triChild->getContents();
@@ -360,7 +365,8 @@ void plGeometrySpan::prcParse(const pfPrcTag* tag) {
     }
 }
 
-std::vector<plGeometrySpan::TempVertex> plGeometrySpan::getVertices() const {
+std::vector<plGeometrySpan::TempVertex> plGeometrySpan::getVertices() const
+{
     std::vector<TempVertex> buf(fNumVerts);
 
     const unsigned char* cp = &fVertexData[0];
@@ -396,7 +402,8 @@ std::vector<plGeometrySpan::TempVertex> plGeometrySpan::getVertices() const {
     return buf;
 }
 
-void plGeometrySpan::setVertices(const std::vector<TempVertex>& verts) {
+void plGeometrySpan::setVertices(const std::vector<TempVertex>& verts)
+{
     fVertexData.clear();
     fDiffuseRGBA.clear();
     fSpecularRGBA.clear();

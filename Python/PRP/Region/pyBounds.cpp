@@ -36,11 +36,11 @@ PY_METHOD_VA(Bounds, read,
     pyStream* stream;
     if (!PyArg_ParseTuple(args, "O", &stream)) {
         PyErr_SetString(PyExc_TypeError, "read expects an hsStream");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream)) {
         PyErr_SetString(PyExc_TypeError, "read expects an hsStream");
-        return NULL;
+        return nullptr;
     }
     self->fThis->read(stream->fThis);
     Py_RETURN_NONE;
@@ -53,11 +53,11 @@ PY_METHOD_VA(Bounds, write,
     pyStream* stream;
     if (!PyArg_ParseTuple(args, "O", &stream)) {
         PyErr_SetString(PyExc_TypeError, "write expects an hsStream");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream)) {
         PyErr_SetString(PyExc_TypeError, "write expects an hsStream");
-        return NULL;
+        return nullptr;
     }
     self->fThis->write(stream->fThis);
     Py_RETURN_NONE;
@@ -79,14 +79,15 @@ static PyGetSetDef pyBounds_GetSet[] = {
 
 PY_PLASMA_TYPE(Bounds, hsBounds, "hsBounds wrapper")
 
-PY_PLASMA_TYPE_INIT(Bounds) {
+PY_PLASMA_TYPE_INIT(Bounds)
+{
     pyBounds_Type.tp_dealloc = pyBounds_dealloc;
     pyBounds_Type.tp_init = pyBounds___init__;
     pyBounds_Type.tp_new = pyBounds_new;
     pyBounds_Type.tp_methods = pyBounds_Methods;
     pyBounds_Type.tp_getset = pyBounds_GetSet;
     if (PyType_CheckAndReady(&pyBounds_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyBounds_Type);
     return (PyObject*)&pyBounds_Type;

@@ -21,32 +21,28 @@
 
 #include <png.h>
 
-class PLASMA_DLL hsPNGException : public hsException {
+class hsPNGException : public hsException
+{
 public:
-    hsPNGException(const char* file, unsigned long line,
-                   const char* message = NULL) throw();
+    inline hsPNGException(const char* file, unsigned long line,
+                          const char* message = nullptr) HS_NOEXCEPT
+        : hsException(ST_LITERAL("libPNG error"), file, line)
+    {
+        if (message != nullptr)
+            fWhat += ST_LITERAL(": ") + message;
+    }
 };
 
 
-class PLASMA_DLL plPNG {
-private:
-    png_structp fPngReader;
-    png_structp fPngWriter;
-    png_infop   fPngInfo;
-    png_infop   fEndInfo;
-
+class PLASMA_DLL plPNG
+{
 public:
     static void DecompressPNG(hsStream* S, void* buf, size_t size);
     static void CompressPNG(hsStream* S, const void* buf, size_t size,
                             uint32_t width, uint32_t height, int pixelSize);
 
 private:
-    plPNG() : fPngReader(), fPngWriter(), fPngInfo(), fEndInfo() { }
-    ~plPNG();
-
-    static plPNG& Instance();
-    static plPNG& InitReader();
-    static plPNG& InitWriter();
+    plPNG() = delete;
 };
 
 #endif

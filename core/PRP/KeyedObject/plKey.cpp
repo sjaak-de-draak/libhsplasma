@@ -21,23 +21,27 @@
 #include "Debug/plDebug.h"
 
 /* plKeyData */
-void plKeyData::read(hsStream* S) {
+void plKeyData::read(hsStream* S)
+{
     fUoid.read(S);
     fFileOff = S->readInt();
     fObjSize = S->readInt();
 }
 
-void plKeyData::write(hsStream* S) {
+void plKeyData::write(hsStream* S)
+{
     fUoid.write(S);
     S->writeInt(fFileOff);
     S->writeInt(fObjSize);
 }
 
-void plKeyData::prcWriteUoid(pfPrcHelper* prc) {
+void plKeyData::prcWriteUoid(pfPrcHelper* prc)
+{
     fUoid.prcWrite(prc);
 }
 
-plKeyData* plKeyData::PrcParse(const pfPrcTag* tag) {
+plKeyData* plKeyData::PrcParse(const pfPrcTag* tag)
+{
     if (tag->getName() != "plKey")
         throw pfPrcTagException(__FILE__, __LINE__, tag->getName());
 
@@ -46,22 +50,24 @@ plKeyData* plKeyData::PrcParse(const pfPrcTag* tag) {
         key->fUoid.prcParse(tag);
         return key;
     } else {
-        return NULL;
+        return nullptr;
     }
 }
 
-void plKeyData::UnRef() {
+void plKeyData::UnRef()
+{
     if (--fRefCnt == 0) {
         //plDebug::Debug("Key %s no longer in use, deleting...", toString());
         delete this;
     }
 }
 
-void plKeyData::setObj(class hsKeyedObject* obj) {
+void plKeyData::setObj(class hsKeyedObject* obj)
+{
     if (obj == fObjPtr)
         return;
 
-    if (fObjPtr != NULL && !fObjPtr->isStub())
+    if (fObjPtr && !fObjPtr->isStub())
         throw hsBadParamException(__FILE__, __LINE__, "Trying to change already loaded object");
 
     fObjPtr = obj;
@@ -74,64 +80,111 @@ void plKeyData::setObj(class hsKeyedObject* obj) {
     }
 }
 
-void plKeyData::deleteObj() {
+void plKeyData::deleteObj()
+{
     delete fObjPtr;
-    fObjPtr = 0;
+    fObjPtr = nullptr;
 }
 
-void plKeyData::addCallback(AfterLoadCallback callback) {
-    if (fObjPtr != NULL)
+void plKeyData::addCallback(AfterLoadCallback callback)
+{
+    if (fObjPtr)
         callback(fObjPtr);
     else
-        fCallbacks.push_back(callback);
+        fCallbacks.emplace_back(std::move(callback));
 }
 
 /* plKey */
-plKey::plKey(const plKey& init) : fKeyData(init.fKeyData) {
-    if (fKeyData != NULL)
+plKey::plKey(const plKey& init) : fKeyData(init.fKeyData)
+{
+    if (fKeyData)
         fKeyData->Ref();
 }
 
-plKey::plKey(plKeyData* init) : fKeyData(init) {
-    if (fKeyData != NULL)
+plKey::plKey(plKeyData* init) : fKeyData(init)
+{
+    if (fKeyData)
         fKeyData->Ref();
 }
 
-plKey::~plKey() {
-    if (fKeyData != NULL)
+plKey::~plKey()
+{
+    if (fKeyData)
         fKeyData->UnRef();
 }
 
-plKey& plKey::operator=(const plKey& other) {
+plKey& plKey::operator=(const plKey& other)
+{
     if (fKeyData != other.fKeyData) {
-        if (other.fKeyData != NULL)
+        if (other.fKeyData)
             other->Ref();
-        if (fKeyData != NULL)
+        if (fKeyData)
             fKeyData->UnRef();
         fKeyData = other.fKeyData;
     }
     return *this;
 }
 
-plKey& plKey::operator=(plKeyData* other) {
+plKey& plKey::operator=(plKeyData* other)
+{
     if (fKeyData != other) {
-        if (other != NULL)
+        if (other)
             other->Ref();
-        if (fKeyData != NULL)
+        if (fKeyData)
             fKeyData->UnRef();
         fKeyData = other;
     }
     return *this;
 }
 
-bool plKey::isLoaded() const {
+bool plKey::isLoaded() const
+{
     if (!Exists())
         return true;
-    return fKeyData->getObj() != NULL;
+    return fKeyData->getObj() != nullptr;
 }
 
-ST::string plKey::toString() const {
+ST::string plKey::toString() const
+{
     if (!Exists())
         return "NULL";
     return fKeyData->getUoid().toString();
+}
+
+bool plKey::orderAfter(const plKey& other) const
+{
+    if (!Exists() || !other.Exists())
+        return false;
+    if (!isLoaded() || !other.isLoaded())
+        return false;
+
+    return fKeyData->getObj()->orderAfter(other.fKeyData->getObj());
+}
+
+std::vector<plKey> hsOrderKeys(const std::vector<plKey>& keys)
+{
+    // std::sort cannot be used here, since hsKeyedObject::orderAfter does
+    // not provide strict weak ordering, which is required for std::sort
+    // to work correctly.  Instead, we perform a stable topological sort.
+    // TODO: This algorithm could probably be more efficient.
+    std::vector<plKey> result;
+    result.reserve(keys.size());
+    std::list<plKey> input = std::list<plKey>(keys.begin(), keys.end());
+
+    while (!input.empty()) {
+        auto lowest = input.begin();
+        auto iter = lowest;
+        while (iter != input.end()) {
+            if (lowest->orderAfter(*iter)) {
+                lowest = iter;
+                iter = input.begin();
+            } else {
+                ++iter;
+            }
+        }
+        result.push_back(*lowest);
+        input.erase(lowest);
+    }
+
+    return result;
 }

@@ -23,11 +23,12 @@ PY_PLASMA_NEW_MSG(Drawable, "plDrawable is abstract")
 
 PY_PLASMA_TYPE(Drawable, plDrawable, "plDrawable wrapper")
 
-PY_PLASMA_TYPE_INIT(Drawable) {
+PY_PLASMA_TYPE_INIT(Drawable)
+{
     pyDrawable_Type.tp_new = pyDrawable_new;
     pyDrawable_Type.tp_base = &pyKeyedObject_Type;
     if (PyType_CheckAndReady(&pyDrawable_Type) < 0)
-        return NULL;
+        return nullptr;
 
     // Properties
     PY_TYPE_ADD_CONST(Drawable, "kPropNoDraw", plDrawable::kPropNoDraw);

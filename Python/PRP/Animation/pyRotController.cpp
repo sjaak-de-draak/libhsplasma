@@ -31,12 +31,13 @@ static PyGetSetDef pyRotController_GetSet[] = {
 
 PY_PLASMA_TYPE(RotController, plRotController, "plRotController wrapper")
 
-PY_PLASMA_TYPE_INIT(RotController) {
+PY_PLASMA_TYPE_INIT(RotController)
+{
     pyRotController_Type.tp_new = pyRotController_new;
     pyRotController_Type.tp_getset = pyRotController_GetSet;
     pyRotController_Type.tp_base = &pyController_Type;
     if (PyType_CheckAndReady(&pyRotController_Type) < 0)
-        return NULL;
+        return nullptr;
 
     PY_TYPE_ADD_CONST(RotController, "kSimple", plRotController::kSimple);
     PY_TYPE_ADD_CONST(RotController, "kCompound", plRotController::kCompound);

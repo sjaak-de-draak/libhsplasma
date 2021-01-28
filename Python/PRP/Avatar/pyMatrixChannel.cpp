@@ -31,12 +31,13 @@ static PyGetSetDef pyMatrixChannel_GetSet[] = {
 
 PY_PLASMA_TYPE(MatrixChannel, plMatrixChannel, "plMatrixChannel wrapper")
 
-PY_PLASMA_TYPE_INIT(MatrixChannel) {
+PY_PLASMA_TYPE_INIT(MatrixChannel)
+{
     pyMatrixChannel_Type.tp_new = pyMatrixChannel_new;
     pyMatrixChannel_Type.tp_getset = pyMatrixChannel_GetSet;
     pyMatrixChannel_Type.tp_base = &pyAGChannel_Type;
     if (PyType_CheckAndReady(&pyMatrixChannel_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyMatrixChannel_Type);
     return (PyObject*)&pyMatrixChannel_Type;

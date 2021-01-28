@@ -34,7 +34,7 @@ public:
     static const plUuid Null;
 
     /** Constructs a null UUID, i.e. 00000000-0000-0000-0000-000000000000. */
-    plUuid();
+    plUuid() : fData1(), fData2(), fData3(), fData4() { }
 
     /**
      * Constructs a UUID from the four arguments. The argument \a data4 should
@@ -49,9 +49,6 @@ public:
      */
     plUuid(const ST::string& str) { fromString(str); }
 
-    /** Copies the UUID data from \a init to this UUID object. */
-    plUuid& operator=(const plUuid& init);
-
     /** Returns true if the two UUIDs are identical. */
     bool operator==(const plUuid& other) const;
 
@@ -65,7 +62,7 @@ public:
     void read(const unsigned char* buffer);
 
     /** Writes the UUID to a stream */
-    void write(hsStream* S);
+    void write(hsStream* S) const;
 
     /** Writes the UUID to a buffer. */
     void write(unsigned char* buffer) const;

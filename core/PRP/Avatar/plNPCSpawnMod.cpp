@@ -16,11 +16,13 @@
 
 #include "plNPCSpawnMod.h"
 
-plNPCSpawnMod::~plNPCSpawnMod() {
+plNPCSpawnMod::~plNPCSpawnMod()
+{
     delete fNotify;
 }
 
-void plNPCSpawnMod::read(hsStream* S, plResManager* mgr) {
+void plNPCSpawnMod::read(hsStream* S, plResManager* mgr)
+{
     plSingleModifier::read(S, mgr);
 
     fModelName = S->readSafeStr();
@@ -28,22 +30,24 @@ void plNPCSpawnMod::read(hsStream* S, plResManager* mgr) {
     fAutoSpawn = S->readBool();
 
     if (S->readBool())
-        setNotify(plNotifyMsg::Convert(mgr->ReadCreatable(S)));
+        setNotify(mgr->ReadCreatableC<plNotifyMsg>(S));
 }
 
-void plNPCSpawnMod::write(hsStream* S, plResManager* mgr) {
+void plNPCSpawnMod::write(hsStream* S, plResManager* mgr)
+{
     plSingleModifier::write(S, mgr);
 
     S->writeSafeStr(fModelName);
     S->writeSafeStr(fAccountName);
     S->writeBool(fAutoSpawn);
 
-    S->writeBool(fNotify != NULL);
-    if (fNotify != NULL)
+    S->writeBool(fNotify != nullptr);
+    if (fNotify)
         mgr->WriteCreatable(S, fNotify);
 }
 
-void plNPCSpawnMod::IPrcWrite(pfPrcHelper* prc) {
+void plNPCSpawnMod::IPrcWrite(pfPrcHelper* prc)
+{
     plSingleModifier::IPrcWrite(prc);
 
     prc->startTag("NPCSpawnParams");
@@ -52,7 +56,7 @@ void plNPCSpawnMod::IPrcWrite(pfPrcHelper* prc) {
     prc->writeParam("AutoSpawn", fAutoSpawn);
     prc->endTag(true);
 
-    if (fNotify != NULL) {
+    if (fNotify) {
         prc->writeSimpleTag("Notify");
         fNotify->prcWrite(prc);
         prc->closeTag();
@@ -63,23 +67,25 @@ void plNPCSpawnMod::IPrcWrite(pfPrcHelper* prc) {
     }
 }
 
-void plNPCSpawnMod::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
+void plNPCSpawnMod::IPrcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     if (tag->getName() == "NPCSpawnParams") {
         fModelName = tag->getParam("ModelName", "");
         fAccountName = tag->getParam("AccountName", "");
         fAutoSpawn = tag->getParam("AutoSpawn", "false").to_bool();
     } else if (tag->getName() == "Notify") {
         if (tag->getParam("NULL", "false").to_bool()) {
-            setNotify(NULL);
+            setNotify(nullptr);
         } else if (tag->hasChildren()) {
-            setNotify(plNotifyMsg::Convert(mgr->prcParseCreatable(tag->getFirstChild())));
+            setNotify(mgr->prcParseCreatableC<plNotifyMsg>(tag->getFirstChild()));
         }
     } else {
         plSingleModifier::IPrcParse(tag, mgr);
     }
 }
 
-void plNPCSpawnMod::setNotify(plNotifyMsg* msg) {
+void plNPCSpawnMod::setNotify(plNotifyMsg* msg)
+{
     delete fNotify;
     fNotify = msg;
 }

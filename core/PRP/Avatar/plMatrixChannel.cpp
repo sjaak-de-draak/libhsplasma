@@ -17,7 +17,8 @@
 #include "plMatrixChannel.h"
 
 /* plMatrixConstant */
-void plMatrixConstant::read(hsStream* S, plResManager* mgr) {
+void plMatrixConstant::read(hsStream* S, plResManager* mgr)
+{
     plAGChannel::read(S, mgr);
 
     if (!S->getVer().isUruSP())
@@ -26,14 +27,16 @@ void plMatrixConstant::read(hsStream* S, plResManager* mgr) {
         fAP.reset();
 }
 
-void plMatrixConstant::write(hsStream* S, plResManager* mgr) {
+void plMatrixConstant::write(hsStream* S, plResManager* mgr)
+{
     plAGChannel::write(S, mgr);
 
     if (!S->getVer().isUruSP())
         fAP.write(S);
 }
 
-void plMatrixConstant::IPrcWrite(pfPrcHelper* prc) {
+void plMatrixConstant::IPrcWrite(pfPrcHelper* prc)
+{
     plAGChannel::IPrcWrite(prc);
 
     prc->writeSimpleTag("AffineParts");
@@ -41,7 +44,8 @@ void plMatrixConstant::IPrcWrite(pfPrcHelper* prc) {
     prc->closeTag();
 }
 
-void plMatrixConstant::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
+void plMatrixConstant::IPrcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     if (tag->getName() == "AffineParts") {
         if (tag->hasChildren())
             fAP.prcParse(tag->getFirstChild());
@@ -52,27 +56,31 @@ void plMatrixConstant::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
 
 
 /* plMatrixControllerChannel */
-plMatrixControllerChannel::~plMatrixControllerChannel() {
+plMatrixControllerChannel::~plMatrixControllerChannel()
+{
     delete fController;
 }
 
-void plMatrixControllerChannel::read(hsStream* S, plResManager* mgr) {
+void plMatrixControllerChannel::read(hsStream* S, plResManager* mgr)
+{
     plAGChannel::read(S, mgr);
-    fController = plController::Convert(mgr->ReadCreatable(S));
+    fController = mgr->ReadCreatableC<plController>(S);
     fAP.read(S);
 }
 
-void plMatrixControllerChannel::write(hsStream* S, plResManager* mgr) {
+void plMatrixControllerChannel::write(hsStream* S, plResManager* mgr)
+{
     plAGChannel::write(S, mgr);
     plController::WriteController(S, mgr, fController);
     fAP.write(S);
 }
 
-void plMatrixControllerChannel::IPrcWrite(pfPrcHelper* prc) {
+void plMatrixControllerChannel::IPrcWrite(pfPrcHelper* prc)
+{
     plAGChannel::IPrcWrite(prc);
 
     prc->writeSimpleTag("Controller");
-    if (fController != NULL)
+    if (fController)
         fController->prcWrite(prc);
     prc->closeTag();
 
@@ -81,10 +89,11 @@ void plMatrixControllerChannel::IPrcWrite(pfPrcHelper* prc) {
     prc->closeTag();
 }
 
-void plMatrixControllerChannel::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
+void plMatrixControllerChannel::IPrcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     if (tag->getName() == "Controller") {
         if (tag->hasChildren())
-            fController = plController::Convert(mgr->prcParseCreatable(tag->getFirstChild()));
+            fController = mgr->prcParseCreatableC<plController>(tag->getFirstChild());
     } else if (tag->getName() == "AffineParts") {
         if (tag->hasChildren())
             fAP.prcParse(tag->getFirstChild());
@@ -93,7 +102,8 @@ void plMatrixControllerChannel::IPrcParse(const pfPrcTag* tag, plResManager* mgr
     }
 }
 
-void plMatrixControllerChannel::setController(plController* controller) {
+void plMatrixControllerChannel::setController(plController* controller)
+{
     delete fController;
     fController = controller;
 }

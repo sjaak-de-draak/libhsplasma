@@ -31,13 +31,14 @@ PY_METHOD_VA(DynamicCamMap, addMatLayer,
     PyObject* key;
     if (!(PyArg_ParseTuple(args, "O", &key) && pyKey_Check(key))) {
         PyErr_SetString(PyExc_TypeError, "addMatLayer expects a plKey");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addMatLayer(pyPlasma_get<plKey>(key));
     Py_RETURN_NONE;
 }
 
-PY_METHOD_NOARGS(DynamicCamMap, clearMatLayers, "Clears the list of layer keys") {
+PY_METHOD_NOARGS(DynamicCamMap, clearMatLayers, "Clears the list of layer keys")
+{
     self->fThis->clearMatLayers();
     Py_RETURN_NONE;
 }
@@ -49,7 +50,7 @@ PY_METHOD_VA(DynamicCamMap, delMatLayer,
     Py_ssize_t idx;
     if (!PyArg_ParseTuple(args, "n", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delMatLayer expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->delMatLayer((size_t)idx);
     Py_RETURN_NONE;
@@ -62,7 +63,7 @@ PY_METHOD_VA(DynamicCamMap, addTargetNode,
     PyObject* key;
     if (!(PyArg_ParseTuple(args, "O", &key) && pyKey_Check(key))) {
         PyErr_SetString(PyExc_TypeError, "addTargetNode expects a plKey");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addTargetNode(pyPlasma_get<plKey>(key));
     Py_RETURN_NONE;
@@ -82,7 +83,7 @@ PY_METHOD_VA(DynamicCamMap, delTargetNode,
     Py_ssize_t idx;
     if (!PyArg_ParseTuple(args, "n", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delTargetNode expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->delTargetNode((size_t)idx);
     Py_RETURN_NONE;
@@ -95,7 +96,7 @@ PY_METHOD_VA(DynamicCamMap, addVisRegion,
     PyObject* key;
     if (!(PyArg_ParseTuple(args, "O", &key) && pyKey_Check(key))) {
         PyErr_SetString(PyExc_TypeError, "addVisRegion expects a plKey");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addVisRegion(pyPlasma_get<plKey>(key));
     Py_RETURN_NONE;
@@ -115,7 +116,7 @@ PY_METHOD_VA(DynamicCamMap, delVisRegion,
     Py_ssize_t idx;
     if (!PyArg_ParseTuple(args, "n", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delVisRegion expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->delVisRegion((size_t)idx);
     Py_RETURN_NONE;
@@ -128,7 +129,7 @@ PY_METHOD_VA(DynamicCamMap, addVisRegionName,
     PyObject* name;
     if (!(PyArg_ParseTuple(args, "O", &name) && pyPlasma_check<ST::string>(name))) {
         PyErr_SetString(PyExc_TypeError, "addVisRegionName expects a string");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addVisRegionName(pyPlasma_get<ST::string>(name));
     Py_RETURN_NONE;
@@ -148,7 +149,7 @@ PY_METHOD_VA(DynamicCamMap, delVisRegionName,
     Py_ssize_t idx;
     if (!PyArg_ParseTuple(args, "n", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delVisRegionName expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->delVisRegionName((size_t)idx);
     Py_RETURN_NONE;
@@ -170,7 +171,8 @@ static PyMethodDef pyDynamicCamMap_Methods[] = {
     PY_METHOD_TERMINATOR
 };
 
-PY_GETSET_GETTER_DECL(DynamicCamMap, visRegions) {
+PY_GETSET_GETTER_DECL(DynamicCamMap, visRegions)
+{
     const std::vector<plKey>& keys = self->fThis->getVisRegions();
     PyObject* regionList = PyTuple_New(keys.size());
     for (size_t i=0; i<keys.size(); i++)
@@ -178,7 +180,8 @@ PY_GETSET_GETTER_DECL(DynamicCamMap, visRegions) {
     return regionList;
 }
 
-PY_GETSET_SETTER_DECL(DynamicCamMap, visRegions) {
+PY_GETSET_SETTER_DECL(DynamicCamMap, visRegions)
+{
     PY_PROPERTY_CHECK_NULL(visRegions)
     pySequenceFastRef seq(value);
     if (!seq.isSequence()) {
@@ -202,7 +205,8 @@ PY_GETSET_SETTER_DECL(DynamicCamMap, visRegions) {
 
 PY_PROPERTY_GETSET_DECL(DynamicCamMap, visRegions)
 
-PY_GETSET_GETTER_DECL(DynamicCamMap, targetNodes) {
+PY_GETSET_GETTER_DECL(DynamicCamMap, targetNodes)
+{
     const std::vector<plKey>& keys = self->fThis->getTargetNodes();
     PyObject* nodeList = PyTuple_New(keys.size());
     for (size_t i=0; i<keys.size(); i++)
@@ -210,7 +214,8 @@ PY_GETSET_GETTER_DECL(DynamicCamMap, targetNodes) {
     return nodeList;
 }
 
-PY_GETSET_SETTER_DECL(DynamicCamMap, targetNodes) {
+PY_GETSET_SETTER_DECL(DynamicCamMap, targetNodes)
+{
     PY_PROPERTY_CHECK_NULL(targetNodes)
     pySequenceFastRef seq(value);
     if (!seq.isSequence()) {
@@ -234,7 +239,8 @@ PY_GETSET_SETTER_DECL(DynamicCamMap, targetNodes) {
 
 PY_PROPERTY_GETSET_DECL(DynamicCamMap, targetNodes)
 
-PY_GETSET_GETTER_DECL(DynamicCamMap, matLayers) {
+PY_GETSET_GETTER_DECL(DynamicCamMap, matLayers)
+{
     const std::vector<plKey>& keys = self->fThis->getMatLayers();
     PyObject* layerList = PyTuple_New(keys.size());
     for (size_t i=0; i<keys.size(); i++)
@@ -242,7 +248,8 @@ PY_GETSET_GETTER_DECL(DynamicCamMap, matLayers) {
     return layerList;
 }
 
-PY_GETSET_SETTER_DECL(DynamicCamMap, matLayers) {
+PY_GETSET_SETTER_DECL(DynamicCamMap, matLayers)
+{
     PY_PROPERTY_CHECK_NULL(matLayers)
     pySequenceFastRef seq(value);
     if (!seq.isSequence()) {
@@ -266,7 +273,8 @@ PY_GETSET_SETTER_DECL(DynamicCamMap, matLayers) {
 
 PY_PROPERTY_GETSET_DECL(DynamicCamMap, matLayers)
 
-PY_GETSET_GETTER_DECL(DynamicCamMap, visRegionNames) {
+PY_GETSET_GETTER_DECL(DynamicCamMap, visRegionNames)
+{
     const std::vector<ST::string>& names = self->fThis->getVisRegionNames();
     PyObject* regionNameList = PyTuple_New(names.size());
     for (size_t i=0; i<names.size(); i++)
@@ -274,7 +282,8 @@ PY_GETSET_GETTER_DECL(DynamicCamMap, visRegionNames) {
     return regionNameList;
 }
 
-PY_GETSET_SETTER_DECL(DynamicCamMap, visRegionNames) {
+PY_GETSET_SETTER_DECL(DynamicCamMap, visRegionNames)
+{
     PY_PROPERTY_CHECK_NULL(visRegionNames)
     pySequenceFastRef seq(value);
     if (!seq.isSequence()) {
@@ -328,13 +337,14 @@ static PyGetSetDef pyDynamicCamMap_GetSet[] = {
 
 PY_PLASMA_TYPE(DynamicCamMap, plDynamicCamMap, "plDynamicCamMap wrapper")
 
-PY_PLASMA_TYPE_INIT(DynamicCamMap) {
+PY_PLASMA_TYPE_INIT(DynamicCamMap)
+{
     pyDynamicCamMap_Type.tp_new = pyDynamicCamMap_new;
     pyDynamicCamMap_Type.tp_methods = pyDynamicCamMap_Methods;
     pyDynamicCamMap_Type.tp_getset = pyDynamicCamMap_GetSet;
     pyDynamicCamMap_Type.tp_base = &pyRenderTarget_Type;
     if (PyType_CheckAndReady(&pyDynamicCamMap_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyDynamicCamMap_Type);
     return (PyObject*)&pyDynamicCamMap_Type;

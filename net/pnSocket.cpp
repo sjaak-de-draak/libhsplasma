@@ -27,14 +27,13 @@ static int sockError();
 #   include <wspiapi.h>
 
     typedef char* sockbuf_t;
+    typedef const char* const_sockbuf_t;
 
     static WSADATA s_wsadata;
 
-    static void closeWinsock()
-    { WSACleanup(); }
+    static void closeWinsock() { WSACleanup(); }
 
-    static int sockError()
-    { return WSAGetLastError(); }
+    static int sockError() { return WSAGetLastError(); }
 
 #   ifndef AI_ADDRCONFIG
 #       define AI_ADDRCONFIG 0x0020
@@ -55,9 +54,9 @@ static int sockError();
 #   define closesocket ::close
 #   define ioctlsocket ::ioctl
     typedef void* sockbuf_t;
+    typedef const void* const_sockbuf_t;
 
-    static int sockError()
-    { return errno; }
+    static int sockError() { return errno; }
 
 #   define INVALID_SOCKET (-1)
 #endif
@@ -76,8 +75,8 @@ static const char* getSockErrorStr()
 #ifdef _WIN32
     static char msgbuf[4096];
 
-    FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, WSAGetLastError(),
-                  0, msgbuf, 4096, NULL);
+    FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, WSAGetLastError(),
+                  0, msgbuf, 4096, nullptr);
     return msgbuf;
 #else
     return strerror(errno);
@@ -97,14 +96,12 @@ static void initSockets()
 }
 
 /* pnSocket */
-pnSocket::pnSocket()
-        : fSockHandle(-1), fConnected(false)
+pnSocket::pnSocket() : fSockHandle(-1), fConnected()
 {
     initSockets();
 }
 
-pnSocket::pnSocket(int handle)
-        : fSockHandle(handle), fConnected(true)
+pnSocket::pnSocket(int handle) : fSockHandle(handle), fConnected(true)
 {
     initSockets();
 }
@@ -116,10 +113,9 @@ ST::string pnSocket::getRemoteIpStr() const
     sockaddr_in addr;
     socklen_t slen = sizeof(addr);
     std::lock_guard<std::mutex> lock(ipStrMutex);
-    const char* str = "???.???.???.???";
     if (getpeername(fSockHandle, (sockaddr*)&addr, &slen) >= 0)
-        str = inet_ntoa(addr.sin_addr);
-    return str;
+        return inet_ntoa(addr.sin_addr);
+    return "???.???.???.???";
 }
 
 bool pnSocket::connect(const char* address, unsigned short port)
@@ -141,7 +137,7 @@ bool pnSocket::connect(const char* address, unsigned short port)
         return false;
     }
 
-    for (addrinfo* ap = addr; ap != NULL; ap = ap->ai_next) {
+    for (addrinfo* ap = addr; ap; ap = ap->ai_next) {
         fSockHandle = socket(ap->ai_family, ap->ai_socktype, ap->ai_protocol);
         if (fSockHandle != INVALID_SOCKET) {
             if (::connect(fSockHandle, ap->ai_addr, ap->ai_addrlen) != -1)
@@ -171,7 +167,7 @@ bool pnSocket::bind(unsigned short port)
     conn.ai_protocol = 0;
 
     addrinfo* addr;
-    int res = getaddrinfo(NULL, ST::format("{}", port).c_str(),
+    int res = getaddrinfo(nullptr, ST::format("{}", port).c_str(),
                           &conn, &addr);
     if (res != 0) {
         ST::string msg = gai_strerror(res);
@@ -180,7 +176,7 @@ bool pnSocket::bind(unsigned short port)
         return false;
     }
 
-    for (addrinfo* ap = addr; ap != NULL; ap = ap->ai_next) {
+    for (addrinfo* ap = addr; ap; ap = ap->ai_next) {
         fSockHandle = socket(ap->ai_family, ap->ai_socktype, ap->ai_protocol);
         if (fSockHandle != INVALID_SOCKET) {
             if (::bind(fSockHandle, ap->ai_addr, ap->ai_addrlen) == 0)
@@ -204,14 +200,14 @@ pnSocket* pnSocket::listen(int backlog)
     if (::listen(fSockHandle, backlog) == -1) {
         if (fSockHandle != -1)
             plDebug::Error("Listen failed: {}", getSockErrorStr());
-        return NULL;
+        return nullptr;
     }
 
-    int client = accept(fSockHandle, NULL, NULL);
+    int client = accept(fSockHandle, nullptr, nullptr);
     if (client == -1) {
         if (fSockHandle != -1)
             plDebug::Error("Listen failed: {}", getSockErrorStr());
-        return NULL;
+        return nullptr;
     }
     return new pnSocket(client);
 }
@@ -236,7 +232,7 @@ void pnSocket::unlink()
 
 long pnSocket::send(const void* buffer, size_t size)
 {
-    long count = ::send(fSockHandle, (const sockbuf_t)buffer, size, 0);
+    long count = ::send(fSockHandle, (const_sockbuf_t)buffer, size, 0);
     if (count == -1) {
         plDebug::Error("Send failed: {}", getSockErrorStr());
         close();
@@ -285,7 +281,7 @@ bool pnSocket::waitForData(unsigned int utimeout)
     FD_SET(fSockHandle, &sread);
     stimeout.tv_sec = 0;
     stimeout.tv_usec = utimeout;
-    int si = select(fSockHandle+1, &sread, NULL, NULL, &stimeout);
+    int si = select(fSockHandle+1, &sread, nullptr, nullptr, &stimeout);
     if (si < 0)
         close();
     return si > 0;
@@ -297,7 +293,7 @@ unsigned long pnSocket::GetAddress(const char* addrName)
     std::lock_guard<std::mutex> lock(addrMutex);
     hostent* host = gethostbyname(addrName);
     unsigned long numAddr = 0;
-    if (host != NULL && host->h_addr_list != NULL)
+    if (host && host->h_addr_list)
         numAddr = ntohl(*(unsigned long*)host->h_addr_list[0]);
     return numAddr;
 }
@@ -312,8 +308,8 @@ ST::string pnSocket::recvString(size_t maxlen)
 
     if (size > 0) {
         ST::utf16_buffer str;
-        char16_t* buf = str.create_writable_buffer(size);
-        recv(buf, size * sizeof(char16_t));
+        str.allocate(size);
+        recv(str.data(), size * sizeof(char16_t));
         return ST::string::from_utf16(str);
     } else {
         return ST::string();
@@ -376,14 +372,11 @@ static void SendBasic(unsigned char*& buf, const msgparm_t& data,
     // Also works for floats and doubles
     if (count == 0) {
         if (size == 1) {
-            *(uint8_t*)buf = (uint8_t)data.fUint;
-            buf += sizeof(uint8_t);
+            NCWriteBuffer<uint8_t>(buf, data.fUint);
         } else if (size == 2) {
-            *(uint16_t*)buf = (uint16_t)data.fUint;
-            buf += sizeof(uint16_t);
+            NCWriteBuffer<uint16_t>(buf, data.fUint);
         } else if (size == 4) {
-            *(uint32_t*)buf = data.fUint;
-            buf += sizeof(uint32_t);
+            NCWriteBuffer<uint32_t>(buf, data.fUint);
         }
 
 #ifdef COMMDEBUG
@@ -423,7 +416,7 @@ static void SendBasic(unsigned char*& buf, const msgparm_t& data,
 
 bool pnSocket::sendMsg(const msgparm_t* data, const pnNetMsg* msg)
 {
-    if (msg == NULL)
+    if (msg == nullptr)
         return false;
 
 #ifdef COMMDEBUG
@@ -514,8 +507,8 @@ bool pnSocket::sendMsg(const msgparm_t* data, const pnNetMsg* msg)
 
 msgparm_t* pnSocket::recvMsg(const pnNetMsg* msg)
 {
-    if (msg == NULL)
-        return NULL;
+    if (msg == nullptr)
+        return nullptr;
 
 #ifdef COMMDEBUG
     plDebug::Debug("<RECV> {}", msg->fMsgName);

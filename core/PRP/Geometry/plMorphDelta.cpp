@@ -17,21 +17,24 @@
 #include "plMorphDelta.h"
 
 /* plVertDelta */
-void plVertDelta::read(hsStream* S) {
+void plVertDelta::read(hsStream* S)
+{
     fIdx = S->readShort();
     fPadding = S->readShort();
     fPos.read(S);
     fNorm.read(S);
 }
 
-void plVertDelta::write(hsStream* S) {
+void plVertDelta::write(hsStream* S)
+{
     S->writeShort(fIdx);
     S->writeShort(fPadding);
     fPos.write(S);
     fNorm.write(S);
 }
 
-void plVertDelta::prcWrite(pfPrcHelper* prc) {
+void plVertDelta::prcWrite(pfPrcHelper* prc)
+{
     prc->startTag("plVertDelta");
     prc->writeParam("Idx", fIdx);
     prc->writeParam("Padding", fPadding);
@@ -47,7 +50,8 @@ void plVertDelta::prcWrite(pfPrcHelper* prc) {
     prc->closeTag();
 }
 
-void plVertDelta::prcParse(const pfPrcTag* tag) {
+void plVertDelta::prcParse(const pfPrcTag* tag)
+{
     if (tag->getName() != "plVertDelta")
         throw pfPrcTagException(__FILE__, __LINE__, tag->getName());
 
@@ -55,7 +59,7 @@ void plVertDelta::prcParse(const pfPrcTag* tag) {
     fPadding = tag->getParam("Padding", "0").to_uint();
 
     const pfPrcTag* child = tag->getFirstChild();
-    while (child != NULL) {
+    while (child) {
         if (child->getName() == "Pos") {
             if (child->hasChildren())
                 fPos.prcParse(child->getFirstChild());
@@ -71,18 +75,20 @@ void plVertDelta::prcParse(const pfPrcTag* tag) {
 
 
 /* plMorphSpan */
-plMorphSpan::~plMorphSpan() {
+plMorphSpan::~plMorphSpan()
+{
     delete[] fUVWs;
 }
 
-void plMorphSpan::read(hsStream* S) {
+void plMorphSpan::read(hsStream* S)
+{
     fDeltas.resize(S->readInt());
     fNumUVWChans = S->readInt();
     delete[] fUVWs;
     if (fNumUVWChans > 0)
         fUVWs = new hsVector3[fNumUVWChans * fDeltas.size()];
     else
-        fUVWs = NULL;
+        fUVWs = nullptr;
 
     for (size_t i=0; i<fDeltas.size(); i++)
         fDeltas[i].read(S);
@@ -90,7 +96,8 @@ void plMorphSpan::read(hsStream* S) {
         fUVWs[i].read(S);
 }
 
-void plMorphSpan::write(hsStream* S) {
+void plMorphSpan::write(hsStream* S)
+{
     S->writeInt(fDeltas.size());
     S->writeInt(fNumUVWChans);
 
@@ -100,7 +107,8 @@ void plMorphSpan::write(hsStream* S) {
         fUVWs[i].write(S);
 }
 
-void plMorphSpan::prcWrite(pfPrcHelper* prc) {
+void plMorphSpan::prcWrite(pfPrcHelper* prc)
+{
     prc->writeSimpleTag("plMorphSpan");
 
     prc->writeSimpleTag("Deltas");
@@ -118,12 +126,13 @@ void plMorphSpan::prcWrite(pfPrcHelper* prc) {
     prc->closeTag();
 }
 
-void plMorphSpan::prcParse(const pfPrcTag* tag) {
+void plMorphSpan::prcParse(const pfPrcTag* tag)
+{
     if (tag->getName() != "plMorphSpan")
         throw pfPrcTagException(__FILE__, __LINE__, tag->getName());
 
     const pfPrcTag* child = tag->getFirstChild();
-    while (child != NULL) {
+    while (child) {
         if (child->getName() == "Deltas") {
             fDeltas.resize(child->countChildren());
             const pfPrcTag* subchild = child->getFirstChild();
@@ -152,21 +161,24 @@ void plMorphSpan::prcParse(const pfPrcTag* tag) {
 
 
 /* plMorphDelta */
-void plMorphDelta::read(hsStream* S, plResManager* ) {
+void plMorphDelta::read(hsStream* S, plResManager* )
+{
     fWeight = S->readFloat();
     fSpans.resize(S->readInt());
     for (size_t i=0; i<fSpans.size(); i++)
         fSpans[i].read(S);
 }
 
-void plMorphDelta::write(hsStream* S, plResManager* ) {
+void plMorphDelta::write(hsStream* S, plResManager* )
+{
     S->writeFloat(fWeight);
     S->writeInt(fSpans.size());
     for (size_t i=0; i<fSpans.size(); i++)
         fSpans[i].write(S);
 }
 
-void plMorphDelta::IPrcWrite(pfPrcHelper* prc) {
+void plMorphDelta::IPrcWrite(pfPrcHelper* prc)
+{
     prc->startTag("Weight");
     prc->writeParam("value", fWeight);
     prc->endTag(true);
@@ -177,7 +189,8 @@ void plMorphDelta::IPrcWrite(pfPrcHelper* prc) {
     prc->closeTag();
 }
 
-void plMorphDelta::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
+void plMorphDelta::IPrcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     if (tag->getName() == "Weight") {
         fWeight = tag->getParam("value", "0").to_float();
     } else if (tag->getName() == "Spans") {

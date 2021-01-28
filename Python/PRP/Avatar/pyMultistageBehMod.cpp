@@ -30,11 +30,11 @@ PY_METHOD_VA(MultistageBehMod, addStage,
     pyAnimStage* anim;
     if (!PyArg_ParseTuple(args, "O", &anim)) {
         PyErr_SetString(PyExc_TypeError, "addStage expects a plAnimStage");
-        return NULL;
+        return nullptr;
     }
     if (!pyAnimStage_Check((PyObject*)anim)) {
         PyErr_SetString(PyExc_TypeError, "addStage expects a plAnimStage");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addStage(anim->fThis);
     anim->fPyOwned = false;
@@ -48,7 +48,7 @@ PY_METHOD_VA(MultistageBehMod, delStage,
     int idx;
     if (!PyArg_ParseTuple(args, "i", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delStage expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->delStage(idx);
     Py_RETURN_NONE;
@@ -68,11 +68,11 @@ PY_METHOD_VA(MultistageBehMod, addReceiver,
     pyKey* rcvr;
     if (!PyArg_ParseTuple(args, "O", &rcvr)) {
         PyErr_SetString(PyExc_TypeError, "addReceiver expects a plKey");
-        return NULL;
+        return nullptr;
     }
     if (!pyKey_Check((PyObject*)rcvr)) {
         PyErr_SetString(PyExc_TypeError, "addReceiver expects a plKey");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addReceiver(*rcvr->fThis);
     Py_RETURN_NONE;
@@ -85,7 +85,7 @@ PY_METHOD_VA(MultistageBehMod, delReceiver,
     int idx;
     if (!PyArg_ParseTuple(args, "i", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delReceiver expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->delReceiver(idx);
     Py_RETURN_NONE;
@@ -108,7 +108,8 @@ static PyMethodDef pyMultistageBehMod_Methods[] = {
     PY_METHOD_TERMINATOR
 };
 
-PY_GETSET_GETTER_DECL(MultistageBehMod, stages) {
+PY_GETSET_GETTER_DECL(MultistageBehMod, stages)
+{
     PyObject* list = PyTuple_New(self->fThis->getStages().size());
     for (size_t i=0; i<self->fThis->getStages().size(); i++)
         PyTuple_SET_ITEM(list, i, ICreate(self->fThis->getStages()[i]));
@@ -118,7 +119,8 @@ PY_GETSET_GETTER_DECL(MultistageBehMod, stages) {
 PY_PROPERTY_SETTER_MSG(MultistageBehMod, stages, "To add stages, use addStage()")
 PY_PROPERTY_GETSET_DECL(MultistageBehMod, stages)
 
-PY_GETSET_GETTER_DECL(MultistageBehMod, receivers) {
+PY_GETSET_GETTER_DECL(MultistageBehMod, receivers)
+{
     PyObject* list = PyTuple_New(self->fThis->getReceivers().size());
     for (size_t i=0; i<self->fThis->getReceivers().size(); i++)
         PyTuple_SET_ITEM(list, i, pyPlasma_convert(self->fThis->getReceivers()[i]));
@@ -144,13 +146,14 @@ static PyGetSetDef pyMultistageBehMod_GetSet[] = {
 
 PY_PLASMA_TYPE(MultistageBehMod, plMultistageBehMod, "plMultistageBehMod wrapper")
 
-PY_PLASMA_TYPE_INIT(MultistageBehMod) {
+PY_PLASMA_TYPE_INIT(MultistageBehMod)
+{
     pyMultistageBehMod_Type.tp_new = pyMultistageBehMod_new;
     pyMultistageBehMod_Type.tp_methods = pyMultistageBehMod_Methods;
     pyMultistageBehMod_Type.tp_getset = pyMultistageBehMod_GetSet;
     pyMultistageBehMod_Type.tp_base = &pySingleModifier_Type;
     if (PyType_CheckAndReady(&pyMultistageBehMod_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyMultistageBehMod_Type);
     return (PyObject*)&pyMultistageBehMod_Type;

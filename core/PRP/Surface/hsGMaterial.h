@@ -19,11 +19,13 @@
 
 #include "PRP/Object/plSynchedObject.h"
 
-class PLASMA_DLL hsGMaterial : public plSynchedObject {
+class PLASMA_DLL hsGMaterial : public plSynchedObject
+{
     CREATABLE(hsGMaterial, kGMaterial, plSynchedObject)
 
 public:
-    enum hsGCompFlags {
+    enum hsGCompFlags
+    {
         kCompShaded = 0x1,
         kCompEnvironMap = 0x2,
         kCompProjectOnto = 0x4,
@@ -45,7 +47,7 @@ private:
     unsigned int fCompFlags, fLoadFlags;
 
 public:
-    hsGMaterial() : fCompFlags(0), fLoadFlags(0) { }
+    hsGMaterial() : fCompFlags(), fLoadFlags() { }
 
     void read(hsStream* S, plResManager* mgr) HS_OVERRIDE;
     void write(hsStream* S, plResManager* mgr) HS_OVERRIDE;
@@ -57,13 +59,13 @@ protected:
 public:
     const std::vector<plKey>& getLayers() const { return fLayers; }
     std::vector<plKey>& getLayers() { return fLayers; }
-    void addLayer(plKey layer) { fLayers.push_back(layer); }
+    void addLayer(plKey layer) { fLayers.emplace_back(std::move(layer)); }
     void delLayer(size_t idx) { fLayers.erase(fLayers.begin() + idx); }
     void clearLayers() { fLayers.clear(); }
 
     const std::vector<plKey>& getPiggyBacks() const { return fPiggyBacks; }
     std::vector<plKey>& getPiggyBacks() { return fPiggyBacks; }
-    void addPiggyBack(plKey layer) { fPiggyBacks.push_back(layer); }
+    void addPiggyBack(plKey layer) { fPiggyBacks.emplace_back(std::move(layer)); }
     void delPiggyBack(size_t idx) { fPiggyBacks.erase(fPiggyBacks.begin() + idx); }
     void clearPiggyBacks() { fPiggyBacks.clear(); }
 

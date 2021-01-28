@@ -17,23 +17,25 @@
 #ifndef _PLCREATABLE_H
 #define _PLCREATABLE_H
 
+#include "Stream/pfPrcHelper.h"
+#include "Stream/pfPrcParser.h"
 #include "ResManager/pdUnifiedTypeMap.h"
-#include "ResManager/plResManager.h"
 #include <string_theory/format>
 
 #define CREATABLE(classname, classid, parentclass) \
 public: \
     short ClassIndex() const HS_OVERRIDE { return classid; } \
-    bool ClassInstance(short hClass) const HS_OVERRIDE { \
+    bool ClassInstance(short hClass) const HS_OVERRIDE \
+    { \
         if (hClass == classid) \
             return true; \
         return parentclass::ClassInstance(hClass); \
     } \
-    static classname* Convert(plCreatable* pCre, bool requireValid = true) { \
-        if (pCre == NULL) \
-            return NULL; \
-        bool result = pCre->ClassInstance(classid); \
-        if (result) { \
+    static classname* Convert(plCreatable* pCre, bool requireValid = true) \
+    { \
+        if (pCre == nullptr) \
+            return nullptr; \
+        if (pCre->ClassInstance(classid)) { \
             return static_cast<classname*>(pCre); \
         } else if (requireValid) { \
             short otherClassId = pCre->ClassIndex(); \
@@ -42,12 +44,15 @@ public: \
                            pdUnifiedTypeMap::ClassName(otherClassId), \
                            pdUnifiedTypeMap::ClassName(classid))); \
         } else { \
-            return NULL; \
+            return nullptr; \
         } \
     }
 
 
-class PLASMA_DLL plCreatable {
+class plResManager;
+
+class PLASMA_DLL plCreatable
+{
 public:
     plCreatable() { }
     virtual ~plCreatable() { }
@@ -108,6 +113,11 @@ public:
      */
     virtual void prcParse(const pfPrcTag* tag, plResManager* mgr);
 
+    /**
+     * Writes this creatable to a PRC document and returns it as a string.
+     */
+    ST::string toPrc(pfPrcHelper::PrcExclude exclude = pfPrcHelper::kNone);
+
 protected:
     /**
      * This must be overloaded by subclasses to write PRC data specific
@@ -140,7 +150,8 @@ protected:
  * a good idea to use a real Creatable class whenever possible.
  * \sa hsKeyedObjectStub
  */
-class PLASMA_DLL plCreatableStub : public plCreatable {
+class PLASMA_DLL plCreatableStub : public plCreatable
+{
 private:
     short fClassIdx;
     uint8_t* fData;
@@ -148,15 +159,15 @@ private:
 
 public:
     /** Constructs an empty stub.  Only useful for NULL creatables. */
-    plCreatableStub() : fClassIdx((short)0x8000), fData(NULL), fDataLen(0) { }
+    plCreatableStub() : fClassIdx((short)0x8000), fData(), fDataLen() { }
 
     /** Constructs a stub whose type is \a hClass, and size is \a length */
     plCreatableStub(short hClass, size_t length);
 
-    virtual ~plCreatableStub();
+    ~plCreatableStub();
 
-    short ClassIndex() const HS_FINAL { return fClassIdx; }
-    bool isStub() const HS_FINAL { return true; }
+    short ClassIndex() const HS_FINAL_OVERRIDE { return fClassIdx; }
+    bool isStub() const HS_FINAL_OVERRIDE { return true; }
 
     void read(hsStream* S, plResManager* mgr) HS_OVERRIDE;
     void write(hsStream* S, plResManager* mgr) HS_OVERRIDE;
@@ -187,7 +198,8 @@ public:
  * for plCastedType::Convert(pCre).
  */
 template <class Creatable_T>
-Creatable_T *creatable_cast(plCreatable *pCre, bool requireValid = true) {
+Creatable_T *creatable_cast(plCreatable *pCre, bool requireValid = true)
+{
     return Creatable_T::Convert(pCre, requireValid);
 }
 

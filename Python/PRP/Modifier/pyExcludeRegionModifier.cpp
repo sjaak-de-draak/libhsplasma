@@ -29,7 +29,7 @@ PY_METHOD_VA(ExcludeRegionModifier, addSafePoint,
     PyObject* key;
     if (!(PyArg_ParseTuple(args, "O", &key) && pyKey_Check(key))) {
         PyErr_SetString(PyExc_TypeError, "addSafePoint expects a plKey");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addSafePoint(pyPlasma_get<plKey>(key));
     Py_RETURN_NONE;
@@ -49,11 +49,11 @@ PY_METHOD_VA(ExcludeRegionModifier, delSafePoint,
     Py_ssize_t idx;
     if (!PyArg_ParseTuple(args, "n", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delSafePoint expects an int");
-        return NULL;
+        return nullptr;
     }
     if (size_t(idx) >= self->fThis->getSafePoints().size()) {
         PyErr_SetNone(PyExc_IndexError);
-        return NULL;
+        return nullptr;
     }
     self->fThis->delSafePoint((size_t)idx);
     Py_RETURN_NONE;
@@ -66,7 +66,8 @@ static PyMethodDef pyExcludeRegionModifier_Methods[] = {
     PY_METHOD_TERMINATOR
 };
 
-PY_GETSET_GETTER_DECL(ExcludeRegionModifier, safePoints) {
+PY_GETSET_GETTER_DECL(ExcludeRegionModifier, safePoints)
+{
     const std::vector<plKey>& points = self->fThis->getSafePoints();
     PyObject* tup = PyTuple_New(points.size());
     for (size_t i = 0; i < points.size(); ++i)
@@ -90,13 +91,14 @@ static PyGetSetDef pyExcludeRegionModifier_GetSet[] = {
 PY_PLASMA_TYPE(ExcludeRegionModifier, plExcludeRegionModifier,
                "plExcludeRegionModifier wrapper")
 
-PY_PLASMA_TYPE_INIT(ExcludeRegionModifier) {
+PY_PLASMA_TYPE_INIT(ExcludeRegionModifier)
+{
     pyExcludeRegionModifier_Type.tp_new = pyExcludeRegionModifier_new;
     pyExcludeRegionModifier_Type.tp_methods = pyExcludeRegionModifier_Methods;
     pyExcludeRegionModifier_Type.tp_getset = pyExcludeRegionModifier_GetSet;
     pyExcludeRegionModifier_Type.tp_base = &pySingleModifier_Type;
     if (PyType_CheckAndReady(&pyExcludeRegionModifier_Type) < 0)
-        return NULL;
+        return nullptr;
 
     PY_TYPE_ADD_CONST(ExcludeRegionModifier, "kBlockCameras",
                       plExcludeRegionModifier::kBlockCameras);

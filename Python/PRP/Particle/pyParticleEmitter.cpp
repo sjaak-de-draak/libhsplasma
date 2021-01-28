@@ -41,12 +41,13 @@ static PyGetSetDef pyParticleEmitter_GetSet[] = {
 
 PY_PLASMA_TYPE(ParticleEmitter, plParticleEmitter, "plParticleEmitter wrapper")
 
-PY_PLASMA_TYPE_INIT(ParticleEmitter) {
+PY_PLASMA_TYPE_INIT(ParticleEmitter)
+{
     pyParticleEmitter_Type.tp_new = pyParticleEmitter_new;
     pyParticleEmitter_Type.tp_getset = pyParticleEmitter_GetSet;
     pyParticleEmitter_Type.tp_base = &pyCreatable_Type;
     if (PyType_CheckAndReady(&pyParticleEmitter_Type) < 0)
-        return NULL;
+        return nullptr;
 
     PY_TYPE_ADD_CONST(ParticleEmitter, "kMatIsEmissive",
                       plParticleEmitter::kMatIsEmissive);

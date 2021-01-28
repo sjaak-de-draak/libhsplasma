@@ -24,7 +24,8 @@ PY_PLASMA_DEALLOC(PageInfo)
 PY_PLASMA_EMPTY_INIT(PageInfo)
 PY_PLASMA_NEW(PageInfo, plPageInfo)
 
-PY_METHOD_NOARGS(PageInfo, isValid, "Returns True if the PageInfo is valid") {
+PY_METHOD_NOARGS(PageInfo, isValid, "Returns True if the PageInfo is valid")
+{
     return pyPlasma_convert(self->fThis->isValid());
 }
 
@@ -35,11 +36,11 @@ PY_METHOD_VA(PageInfo, read,
     pyStream* stream;
     if (!PyArg_ParseTuple(args, "O", &stream)) {
         PyErr_SetString(PyExc_TypeError, "read expects an hsStream");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream)) {
         PyErr_SetString(PyExc_TypeError, "read expects an hsStream");
-        return NULL;
+        return nullptr;
     }
     self->fThis->read(stream->fThis);
     Py_RETURN_NONE;
@@ -52,11 +53,11 @@ PY_METHOD_VA(PageInfo, write,
     pyStream* stream;
     if (!PyArg_ParseTuple(args, "O", &stream)) {
         PyErr_SetString(PyExc_TypeError, "write expects an hsStream");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream)) {
         PyErr_SetString(PyExc_TypeError, "write expects an hsStream");
-        return NULL;
+        return nullptr;
     }
     self->fThis->write(stream->fThis);
     Py_RETURN_NONE;
@@ -69,11 +70,11 @@ PY_METHOD_VA(PageInfo, writeSums,
     pyStream* stream;
     if (!PyArg_ParseTuple(args, "O", &stream)) {
         PyErr_SetString(PyExc_TypeError, "writeSums expects an hsStream");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream)) {
         PyErr_SetString(PyExc_TypeError, "writeSums expects an hsStream");
-        return NULL;
+        return nullptr;
     }
     self->fThis->writeSums(stream->fThis);
     Py_RETURN_NONE;
@@ -86,7 +87,7 @@ PY_METHOD_VA(PageInfo, getFilename,
     int version;
     if (!PyArg_ParseTuple(args, "i", &version)) {
         PyErr_SetString(PyExc_TypeError, "getFilename expects an int");
-        return NULL;
+        return nullptr;
     }
     return pyPlasma_convert(self->fThis->getFilename((PlasmaVer)version));
 }
@@ -100,9 +101,9 @@ static PyMethodDef pyPageInfo_Methods[] = {
     PY_METHOD_TERMINATOR
 };
 
-PY_PROPERTY(ST::string, PageInfo, age, getAge, setAge)
+PY_PROPERTY_PATHLIKE(PageInfo, age, getAge, setAge)
 PY_PROPERTY_RO(PageInfo, chapter, getChapter)
-PY_PROPERTY(ST::string, PageInfo, page, getPage, setPage)
+PY_PROPERTY_PATHLIKE(PageInfo, page, getPage, setPage)
 PY_PROPERTY(unsigned int, PageInfo, releaseVersion, getReleaseVersion, setReleaseVersion)
 PY_PROPERTY(unsigned int, PageInfo, flags, getFlags, setFlags)
 PY_PROPERTY(plLocation, PageInfo, location, getLocation, setLocation)
@@ -119,14 +120,15 @@ static PyGetSetDef pyPageInfo_GetSet[] = {
 
 PY_PLASMA_TYPE(PageInfo, plPageInfo, "plPageInfo wrapper")
 
-PY_PLASMA_TYPE_INIT(PageInfo) {
+PY_PLASMA_TYPE_INIT(PageInfo)
+{
     pyPageInfo_Type.tp_dealloc = pyPageInfo_dealloc;
     pyPageInfo_Type.tp_init = pyPageInfo___init__;
     pyPageInfo_Type.tp_new = pyPageInfo_new;
     pyPageInfo_Type.tp_methods = pyPageInfo_Methods;
     pyPageInfo_Type.tp_getset = pyPageInfo_GetSet;
     if (PyType_CheckAndReady(&pyPageInfo_Type) < 0)
-        return NULL;
+        return nullptr;
 
     PY_TYPE_ADD_CONST(PageInfo, "kPartialPatchFile", plPageInfo::kPartialPatchFile);
     PY_TYPE_ADD_CONST(PageInfo, "kOldDataChecksum", plPageInfo::kOldDataChecksum);

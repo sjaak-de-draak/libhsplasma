@@ -19,7 +19,8 @@
 
 #include "plModifier.h"
 
-class PLASMA_DLL plInterfaceInfoModifier : public plSingleModifier {
+class PLASMA_DLL plInterfaceInfoModifier : public plSingleModifier
+{
     CREATABLE(plInterfaceInfoModifier, kInterfaceInfoModifier, plSingleModifier)
 
 protected:
@@ -36,7 +37,7 @@ protected:
 public:
     const std::vector<plKey>& getIntfKeys() const { return fKeyList; }
     std::vector<plKey>& getIntfKeys() { return fKeyList; }
-    void addIntfKey(plKey key) { fKeyList.push_back(key); }
+    void addIntfKey(plKey key) { fKeyList.emplace_back(std::move(key)); }
     void delIntfKey(size_t idx) { fKeyList.erase(fKeyList.begin() + idx); }
     void clearIntfKeys() { fKeyList.clear(); }
 };

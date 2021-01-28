@@ -17,17 +17,20 @@
 #include "plVolumeIsect.h"
 
 /* plBoundsIsect */
-void plBoundsIsect::read(hsStream* S, plResManager* mgr) {
+void plBoundsIsect::read(hsStream* S, plResManager* mgr)
+{
     fLocalBounds.read(S);
     fWorldBounds.read(S);
 }
 
-void plBoundsIsect::write(hsStream* S, plResManager* mgr) {
+void plBoundsIsect::write(hsStream* S, plResManager* mgr)
+{
     fLocalBounds.write(S);
     fWorldBounds.write(S);
 }
 
-void plBoundsIsect::IPrcWrite(pfPrcHelper* prc) {
+void plBoundsIsect::IPrcWrite(pfPrcHelper* prc)
+{
     prc->writeSimpleTag("LocalBounds");
     fLocalBounds.prcWrite(prc);
     prc->closeTag();
@@ -36,7 +39,8 @@ void plBoundsIsect::IPrcWrite(pfPrcHelper* prc) {
     prc->closeTag();
 }
 
-void plBoundsIsect::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
+void plBoundsIsect::IPrcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     if (tag->getName() == "LocalBounds") {
         if (tag->hasChildren())
             fLocalBounds.prcParse(tag->getFirstChild());
@@ -50,12 +54,8 @@ void plBoundsIsect::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
 
 
 /* plConeIsect */
-plConeIsect::plConeIsect() : fCapped(0), fRadAngle(0.0f), fLength(0.0f) {
-    for (size_t i=0; i<5; i++)
-        fDists[i] = 0.0f;
-}
-
-void plConeIsect::read(hsStream* S, plResManager* mgr) {
+void plConeIsect::read(hsStream* S, plResManager* mgr)
+{
     fCapped = S->readInt();
     fRadAngle = S->readFloat();
     fLength = S->readFloat();
@@ -71,7 +71,8 @@ void plConeIsect::read(hsStream* S, plResManager* mgr) {
     }
 }
 
-void plConeIsect::write(hsStream* S, plResManager* mgr) {
+void plConeIsect::write(hsStream* S, plResManager* mgr)
+{
     S->writeInt(fCapped);
     S->writeFloat(fRadAngle);
     S->writeFloat(fLength);
@@ -87,7 +88,8 @@ void plConeIsect::write(hsStream* S, plResManager* mgr) {
     }
 }
 
-void plConeIsect::IPrcWrite(pfPrcHelper* prc) {
+void plConeIsect::IPrcWrite(pfPrcHelper* prc)
+{
     prc->startTag("ConeParams");
     prc->writeParam("Capped", fCapped);
     prc->writeParam("RadAngle", fRadAngle);
@@ -119,7 +121,8 @@ void plConeIsect::IPrcWrite(pfPrcHelper* prc) {
     prc->closeTag();
 }
 
-void plConeIsect::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
+void plConeIsect::IPrcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     if (tag->getName() == "ConeParams") {
         fCapped = tag->getParam("Capped", "0").to_int();
         fRadAngle = tag->getParam("RadAngle", "0").to_float();
@@ -155,76 +158,102 @@ void plConeIsect::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
 }
 
 
+/* plConvexIsect::SinglePlane */
+void plConvexIsect::SinglePlane::read(hsStream* S)
+{
+    fNorm.read(S);
+    fPos.read(S);
+    fDist = S->readFloat();
+    fWorldNorm.read(S);
+    fWorldDist = S->readFloat();
+}
+
+void plConvexIsect::SinglePlane::write(hsStream* S)
+{
+    fNorm.write(S);
+    fPos.write(S);
+    S->writeFloat(fDist);
+    fWorldNorm.write(S);
+    S->writeFloat(fWorldDist);
+}
+
+void plConvexIsect::SinglePlane::prcWrite(pfPrcHelper* prc)
+{
+    prc->startTag("SinglePlane");
+    prc->writeParam("Dist", fDist);
+    prc->writeParam("WorldDist", fWorldDist);
+    prc->endTag();
+    prc->writeSimpleTag("Normal");
+    fNorm.prcWrite(prc);
+    prc->closeTag();
+    prc->writeSimpleTag("Position");
+    fPos.prcWrite(prc);
+    prc->closeTag();
+    prc->writeSimpleTag("WorldNormal");
+    fWorldNorm.prcWrite(prc);
+    prc->closeTag();
+    prc->closeTag();
+}
+
+void plConvexIsect::SinglePlane::prcParse(const pfPrcTag* tag)
+{
+    if (tag->getName() != "SinglePlane")
+        throw pfPrcTagException(__FILE__, __LINE__, tag->getName());
+    fDist = tag->getParam("Dist", "0").to_float();
+    fWorldDist = tag->getParam("WorldDist", "0").to_float();
+
+    const pfPrcTag* child = tag->getFirstChild();
+    while (child) {
+        if (child->getName() == "Normal") {
+            if (child->hasChildren())
+                fNorm.prcParse(child->getFirstChild());
+        } else if (child->getName() == "Position") {
+            if (child->hasChildren())
+                fPos.prcParse(child->getFirstChild());
+        } else if (child->getName() == "WorldNormal") {
+            if (child->hasChildren())
+                fWorldNorm.prcParse(child->getFirstChild());
+        } else {
+            throw pfPrcTagException(__FILE__, __LINE__, child->getName());
+        }
+        child = child->getNextSibling();
+    }
+}
+
+
 /* plConvexIsect */
-void plConvexIsect::read(hsStream* S, plResManager* mgr) {
+void plConvexIsect::read(hsStream* S, plResManager* mgr)
+{
     fPlanes.resize(S->readShort());
     for (size_t i=0; i<fPlanes.size(); i++) {
-        fPlanes[i].fNorm.read(S);
-        fPlanes[i].fPos.read(S);
-        fPlanes[i].fDist = S->readFloat();
-        fPlanes[i].fWorldNorm.read(S);
-        fPlanes[i].fWorldDist = S->readFloat();
+        fPlanes[i].read(S);
     }
 }
 
-void plConvexIsect::write(hsStream* S, plResManager* mgr) {
+void plConvexIsect::write(hsStream* S, plResManager* mgr)
+{
     S->writeShort(fPlanes.size());
     for (size_t i=0; i<fPlanes.size(); i++) {
-        fPlanes[i].fNorm.write(S);
-        fPlanes[i].fPos.write(S);
-        S->writeFloat(fPlanes[i].fDist);
-        fPlanes[i].fWorldNorm.write(S);
-        S->writeFloat(fPlanes[i].fWorldDist);
+        fPlanes[i].write(S);
     }
 }
 
-void plConvexIsect::IPrcWrite(pfPrcHelper* prc) {
+void plConvexIsect::IPrcWrite(pfPrcHelper* prc)
+{
     prc->writeSimpleTag("Planes");
     for (size_t i=0; i<fPlanes.size(); i++) {
-        prc->startTag("SinglePlane");
-        prc->writeParam("Dist", fPlanes[i].fDist);
-        prc->writeParam("WorldDist", fPlanes[i].fWorldDist);
-        prc->endTag();
-          prc->writeSimpleTag("Normal");
-          fPlanes[i].fNorm.prcWrite(prc);
-          prc->closeTag();
-          prc->writeSimpleTag("Position");
-          fPlanes[i].fPos.prcWrite(prc);
-          prc->closeTag();
-          prc->writeSimpleTag("WorldNormal");
-          fPlanes[i].fWorldNorm.prcWrite(prc);
-          prc->closeTag();
-        prc->closeTag();
+        fPlanes[i].prcWrite(prc);
     }
     prc->closeTag(); // Planes
 }
 
-void plConvexIsect::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
+void plConvexIsect::IPrcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     if (tag->getName() == "Planes") {
         fPlanes.resize(tag->countChildren());
         const pfPrcTag* planeChild = tag->getFirstChild();
         for (size_t i=0; i<fPlanes.size(); i++) {
-            if (planeChild->getName() != "SinglePlane")
-                throw pfPrcTagException(__FILE__, __LINE__, planeChild->getName());
-            fPlanes[i].fDist = planeChild->getParam("Dist", "0").to_float();
-            fPlanes[i].fWorldDist = planeChild->getParam("WorldDist", "0").to_float();
-
-            const pfPrcTag* child = planeChild->getFirstChild();
-            while (child != NULL) {
-                if (child->getName() == "Normal") {
-                    if (child->hasChildren())
-                        fPlanes[i].fNorm.prcParse(child->getFirstChild());
-                } else if (child->getName() == "Position") {
-                    if (child->hasChildren())
-                        fPlanes[i].fPos.prcParse(child->getFirstChild());
-                } else if (child->getName() == "WorldNormal") {
-                    if (child->hasChildren())
-                        fPlanes[i].fWorldNorm.prcParse(child->getFirstChild());
-                } else {
-                    throw pfPrcTagException(__FILE__, __LINE__, child->getName());
-                }
-                child = child->getNextSibling();
-            }
+            fPlanes[i].prcParse(planeChild);
             planeChild = planeChild->getNextSibling();
         }
     } else {
@@ -232,43 +261,47 @@ void plConvexIsect::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
     }
 }
 
-void plConvexIsect::addPlane(hsVector3 normal, const hsVector3& pos) {
+void plConvexIsect::addPlane(hsVector3 normal, const hsVector3& pos)
+{
     normal.normalize();
 
     // Check to see if we already have this plane -- if so, make sure that we have the outermost
     // point associated with it
     for (SinglePlane& i : fPlanes) {
-        if (i.fNorm.dotP(normal) >= 0.9998f) {
+        if (i.getNorm().dotP(normal) >= 0.9998f) {
             float dist = normal.dotP(pos);
-            if (dist > i.fDist) {
-                i.fDist = dist;
-                i.fPos = pos;
+            if (dist > i.getDist()) {
+                i.setDist(dist);
+                i.setPos(pos);
             }
             return;
         }
     }
 
     SinglePlane plane;
-    plane.fNorm = normal;
-    plane.fPos = pos;
-    plane.fDist = normal.dotP(pos);
-    plane.fWorldNorm = normal;
-    plane.fWorldDist = plane.fDist;
+    plane.setNorm(normal);
+    plane.setPos(pos);
+    plane.setDist(normal.dotP(pos));
+    plane.setWorldNorm(normal);
+    plane.setWorldDist(plane.getDist());
     fPlanes.push_back(plane);
 }
 
-void plConvexIsect::transform(const hsMatrix44& localToWorld, const hsMatrix44& worldToLocal) {
+void plConvexIsect::transform(const hsMatrix44& localToWorld, const hsMatrix44& worldToLocal)
+{
     for (SinglePlane& i : fPlanes) {
-        i.fWorldNorm = worldToLocal.multVector(i.fNorm);
-        i.fWorldNorm.normalize();
+        hsVector3 worldNorm = worldToLocal.multVector(i.getNorm());
+        worldNorm.normalize();
+        i.setWorldNorm(worldNorm);
 
-        hsVector3 pos = localToWorld.multPoint(i.fPos);
-        i.fWorldDist = i.fWorldNorm.dotP(pos);
+        hsVector3 pos = localToWorld.multPoint(i.getPos());
+        i.setWorldDist(i.getWorldNorm().dotP(pos));
     }
 }
 
 /* plCylinderIsect */
-void plCylinderIsect::read(hsStream* S, plResManager* mgr) {
+void plCylinderIsect::read(hsStream* S, plResManager* mgr)
+{
     fTop.read(S);
     fBot.read(S);
     fRadius = S->readFloat();
@@ -279,7 +312,8 @@ void plCylinderIsect::read(hsStream* S, plResManager* mgr) {
     fMax = S->readFloat();
 }
 
-void plCylinderIsect::write(hsStream* S, plResManager* mgr) {
+void plCylinderIsect::write(hsStream* S, plResManager* mgr)
+{
     fTop.write(S);
     fBot.write(S);
     S->writeFloat(fRadius);
@@ -290,7 +324,8 @@ void plCylinderIsect::write(hsStream* S, plResManager* mgr) {
     S->writeFloat(fMax);
 }
 
-void plCylinderIsect::IPrcWrite(pfPrcHelper* prc) {
+void plCylinderIsect::IPrcWrite(pfPrcHelper* prc)
+{
     prc->startTag("CylinderParams");
     prc->writeParam("Radius", fRadius);
     prc->writeParam("Length", fLength);
@@ -312,7 +347,8 @@ void plCylinderIsect::IPrcWrite(pfPrcHelper* prc) {
     prc->closeTag();
 }
 
-void plCylinderIsect::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
+void plCylinderIsect::IPrcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     if (tag->getName() == "CylinderParams") {
         fRadius = tag->getParam("Radius", "0").to_float();
         fLength = tag->getParam("Length", "0").to_float();
@@ -337,7 +373,8 @@ void plCylinderIsect::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
 
 
 /* plParallelIsect */
-void plParallelIsect::read(hsStream* S, plResManager* mgr) {
+void plParallelIsect::read(hsStream* S, plResManager* mgr)
+{
     fPlanes.resize(S->readShort());
     for (size_t i=0; i<fPlanes.size(); i++) {
         fPlanes[i].fNorm.read(S);
@@ -348,7 +385,8 @@ void plParallelIsect::read(hsStream* S, plResManager* mgr) {
     }
 }
 
-void plParallelIsect::write(hsStream* S, plResManager* mgr) {
+void plParallelIsect::write(hsStream* S, plResManager* mgr)
+{
     S->writeShort(fPlanes.size());
     for (size_t i=0; i<fPlanes.size(); i++) {
         fPlanes[i].fNorm.write(S);
@@ -359,7 +397,8 @@ void plParallelIsect::write(hsStream* S, plResManager* mgr) {
     }
 }
 
-void plParallelIsect::IPrcWrite(pfPrcHelper* prc) {
+void plParallelIsect::IPrcWrite(pfPrcHelper* prc)
+{
     prc->writeSimpleTag("Planes");
     for (size_t i=0; i<fPlanes.size(); i++) {
         prc->startTag("ParallelPlane");
@@ -378,7 +417,8 @@ void plParallelIsect::IPrcWrite(pfPrcHelper* prc) {
     prc->closeTag(); // Planes
 }
 
-void plParallelIsect::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
+void plParallelIsect::IPrcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     if (tag->getName() == "Planes") {
         fPlanes.resize(tag->countChildren());
         const pfPrcTag* planeChild = tag->getFirstChild();
@@ -389,7 +429,7 @@ void plParallelIsect::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
             fPlanes[i].fMax = planeChild->getParam("Max", "0").to_float();
 
             const pfPrcTag* child = planeChild->getFirstChild();
-            while (child != NULL) {
+            while (child) {
                 if (child->getName() == "Normal") {
                     if (child->hasChildren())
                         fPlanes[i].fNorm.prcParse(child->getFirstChild());
@@ -412,7 +452,8 @@ void plParallelIsect::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
 
 
 /* plSphereIsect */
-void plSphereIsect::read(hsStream* S, plResManager* mgr) {
+void plSphereIsect::read(hsStream* S, plResManager* mgr)
+{
     fCenter.read(S);
     fWorldCenter.read(S);
     fRadius = S->readFloat();
@@ -420,7 +461,8 @@ void plSphereIsect::read(hsStream* S, plResManager* mgr) {
     fMaxs.read(S);
 }
 
-void plSphereIsect::write(hsStream* S, plResManager* mgr) {
+void plSphereIsect::write(hsStream* S, plResManager* mgr)
+{
     fCenter.write(S);
     fWorldCenter.write(S);
     S->writeFloat(fRadius);
@@ -428,7 +470,8 @@ void plSphereIsect::write(hsStream* S, plResManager* mgr) {
     fMaxs.write(S);
 }
 
-void plSphereIsect::IPrcWrite(pfPrcHelper* prc) {
+void plSphereIsect::IPrcWrite(pfPrcHelper* prc)
+{
     prc->startTag("SphereParams");
     prc->writeParam("Radius", fRadius);
     prc->endTag(true);
@@ -447,7 +490,8 @@ void plSphereIsect::IPrcWrite(pfPrcHelper* prc) {
     prc->closeTag();
 }
 
-void plSphereIsect::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
+void plSphereIsect::IPrcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     if (tag->getName() == "SphereParams") {
         fRadius = tag->getParam("Radius", "0").to_float();
     } else if (tag->getName() == "Center") {
@@ -469,38 +513,43 @@ void plSphereIsect::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
 
 
 /* plComplexIsect */
-plComplexIsect::~plComplexIsect() {
+plComplexIsect::~plComplexIsect()
+{
     for (auto vol = fVolumes.begin(); vol != fVolumes.end(); ++vol)
         delete *vol;
 }
 
-void plComplexIsect::read(hsStream* S, plResManager* mgr) {
+void plComplexIsect::read(hsStream* S, plResManager* mgr)
+{
     clearVolumes();
     fVolumes.resize(S->readShort());
     for (size_t i=0; i<fVolumes.size(); i++)
-        fVolumes[i] = plVolumeIsect::Convert(mgr->ReadCreatable(S));
+        fVolumes[i] = mgr->ReadCreatableC<plVolumeIsect>(S);
 }
 
-void plComplexIsect::write(hsStream* S, plResManager* mgr) {
+void plComplexIsect::write(hsStream* S, plResManager* mgr)
+{
     S->writeShort(fVolumes.size());
     for (size_t i=0; i<fVolumes.size(); i++)
         mgr->WriteCreatable(S, fVolumes[i]);
 }
 
-void plComplexIsect::IPrcWrite(pfPrcHelper* prc) {
+void plComplexIsect::IPrcWrite(pfPrcHelper* prc)
+{
     prc->writeSimpleTag("Volumes");
     for (size_t i=0; i<fVolumes.size(); i++)
         fVolumes[i]->prcWrite(prc);
     prc->closeTag();
 }
 
-void plComplexIsect::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
+void plComplexIsect::IPrcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     if (tag->getName() == "Volumes") {
         clearVolumes();
         fVolumes.resize(tag->countChildren());
         const pfPrcTag* child = tag->getFirstChild();
         for (size_t i=0; i<fVolumes.size(); i++) {
-            fVolumes[i] = plVolumeIsect::Convert(mgr->prcParseCreatable(child));
+            fVolumes[i] = mgr->prcParseCreatableC<plVolumeIsect>(child);
             child = child->getNextSibling();
         }
     } else {
@@ -508,7 +557,8 @@ void plComplexIsect::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
     }
 }
 
-void plComplexIsect::clearVolumes() {
+void plComplexIsect::clearVolumes()
+{
     for (auto vol = fVolumes.begin(); vol != fVolumes.end(); ++vol)
         delete *vol;
     fVolumes.clear();

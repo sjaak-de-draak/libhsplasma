@@ -33,12 +33,13 @@ static PyGetSetDef pyScalarControllerChannel_GetSet[] = {
 PY_PLASMA_TYPE(ScalarControllerChannel, plScalarControllerChannel,
                "plScalarControllerChannel wrapper")
 
-PY_PLASMA_TYPE_INIT(ScalarControllerChannel) {
+PY_PLASMA_TYPE_INIT(ScalarControllerChannel)
+{
     pyScalarControllerChannel_Type.tp_new = pyScalarControllerChannel_new;
     pyScalarControllerChannel_Type.tp_getset = pyScalarControllerChannel_GetSet;
     pyScalarControllerChannel_Type.tp_base = &pyScalarChannel_Type;
     if (PyType_CheckAndReady(&pyScalarControllerChannel_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyScalarControllerChannel_Type);
     return (PyObject*)&pyScalarControllerChannel_Type;

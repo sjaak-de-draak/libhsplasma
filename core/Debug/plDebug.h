@@ -20,7 +20,8 @@
 #include <string_theory/format>
 #include "Stream/hsStdioStream.h"
 
-class PLASMA_DLL plDebug {
+class PLASMA_DLL plDebug
+{
 public:
     enum DebugLevel { kDLNone, kDLError, kDLWarning, kDLDebug, kDLAll };
 
@@ -32,8 +33,8 @@ private:
     static ST::string fDebugFile;
 
 public:
-    static void Init(int level, hsStream* stream = NULL);
-    static void InitFile(int level, const char* filename = "Plasma.log");
+    static void Init(int level, hsStream* stream = nullptr);
+    static void InitFile(int level, const ST::string& filename = ST_LITERAL("Plasma.log"));
 
     static void Error(const char* line)
     {

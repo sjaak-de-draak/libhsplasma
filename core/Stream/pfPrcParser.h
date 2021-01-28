@@ -22,7 +22,8 @@
 #include <map>
 #include <list>
 
-class PLASMA_DLL pfPrcTag {
+class PLASMA_DLL pfPrcTag
+{
 protected:
     ST::string fName;
     std::map<ST::string, ST::string> fParams;
@@ -31,7 +32,7 @@ protected:
     std::list<ST::string> fContents;
     bool fIsEndTag;
 
-    pfPrcTag() : fNextSibling(NULL), fFirstChild(NULL), fIsEndTag(false) { }
+    pfPrcTag() : fNextSibling(), fFirstChild(), fIsEndTag() { }
     ~pfPrcTag();
 
     pfPrcTag* Destroy();
@@ -44,8 +45,8 @@ public:
     const std::list<ST::string>& getContents() const { return fContents; }
     const pfPrcTag* getFirstChild() const { return fFirstChild; }
     const pfPrcTag* getNextSibling() const { return fNextSibling; }
-    bool hasChildren() const { return (fFirstChild != NULL); }
-    bool hasNextSibling() const { return (fNextSibling != NULL); }
+    bool hasChildren() const { return (fFirstChild != nullptr); }
+    bool hasNextSibling() const { return (fNextSibling != nullptr); }
     bool isEndTag() const { return fIsEndTag; }
     bool hasParam(const ST::string& key) const;
     size_t countChildren() const;
@@ -54,12 +55,13 @@ public:
 };
 
 
-class PLASMA_DLL pfPrcParser {
+class PLASMA_DLL pfPrcParser
+{
 private:
     pfPrcTag* fRootTag;
 
 public:
-    pfPrcParser() : fRootTag(NULL) { }
+    pfPrcParser() : fRootTag() { }
     ~pfPrcParser();
 
     void read(hsStream* S);
@@ -70,17 +72,32 @@ private:
 };
 
 
-class PLASMA_DLL pfPrcParseException : public hsException {
+class pfPrcParseException : public hsException
+{
 public:
-    pfPrcParseException(const char* file, unsigned long line,
-                        const char* msg) HS_NOEXCEPT;
+    inline pfPrcParseException(const char* file, unsigned long line,
+                               const char* msg) HS_NOEXCEPT
+        : hsException(file, line)
+    {
+        if (msg == nullptr)
+            fWhat = ST_LITERAL("Unknown Parse Error");
+        else
+            fWhat = ST_LITERAL("Parse Error: ") + msg;
+    }
 };
 
 
-class PLASMA_DLL pfPrcTagException : public pfPrcParseException {
+class pfPrcTagException : public pfPrcParseException
+{
 public:
-    pfPrcTagException(const char* file, unsigned long line,
-                      const ST::string& tag) HS_NOEXCEPT;
+    inline pfPrcTagException(const char* file, unsigned long line,
+                             const ST::string& tag) HS_NOEXCEPT
+        : pfPrcParseException(file, line, nullptr)
+    {
+        fWhat = ST_LITERAL("Unexpected tag");
+        if (!tag.empty())
+            fWhat += ST_LITERAL(": ") + tag;
+    }
 };
 
 #endif

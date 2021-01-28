@@ -33,11 +33,11 @@ PY_METHOD_VA(DDSurface, read,
     pyStream* stream;
     if (!PyArg_ParseTuple(args, "O", &stream)) {
         PyErr_SetString(PyExc_TypeError, "read expects an hsStream");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream)) {
         PyErr_SetString(PyExc_TypeError, "read expects an hsStream");
-        return NULL;
+        return nullptr;
     }
     self->fThis->read(stream->fThis);
     Py_RETURN_NONE;
@@ -50,11 +50,11 @@ PY_METHOD_VA(DDSurface, write,
     pyStream* stream;
     if (!PyArg_ParseTuple(args, "O", &stream)) {
         PyErr_SetString(PyExc_TypeError, "write expects an hsStream");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream)) {
         PyErr_SetString(PyExc_TypeError, "write expects an hsStream");
-        return NULL;
+        return nullptr;
     }
     self->fThis->write(stream->fThis);
     Py_RETURN_NONE;
@@ -67,20 +67,29 @@ PY_METHOD_VA(DDSurface, setFromMipmap,
     pyMipmap* tex;
     if (!PyArg_ParseTuple(args, "O", &tex)) {
         PyErr_SetString(PyExc_TypeError, "setFromMipmap expects a plMipmap");
-        return NULL;
+        return nullptr;
     }
     if (!pyMipmap_Check((PyObject*)tex)) {
         PyErr_SetString(PyExc_TypeError, "setFromMipmap expects a plMipmap");
-        return NULL;
+        return nullptr;
     }
     self->fThis->setFromMipmap(tex->fThis);
     Py_RETURN_NONE;
 }
 
-PY_METHOD_NOARGS(DDSurface, createMipmap,
+PY_METHOD_VA(DDSurface, createMipmap,
+    "Params: Mipmap name\n"
     "Create a new plMipmap from this plDDSurface")
 {
-    return ICreate(self->fThis->createMipmap());
+    const char* name = "";
+    if (!PyArg_ParseTuple(args, "|s", &name)) {
+        PyErr_SetString(PyExc_TypeError, "createMipmap expects a string");
+        return nullptr;
+    }
+
+    plMipmap* mm = self->fThis->createMipmap();
+    mm->init(name);
+    return ICreate(mm);
 }
 
 PY_METHOD_VA(DDSurface, calcBufferSize,
@@ -90,7 +99,7 @@ PY_METHOD_VA(DDSurface, calcBufferSize,
     int width, height;
     if (!PyArg_ParseTuple(args, "ii", &width, &height)) {
         PyErr_SetString(PyExc_TypeError, "calcBufferSize expects int, int");
-        return NULL;
+        return nullptr;
     }
     size_t bufSize = self->fThis->calcBufferSize(width, height);
     return pyPlasma_convert(bufSize);
@@ -133,11 +142,13 @@ PY_PROPERTY_MEMBER(unsigned int, DDSurface, srcVBHandle, fSrcVBHandle)
 PY_PROPERTY_MEMBER(unsigned int, DDSurface, alphaDepth, fAlphaDepth)
 
 #define DDCK_PROPERTY(name, member)                                     \
-    PY_GETSET_GETTER_DECL(DDSurface, name) {                            \
+    PY_GETSET_GETTER_DECL(DDSurface, name)                              \
+    {                                                                   \
         return Py_BuildValue("ii", self->fThis->member.fColorSpaceLow,  \
                                    self->fThis->member.fColorSpaceHigh); \
     }                                                                   \
-    PY_GETSET_SETTER_DECL(DDSurface, name) {                            \
+    PY_GETSET_SETTER_DECL(DDSurface, name)                              \
+    {                                                                   \
         PY_PROPERTY_CHECK_NULL(name)                                    \
         if (!PyTuple_Check(value) || PyTuple_GET_SIZE(value) != 2) {    \
             PyErr_SetString(PyExc_TypeError, #name " should be a tuple (int, int)"); \
@@ -181,12 +192,14 @@ PY_PROPERTY_MEMBER(unsigned int, DDSurface, pf_UBitMask, fPixelFormat.fUBitMask)
 PY_PROPERTY_MEMBER(unsigned int, DDSurface, pf_ZBitMask, fPixelFormat.fZBitMask)
 PY_PROPERTY_MEMBER(unsigned int, DDSurface, pf_bumpDvBitMask, fPixelFormat.fBumpDvBitMask)
 
-PY_GETSET_GETTER_DECL(DDSurface, pf_multiSampleCaps) {
+PY_GETSET_GETTER_DECL(DDSurface, pf_multiSampleCaps)
+{
     return Py_BuildValue("ii", self->fThis->fPixelFormat.fMultiSampleCaps.fFlipMSTypes,
                                self->fThis->fPixelFormat.fMultiSampleCaps.fBltMSTypes);
 }
 
-PY_GETSET_SETTER_DECL(DDSurface, pf_multiSampleCaps) {
+PY_GETSET_SETTER_DECL(DDSurface, pf_multiSampleCaps)
+{
     PY_PROPERTY_CHECK_NULL(pf_multiSampleCaps)
     if (!PyTuple_Check(value) || PyTuple_GET_SIZE(value) != 2) {
         PyErr_SetString(PyExc_TypeError, "pf_multiSampleCaps should be a tuple (int, int)");
@@ -212,15 +225,17 @@ PY_PROPERTY_MEMBER(unsigned int, DDSurface, pf_bumpLuminanceBitMask, fPixelForma
 PY_PROPERTY_MEMBER(unsigned int, DDSurface, pf_alphaBitMask, fPixelFormat.fAlphaBitMask)
 PY_PROPERTY_MEMBER(unsigned int, DDSurface, pf_colorZBitMask, fPixelFormat.fColorZBitMask)
 
-PY_GETSET_GETTER_DECL(DDSurface, data) {
+PY_GETSET_GETTER_DECL(DDSurface, data)
+{
     return PyBytes_FromStringAndSize((const char*)self->fThis->getData(),
                                      self->fThis->getDataSize());
 }
 
-PY_GETSET_SETTER_DECL(DDSurface, data) {
+PY_GETSET_SETTER_DECL(DDSurface, data)
+{
     PY_PROPERTY_CHECK_NULL(data)
     if (value == Py_None) {
-        self->fThis->setData(0, NULL);
+        self->fThis->setData(0, nullptr);
     } else if (PyBytes_Check(value)) {
         char* data;
         Py_ssize_t size;
@@ -286,14 +301,15 @@ static PyGetSetDef pyDDSurface_GetSet[] = {
 
 PY_PLASMA_TYPE(DDSurface, plDDSurface, "plDDSurface wrapper")
 
-PY_PLASMA_TYPE_INIT(DDSurface) {
+PY_PLASMA_TYPE_INIT(DDSurface)
+{
     pyDDSurface_Type.tp_dealloc = pyDDSurface_dealloc;
     pyDDSurface_Type.tp_init = pyDDSurface___init__;
     pyDDSurface_Type.tp_new = pyDDSurface_new;
     pyDDSurface_Type.tp_methods = pyDDSurface_Methods;
     pyDDSurface_Type.tp_getset = pyDDSurface_GetSet;
     if (PyType_CheckAndReady(&pyDDSurface_Type) < 0)
-        return NULL;
+        return nullptr;
 
     PY_TYPE_ADD_CONST(DDSurface, "DDSD_CAPS", plDDSurface::DDSD_CAPS);
     PY_TYPE_ADD_CONST(DDSurface, "DDSD_HEIGHT", plDDSurface::DDSD_HEIGHT);

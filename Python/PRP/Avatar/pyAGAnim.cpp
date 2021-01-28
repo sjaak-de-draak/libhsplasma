@@ -23,7 +23,8 @@
 
 PY_PLASMA_NEW(AGAnim, plAGAnim)
 
-PY_METHOD_NOARGS(AGAnim, clearApplicators, "Remove all plAGApplicators from the anim") {
+PY_METHOD_NOARGS(AGAnim, clearApplicators, "Remove all plAGApplicators from the anim")
+{
     self->fThis->clearApplicators();
     Py_RETURN_NONE;
 }
@@ -35,11 +36,11 @@ PY_METHOD_VA(AGAnim, addApplicator,
     pyAGApplicator* app;
     if (!PyArg_ParseTuple(args, "O", &app)) {
         PyErr_SetString(PyExc_TypeError, "addApplicator expects a plAGApplicator");
-        return NULL;
+        return nullptr;
     }
     if (!pyAGApplicator_Check((PyObject*)app)) {
         PyErr_SetString(PyExc_TypeError, "addApplicator expects a plAGApplicator");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addApplicator(app->fThis);
     app->fPyOwned = false;
@@ -53,7 +54,7 @@ PY_METHOD_VA(AGAnim, delApplicator,
     int idx;
     if (!PyArg_ParseTuple(args, "i", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delApplicator expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->delApplicator(idx);
     Py_RETURN_NONE;
@@ -66,7 +67,8 @@ static PyMethodDef pyAGAnim_Methods[] = {
     PY_METHOD_TERMINATOR
 };
 
-PY_GETSET_GETTER_DECL(AGAnim, applicators) {
+PY_GETSET_GETTER_DECL(AGAnim, applicators)
+{
     plAGAnim* anim = self->fThis;
     PyObject* list = PyTuple_New(anim->getApplicators().size());
     for (size_t i=0; i < anim->getApplicators().size(); i++)
@@ -93,13 +95,14 @@ static PyGetSetDef pyAGAnim_GetSet[] = {
 
 PY_PLASMA_TYPE(AGAnim, plAGAnim, "plAGAnim wrapper")
 
-PY_PLASMA_TYPE_INIT(AGAnim) {
+PY_PLASMA_TYPE_INIT(AGAnim)
+{
     pyAGAnim_Type.tp_new = pyAGAnim_new;
     pyAGAnim_Type.tp_methods = pyAGAnim_Methods;
     pyAGAnim_Type.tp_getset = pyAGAnim_GetSet;
     pyAGAnim_Type.tp_base = &pySynchedObject_Type;
     if (PyType_CheckAndReady(&pyAGAnim_Type) < 0)
-        return NULL;
+        return nullptr;
 
     PY_TYPE_ADD_CONST(AGAnim, "kBodyUnknown", plAGAnim::kBodyUnknown);
     PY_TYPE_ADD_CONST(AGAnim, "kBodyUpper", plAGAnim::kBodyUpper);

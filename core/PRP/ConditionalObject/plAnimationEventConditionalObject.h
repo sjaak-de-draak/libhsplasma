@@ -19,7 +19,8 @@
 
 #include "plConditionalObject.h"
 
-class PLASMA_DLL plAnimationEventConditionalObject : public plConditionalObject {
+class PLASMA_DLL plAnimationEventConditionalObject : public plConditionalObject
+{
     CREATABLE(plAnimationEventConditionalObject,
               kAnimationEventConditionalObject,
               plConditionalObject)
@@ -43,7 +44,7 @@ public:
     plKey getTarget() const { return fTarget; }
 
     void setAction(CallbackEvent value) { fAction = value; }
-    void setTarget(plKey value) { fTarget = value; }
+    void setTarget(plKey value) { fTarget = std::move(value); }
 };
 
 #endif

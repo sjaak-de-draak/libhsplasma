@@ -17,7 +17,8 @@
 #include "plSynchedObject.h"
 #include "Debug/plDebug.h"
 
-void plSynchedObject::read(hsStream* S, plResManager* mgr) {
+void plSynchedObject::read(hsStream* S, plResManager* mgr)
+{
     hsKeyedObject::read(S, mgr);
     fSDLExcludeList.clear();
     fSDLVolatileList.clear();
@@ -65,7 +66,8 @@ void plSynchedObject::read(hsStream* S, plResManager* mgr) {
     }
 }
 
-void plSynchedObject::write(hsStream* S, plResManager* mgr) {
+void plSynchedObject::write(hsStream* S, plResManager* mgr)
+{
     hsKeyedObject::write(S, mgr);
 
     unsigned short i;
@@ -102,7 +104,8 @@ void plSynchedObject::write(hsStream* S, plResManager* mgr) {
     }
 }
 
-void plSynchedObject::IPrcWrite(pfPrcHelper* prc) {
+void plSynchedObject::IPrcWrite(pfPrcHelper* prc)
+{
     hsKeyedObject::IPrcWrite(prc);
 
     prc->startTag("SyncParams");
@@ -123,12 +126,13 @@ void plSynchedObject::IPrcWrite(pfPrcHelper* prc) {
     prc->closeTag();
 }
 
-void plSynchedObject::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
+void plSynchedObject::IPrcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     // Backwards compatibility synonym
     if (tag->getName() == "SynchParams" || tag->getName() == "SyncParams") {
         fSynchFlags = tag->getParam("flags", "0").to_uint();
         const pfPrcTag* child = tag->getFirstChild();
-        while (child != NULL) {
+        while (child) {
             if (child->getName() == "ExcludePersistentStates") {
                 std::list<ST::string> states = child->getContents();
                 fSDLExcludeList = std::vector<ST::string>(states.begin(), states.end());
@@ -145,22 +149,26 @@ void plSynchedObject::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
     }
 }
 
-void plSynchedObject::setExclude(const ST::string& sdl) {
+void plSynchedObject::setExclude(const ST::string& sdl)
+{
     fSynchFlags |= kExcludePersistentState;
     fSDLExcludeList.push_back(sdl);
 }
 
-void plSynchedObject::setVolatile(const ST::string& sdl) {
+void plSynchedObject::setVolatile(const ST::string& sdl)
+{
     fSynchFlags |= kHasVolatileState;
     fSDLVolatileList.push_back(sdl);
 }
 
-void plSynchedObject::clearExcludes() {
+void plSynchedObject::clearExcludes()
+{
     fSDLExcludeList.clear();
     fSynchFlags &= ~kExcludePersistentState;
 }
 
-void plSynchedObject::clearVolatiles() {
+void plSynchedObject::clearVolatiles()
+{
     fSDLVolatileList.clear();
     fSynchFlags &= ~kHasVolatileState;
 }

@@ -41,12 +41,13 @@ static PyGetSetDef pyAvLadderMod_GetSet[] = {
 
 PY_PLASMA_TYPE(AvLadderMod, plAvLadderMod, "plAvLadderMod wrapper")
 
-PY_PLASMA_TYPE_INIT(AvLadderMod) {
+PY_PLASMA_TYPE_INIT(AvLadderMod)
+{
     pyAvLadderMod_Type.tp_new = pyAvLadderMod_new;
     pyAvLadderMod_Type.tp_getset = pyAvLadderMod_GetSet;
     pyAvLadderMod_Type.tp_base = &pySingleModifier_Type;
     if (PyType_CheckAndReady(&pyAvLadderMod_Type) < 0)
-        return NULL;
+        return nullptr;
 
     /* Konstants */
     PY_TYPE_ADD_CONST(AvLadderMod, "kBig", plAvLadderMod::kBig);
@@ -84,12 +85,13 @@ static PyGetSetDef pyLadderModifier_GetSet[] = {
 
 PY_PLASMA_TYPE(LadderModifier, plLadderModifier, "plLadderModifier wrapper")
 
-PY_PLASMA_TYPE_INIT(LadderModifier) {
+PY_PLASMA_TYPE_INIT(LadderModifier)
+{
     pyLadderModifier_Type.tp_new = pyLadderModifier_new;
     pyLadderModifier_Type.tp_getset = pyLadderModifier_GetSet;
     pyLadderModifier_Type.tp_base = &pySingleModifier_Type;
     if (PyType_CheckAndReady(&pyLadderModifier_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyLadderModifier_Type);
     return (PyObject*)&pyLadderModifier_Type;

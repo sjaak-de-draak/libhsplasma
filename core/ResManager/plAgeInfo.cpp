@@ -20,23 +20,33 @@
 const ST::string plAgeInfo::kCommonPages[] = { "Textures", "BuiltIn" };
 
 /* plAgeInfo */
-void plAgeInfo::readFromFile(const ST::string& filename) {
+void plAgeInfo::readFromFile(const ST::string& filename)
+{
     fName = filename.after_last(PATHSEP);
     ST_ssize_t dot = fName.find_last('.');
     if (dot >= 0)
         fName = fName.left(dot);
 
-    hsStream* S;
     if (plEncryptedStream::IsFileEncrypted(filename)) {
-        S = new plEncryptedStream();
-        ((plEncryptedStream*)S)->open(filename, fmRead, plEncryptedStream::kEncAuto);
+        plEncryptedStream S;
+        S.open(filename, fmRead, plEncryptedStream::kEncAuto);
+        readFromStream(&S);
+        S.close();
     } else {
-        S = new hsFileStream();
-        ((hsFileStream*)S)->open(filename, fmRead);
+        hsFileStream S;
+        S.open(filename, fmRead);
+        readFromStream(&S);
+        S.close();
     }
+}
 
+void plAgeInfo::readFromStream(hsStream* S)
+{
     while (!S->eof()) {
         ST::string ln = S->readLine();
+        if (ln.trim().empty())
+            continue;
+
         std::vector<ST::string> parts = ln.split('=', 1);
         ST::string field = parts.at(0).to_lower();
         ST::string value = parts.at(1);
@@ -62,25 +72,30 @@ void plAgeInfo::readFromFile(const ST::string& filename) {
             addPage(page);
         }
     }
-
-    delete S;
 }
 
-void plAgeInfo::writeToFile(const ST::string& filename, PlasmaVer ver) {
-    hsStream* S;
+void plAgeInfo::writeToFile(const ST::string& filename, PlasmaVer ver) const
+{
     if (ver.isUniversal()) {
-        S = new hsFileStream();
-        ((hsFileStream*)S)->open(filename, fmCreate);
+        hsFileStream S;
+        S.open(filename, fmCreate);
+        writeToStream(&S);
+        S.close();
     } else {
-        S = new plEncryptedStream();
+        plEncryptedStream S;
         plEncryptedStream::EncryptionType eType = plEncryptedStream::kEncAuto;
         if (ver.isNewPlasma())
             eType = plEncryptedStream::kEncAES;
         else
             eType = plEncryptedStream::kEncXtea;
-        ((plEncryptedStream*)S)->open(filename, fmCreate, eType);
+        S.open(filename, fmCreate, eType);
+        writeToStream(&S);
+        S.close();
     }
+}
 
+void plAgeInfo::writeToStream(hsStream* S) const
+{
     S->writeLine(ST::format("StartDateTime={_010}", fStartDateTime), true);
     S->writeLine(ST::format("DayLength={f}", fDayLength), true);
     S->writeLine(ST::format("MaxCapacity={}", fMaxCapacity), true);
@@ -99,11 +114,10 @@ void plAgeInfo::writeToFile(const ST::string& filename, PlasmaVer ver) {
                          fPages[i].fName,
                          fPages[i].fSeqSuffix), true);
     }
-
-    delete S;
 }
 
-void plAgeInfo::prcWrite(pfPrcHelper* prc) {
+void plAgeInfo::prcWrite(pfPrcHelper* prc)
+{
     prc->startTag("Age");
     prc->writeParam("Name", fName);
     prc->endTag();
@@ -134,13 +148,14 @@ void plAgeInfo::prcWrite(pfPrcHelper* prc) {
     prc->closeTag();
 }
 
-void plAgeInfo::prcParse(const pfPrcTag* tag) {
+void plAgeInfo::prcParse(const pfPrcTag* tag)
+{
     if (tag->getName() != "Age")
         throw pfPrcTagException(__FILE__, __LINE__, tag->getName());
     fName = tag->getParam("Name", "");
 
     const pfPrcTag* child = tag->getFirstChild();
-    while (child != NULL) {
+    while (child) {
         if (child->getName() == "AgeParams") {
             fStartDateTime = child->getParam("StartDateTime", "0").to_uint();
             fDayLength = child->getParam("DayLength", "0").to_float();
@@ -166,17 +181,20 @@ void plAgeInfo::prcParse(const pfPrcTag* tag) {
     }
 }
 
-size_t plAgeInfo::getNumCommonPages(PlasmaVer pv) const {
+size_t plAgeInfo::getNumCommonPages(PlasmaVer pv) const
+{
     if (fSeqPrefix < 0)
         return 0;
     return (!pv.isNewPlasma() || pv.isUniversal()) ? 2 : 1;
 }
 
-plAgeInfo::PageEntry plAgeInfo::getCommonPage(size_t idx, PlasmaVer pv) const {
+plAgeInfo::PageEntry plAgeInfo::getCommonPage(size_t idx, PlasmaVer pv) const
+{
     return PageEntry(kCommonPages[idx], (-1) - idx, 0);
 }
 
-ST::string plAgeInfo::getPageFilename(size_t idx, PlasmaVer pv) const {
+ST::string plAgeInfo::getPageFilename(size_t idx, PlasmaVer pv) const
+{
     if (!pv.isValid())
         throw hsBadVersionException(__FILE__, __LINE__);
     if (pv.isNewPlasma() || pv.isUniversal())    // Includes pvUniversal
@@ -187,7 +205,8 @@ ST::string plAgeInfo::getPageFilename(size_t idx, PlasmaVer pv) const {
         return ST::format("{}_District_{}.prp", fName, fPages[idx].fName);
 }
 
-ST::string plAgeInfo::getCommonPageFilename(size_t idx, PlasmaVer pv) const {
+ST::string plAgeInfo::getCommonPageFilename(size_t idx, PlasmaVer pv) const
+{
     if (!pv.isValid())
         throw hsBadVersionException(__FILE__, __LINE__);
     if (pv.isNewPlasma() || pv.isUniversal())    // Includes pvUniversal
@@ -198,7 +217,8 @@ ST::string plAgeInfo::getCommonPageFilename(size_t idx, PlasmaVer pv) const {
         return ST::format("{}_District_{}.prp", fName, kCommonPages[idx]);
 }
 
-plLocation plAgeInfo::getPageLoc(size_t idx, PlasmaVer pv) const {
+plLocation plAgeInfo::getPageLoc(size_t idx, PlasmaVer pv) const
+{
     plLocation loc(pv);
     loc.setSeqPrefix(fSeqPrefix);
     loc.setPageNum(fPages[idx].fSeqSuffix);
@@ -206,7 +226,8 @@ plLocation plAgeInfo::getPageLoc(size_t idx, PlasmaVer pv) const {
     return loc;
 }
 
-plLocation plAgeInfo::getCommonPageLoc(size_t idx, PlasmaVer pv) const {
+plLocation plAgeInfo::getCommonPageLoc(size_t idx, PlasmaVer pv) const
+{
     plLocation loc(pv);
     loc.setSeqPrefix(fSeqPrefix);
     loc.setPageNum((-1) - idx);
@@ -214,7 +235,8 @@ plLocation plAgeInfo::getCommonPageLoc(size_t idx, PlasmaVer pv) const {
     return loc;
 }
 
-std::vector<plLocation> plAgeInfo::getPageLocs(PlasmaVer pv, bool all) const {
+std::vector<plLocation> plAgeInfo::getPageLocs(PlasmaVer pv, bool all) const
+{
     std::vector<plLocation> locs;
 
     for (size_t i=0; i < fPages.size(); i++) {

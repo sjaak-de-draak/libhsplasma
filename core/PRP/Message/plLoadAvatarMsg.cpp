@@ -16,32 +16,35 @@
 
 #include "plLoadAvatarMsg.h"
 
-plLoadAvatarMsg::~plLoadAvatarMsg() {
+plLoadAvatarMsg::~plLoadAvatarMsg()
+{
     delete fInitialTask;
 }
 
-void plLoadAvatarMsg::read(hsStream* S, plResManager* mgr) {
+void plLoadAvatarMsg::read(hsStream* S, plResManager* mgr)
+{
     plLoadCloneMsg::read(S, mgr);
 
     fIsPlayer = S->readBool();
     fSpawnPoint = mgr->readKey(S);
     if (S->readBool()) {
-        setInitialTask(plAvTask::Convert(mgr->ReadCreatable(S)));
+        setInitialTask(mgr->ReadCreatableC<plAvTask>(S));
     } else {
-        setInitialTask(NULL);
+        setInitialTask(nullptr);
     }
 
     if (S->getVer().isMoul() || S->getVer().isUniversal())
         fUserStr = S->readSafeStr();
 }
 
-void plLoadAvatarMsg::write(hsStream* S, plResManager* mgr) {
+void plLoadAvatarMsg::write(hsStream* S, plResManager* mgr)
+{
     plLoadCloneMsg::write(S, mgr);
 
     S->writeBool(fIsPlayer);
     mgr->writeKey(S, fSpawnPoint);
 
-    if (getInitialTask() != NULL) {
+    if (getInitialTask()) {
         S->writeBool(true);
         mgr->WriteCreatable(S, fInitialTask);
     } else {
@@ -52,7 +55,8 @@ void plLoadAvatarMsg::write(hsStream* S, plResManager* mgr) {
         S->writeSafeStr(fUserStr);
 }
 
-void plLoadAvatarMsg::IPrcWrite(pfPrcHelper* prc) {
+void plLoadAvatarMsg::IPrcWrite(pfPrcHelper* prc)
+{
     plLoadCloneMsg::IPrcWrite(prc);
 
     prc->startTag("AvatarParams");
@@ -64,7 +68,7 @@ void plLoadAvatarMsg::IPrcWrite(pfPrcHelper* prc) {
     plResManager::PrcWriteKey(prc, fSpawnPoint);
     prc->closeTag();
 
-    if (getInitialTask() != NULL) {
+    if (getInitialTask()) {
         prc->writeSimpleTag("InitialTask");
         fInitialTask->prcWrite(prc);
         prc->closeTag();
@@ -75,15 +79,16 @@ void plLoadAvatarMsg::IPrcWrite(pfPrcHelper* prc) {
     }
 }
 
-void plLoadAvatarMsg::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
+void plLoadAvatarMsg::IPrcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     if (tag->getName() == "AvatarParams") {
         fIsPlayer = tag->getParam("IsPlayer", "false").to_bool();
         fUserStr = tag->getParam("UserStr", "");
     } else if (tag->getName() == "InitialTask") {
         if (tag->hasChildren())
-            setInitialTask(plAvTask::Convert(mgr->prcParseCreatable(tag->getFirstChild())));
+            setInitialTask(mgr->prcParseCreatableC<plAvTask>(tag->getFirstChild()));
         else
-            setInitialTask(NULL);
+            setInitialTask(nullptr);
     } else if (tag->getName() == "SpawnPoint") {
         fSpawnPoint = mgr->prcParseKey(tag->getFirstChild());
     } else {
@@ -91,7 +96,8 @@ void plLoadAvatarMsg::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
     }
 }
 
-void plLoadAvatarMsg::setInitialTask(plAvTask* task) {
+void plLoadAvatarMsg::setInitialTask(plAvTask* task)
+{
     delete fInitialTask;
     fInitialTask = task;
 }

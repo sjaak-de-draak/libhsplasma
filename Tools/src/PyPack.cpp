@@ -21,7 +21,8 @@
 #include <ctime>
 #include <cstring>
 
-void doHelp() {
+static void doHelp()
+{
     puts("Usage: PyPack -x filename.pak [-o outdir]");
     puts("       PyPack -c [options] [source.pyc ...] filename.pak");
     puts("       PyPack -a [options] [source.pyc ...] filename.pak");
@@ -40,18 +41,21 @@ void doHelp() {
 
 enum Action { kInvalid, kCreate, kExtract, kAdd };
 
-enum PycHeader {
+enum PycHeader
+{
     kPyc22 = 0x0A0DED2D,
     kPyc23 = 0x0A0DF23B,
 };
 
-struct PycObject {
+struct PycObject
+{
     ST::string fFilename;
     uint32_t fOffset, fSize;
     uint8_t* fData;
 };
 
-bool parseKey(const char* buf, unsigned int& val) {
+static bool parseKey(const char* buf, unsigned int& val)
+{
     char kMap[256];
     memset(kMap, -1, 256);
     int i;
@@ -81,7 +85,8 @@ bool parseKey(const char* buf, unsigned int& val) {
     return true;
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
     Action action = kInvalid;
     ST::string pakfile, outdir;
     std::list<ST::string> infiles;
@@ -121,13 +126,13 @@ int main(int argc, char* argv[]) {
         } else if (strcmp(argv[i], "-eoa") == 0) {
             eType = plEncryptedStream::kEncAES;
         } else {
-            if (!pakfile.is_empty())
+            if (!pakfile.empty())
                 infiles.push_back(pakfile);
             pakfile = argv[i];
         }
     }
 
-    if (pakfile.is_empty()) {
+    if (pakfile.empty()) {
         doHelp();
         return 1;
     }
@@ -317,12 +322,12 @@ int main(int argc, char* argv[]) {
             IS->read(pakObjects[i].fSize, pakObjects[i].fData);
 
             hsFileStream S;
-            if (!outdir.is_empty())
+            if (!outdir.empty())
                 outdir += PATHSEPSTR;
             S.open(outdir + pakObjects[i].fFilename + "c", fmCreate);
             S.writeInt((eType == plEncryptedStream::kEncXtea || eType == plEncryptedStream::kEncNone)
                         ? kPyc22 : kPyc23);
-            time_t ts = time(NULL);
+            time_t ts = time(nullptr);
             S.writeInt(ts);
             S.write(pakObjects[i].fSize, pakObjects[i].fData);
         }

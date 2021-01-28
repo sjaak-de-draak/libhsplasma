@@ -29,11 +29,11 @@ PY_METHOD_VA(Message, addReceiver,
     pyKey* key;
     if (!PyArg_ParseTuple(args, "O", &key)) {
         PyErr_SetString(PyExc_TypeError, "addReceiver expects a plKey");
-        return NULL;
+        return nullptr;
     }
     if (!pyKey_Check((PyObject*)key)) {
         PyErr_SetString(PyExc_TypeError, "addReceiver expects a plKey");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addReceiver(*key->fThis);
     Py_RETURN_NONE;
@@ -46,13 +46,14 @@ PY_METHOD_VA(Message, delReceiver,
     int idx;
     if (!PyArg_ParseTuple(args, "i", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delReceiver expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->delReceiver(idx);
     Py_RETURN_NONE;
 }
 
-PY_METHOD_NOARGS(Message, clearReceivers, "Remove all receivers from the object") {
+PY_METHOD_NOARGS(Message, clearReceivers, "Remove all receivers from the object")
+{
     self->fThis->clearReceivers();
     Py_RETURN_NONE;
 }
@@ -64,7 +65,8 @@ static PyMethodDef pyMessage_Methods[] = {
     PY_METHOD_TERMINATOR
 };
 
-PY_GETSET_GETTER_DECL(Message, receivers) {
+PY_GETSET_GETTER_DECL(Message, receivers)
+{
     PyObject* list = PyTuple_New(self->fThis->getReceivers().size());
     for (size_t i=0; i<self->fThis->getReceivers().size(); i++)
         PyTuple_SET_ITEM(list, i, pyKey_FromKey(self->fThis->getReceivers()[i]));
@@ -88,13 +90,14 @@ static PyGetSetDef pyMessage_GetSet[] = {
 
 PY_PLASMA_TYPE(Message, plMessage, "plMessage wrapper")
 
-PY_PLASMA_TYPE_INIT(Message) {
+PY_PLASMA_TYPE_INIT(Message)
+{
     pyMessage_Type.tp_new = pyMessage_new;
     pyMessage_Type.tp_methods = pyMessage_Methods;
     pyMessage_Type.tp_getset = pyMessage_GetSet;
     pyMessage_Type.tp_base = &pyCreatable_Type;
     if (PyType_CheckAndReady(&pyMessage_Type) < 0)
-        return NULL;
+        return nullptr;
 
     PY_TYPE_ADD_CONST(Message, "kBCastNone", plMessage::kBCastNone);
     PY_TYPE_ADD_CONST(Message, "kBCastByType", plMessage::kBCastByType);

@@ -16,12 +16,14 @@
 
 #include "plParticleEmitter.h"
 
-plParticleEmitter::~plParticleEmitter() {
+plParticleEmitter::~plParticleEmitter()
+{
     delete fGenerator;
 }
 
-void plParticleEmitter::read(hsStream* S, plResManager* mgr) {
-    setGenerator(plParticleGenerator::Convert(mgr->ReadCreatable(S)));
+void plParticleEmitter::read(hsStream* S, plResManager* mgr)
+{
+    setGenerator(mgr->ReadCreatableC<plParticleGenerator>(S));
 
     fSpanIndex = S->readInt();
     fMaxParticles = S->readInt();
@@ -29,7 +31,8 @@ void plParticleEmitter::read(hsStream* S, plResManager* mgr) {
     fColor.read(S);
 }
 
-void plParticleEmitter::write(hsStream* S, plResManager* mgr) {
+void plParticleEmitter::write(hsStream* S, plResManager* mgr)
+{
     mgr->WriteCreatable(S, fGenerator);
 
     S->writeInt(fSpanIndex);
@@ -38,7 +41,8 @@ void plParticleEmitter::write(hsStream* S, plResManager* mgr) {
     fColor.write(S);
 }
 
-void plParticleEmitter::IPrcWrite(pfPrcHelper* prc) {
+void plParticleEmitter::IPrcWrite(pfPrcHelper* prc)
+{
     prc->startTag("Generator");
     fGenerator->prcWrite(prc);
     prc->closeTag();
@@ -54,10 +58,11 @@ void plParticleEmitter::IPrcWrite(pfPrcHelper* prc) {
     prc->closeTag();
 }
 
-void plParticleEmitter::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
+void plParticleEmitter::IPrcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     if (tag->getName() == "Generator") {
         if (tag->hasChildren())
-            setGenerator(plParticleGenerator::Convert(mgr->prcParseCreatable(tag->getFirstChild())));
+            setGenerator(mgr->prcParseCreatableC<plParticleGenerator>(tag->getFirstChild()));
     } else if (tag->getName() == "EmitterParams") {
         fSpanIndex = tag->getParam("SpanIndex", "0").to_uint();
         fMaxParticles = tag->getParam("MaxParticles", "0").to_uint();
@@ -70,7 +75,8 @@ void plParticleEmitter::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
     }
 }
 
-void plParticleEmitter::setGenerator(plParticleGenerator* generator) {
+void plParticleEmitter::setGenerator(plParticleGenerator* generator)
+{
     delete fGenerator;
     fGenerator = generator;
 }

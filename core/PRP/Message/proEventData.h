@@ -24,16 +24,19 @@
 
 #define EVTDATA(classname, evtType) \
 public:\
-    static classname* Convert(proEventData* evt) { \
-        if (evt != NULL && evt->EventType() == evtType) \
+    static classname* Convert(proEventData* evt) \
+    { \
+        if (evt && evt->EventType() == evtType) \
             return (classname*)evt; \
-        return NULL; \
+        return nullptr; \
     }
 
 
-class PLASMA_DLL proEventData {
+class PLASMA_DLL proEventData
+{
 public:
-    enum eventType {
+    enum eventType
+    {
         kCollision = 1, kPicked, kControlKey, kVariable, kFacing, kContained,
         kActivate, kCallback, kResponderState, kMultiStage, kSpawned,
         kClickDrag, kCoop, kOfferLinkBook, kBook, kClimbingBlockerHit,
@@ -42,7 +45,8 @@ public:
 
     enum dataType { kNumber, kKey, kNotta };
 
-    enum multiStageEventType {
+    enum multiStageEventType
+    {
         kEnterStage = 1, kBeginningOfLoop, kAdvanceNextStage,
         kRegressPrevStage, kNothing
     };
@@ -54,7 +58,7 @@ protected:
     int fEventType;
 
 public:
-    proEventData() : fEventType(0) { }
+    proEventData() : fEventType() { }
     virtual ~proEventData() { }
 
     int EventType() const { return fEventType; }
@@ -74,7 +78,8 @@ protected:
 };
 
 
-class PLASMA_DLL proCollisionEventData : public proEventData {
+class PLASMA_DLL proCollisionEventData : public proEventData
+{
     EVTDATA(proCollisionEventData, kCollision)
 
 protected:
@@ -83,7 +88,8 @@ protected:
     plKey fHittee;
 
 public:
-    proCollisionEventData() : fEnter(false) {
+    proCollisionEventData() : fEnter()
+    {
         fEventType = kCollision;
     }
 
@@ -99,12 +105,13 @@ public:
     plKey getHittee() const { return fHittee; }
 
     void setEnter(bool enter) { fEnter = enter; }
-    void setHitter(plKey hitter) { fHitter = hitter; }
-    void setHittee(plKey hittee) { fHittee = hittee; }
+    void setHitter(plKey hitter) { fHitter = std::move(hitter); }
+    void setHittee(plKey hittee) { fHittee = std::move(hittee); }
 };
 
 
-class PLASMA_DLL proPickedEventData : public proEventData {
+class PLASMA_DLL proPickedEventData : public proEventData
+{
     EVTDATA(proPickedEventData, kPicked)
 
 protected:
@@ -114,7 +121,8 @@ protected:
     hsVector3 fHitPoint;
 
 public:
-    proPickedEventData() : fEnabled(false) {
+    proPickedEventData() : fEnabled()
+    {
         fEventType = kPicked;
     }
 
@@ -130,14 +138,15 @@ public:
     bool isEnabled() const { return fEnabled; }
     hsVector3 getHitPoint() const { return fHitPoint; }
 
-    void setPicker(plKey picker) { fPicker = picker; }
-    void setPicked(plKey picked) { fPicked = picked; }
+    void setPicker(plKey picker) { fPicker = std::move(picker); }
+    void setPicked(plKey picked) { fPicked = std::move(picked); }
     void setEnabled(bool enabled) { fEnabled = enabled; }
     void setHitPoint(const hsVector3& point) { fHitPoint = point; }
 };
 
 
-class PLASMA_DLL proControlKeyEventData : public proEventData {
+class PLASMA_DLL proControlKeyEventData : public proEventData
+{
     EVTDATA(proControlKeyEventData, kControlKey)
 
 protected:
@@ -145,7 +154,8 @@ protected:
     bool fDown;
 
 public:
-    proControlKeyEventData(): fControlKey(0), fDown(false) {
+    proControlKeyEventData() : fControlKey(), fDown()
+    {
         fEventType = kControlKey;
     }
 
@@ -164,7 +174,8 @@ public:
 };
 
 
-class PLASMA_DLL proVariableEventData : public proEventData {
+class PLASMA_DLL proVariableEventData : public proEventData
+{
     EVTDATA(proVariableEventData, kVariable)
 
 protected:
@@ -174,7 +185,8 @@ protected:
     plKey fKey;
 
 public:
-    proVariableEventData() : fNumber(0.0f) {
+    proVariableEventData() : fNumber()
+    {
         fEventType = kVariable;
         fDataType = kNotta;
     }
@@ -194,11 +206,12 @@ public:
     void setName(const ST::string& name) { fName = name; }
     void setDataType(int type) { fDataType = type; }
     void setNumber(float number) { fNumber = number; }
-    void setKey(plKey key) { fKey = key; }
+    void setKey(plKey key) { fKey = std::move(key); }
 };
 
 
-class PLASMA_DLL proFacingEventData : public proEventData {
+class PLASMA_DLL proFacingEventData : public proEventData
+{
     EVTDATA(proFacingEventData, kFacing)
 
 protected:
@@ -208,7 +221,8 @@ protected:
     bool fEnabled;
 
 public:
-    proFacingEventData() : fDot(0.0f), fEnabled(false) {
+    proFacingEventData() : fDot(), fEnabled()
+    {
         fEventType = kFacing;
     }
 
@@ -224,14 +238,15 @@ public:
     float getDot() const { return fDot; }
     bool isEnabled() const { return fEnabled; }
 
-    void setFacer(plKey facer) { fFacer = facer; }
-    void setFacee(plKey facee) { fFacee = facee; }
+    void setFacer(plKey facer) { fFacer = std::move(facer); }
+    void setFacee(plKey facee) { fFacee = std::move(facee); }
     void setDot(float dot) { fDot = dot; }
     void setEnabled(bool enabled) { fEnabled = enabled; }
 };
 
 
-class PLASMA_DLL proContainedEventData : public proEventData {
+class PLASMA_DLL proContainedEventData : public proEventData
+{
     EVTDATA(proContainedEventData, kContained)
 
 protected:
@@ -240,7 +255,8 @@ protected:
     bool fEntering;
 
 public:
-    proContainedEventData() : fEntering(false) {
+    proContainedEventData() : fEntering()
+    {
         fEventType = kContained;
     }
 
@@ -255,20 +271,22 @@ public:
     plKey getContainer() const { return fContainer; }
     bool isEntering() const { return fEntering; }
 
-    void setContained(plKey contained) { fContained = contained; }
-    void setContainer(plKey container) { fContainer = container; }
+    void setContained(plKey contained) { fContained = std::move(contained); }
+    void setContainer(plKey container) { fContainer = std::move(container); }
     void setEntering(bool entering) { fEntering = entering; }
 };
 
 
-class PLASMA_DLL proActivateEventData : public proEventData {
+class PLASMA_DLL proActivateEventData : public proEventData
+{
     EVTDATA(proActivateEventData, kActivate)
 
 protected:
     bool fActive, fActivate;
 
 public:
-    proActivateEventData() : fActive(false), fActivate(false) {
+    proActivateEventData() : fActive(), fActivate()
+    {
         fEventType = kActivate;
     }
 
@@ -287,14 +305,16 @@ public:
 };
 
 
-class PLASMA_DLL proCallbackEventData : public proEventData {
+class PLASMA_DLL proCallbackEventData : public proEventData
+{
     EVTDATA(proCallbackEventData, kCallback)
 
 protected:
     int fCallbackEventType;
 
 public:
-    proCallbackEventData() : fCallbackEventType(0) {
+    proCallbackEventData() : fCallbackEventType()
+    {
         fEventType = kCallback;
     }
 
@@ -310,14 +330,16 @@ public:
 };
 
 
-class PLASMA_DLL proResponderStateEventData : public proEventData {
+class PLASMA_DLL proResponderStateEventData : public proEventData
+{
     EVTDATA(proResponderStateEventData, kResponderState)
 
 protected:
     int fState;
 
 public:
-    proResponderStateEventData() : fState(0) {
+    proResponderStateEventData() : fState()
+    {
         fEventType = kResponderState;
     }
 
@@ -333,7 +355,8 @@ public:
 };
 
 
-class PLASMA_DLL proMultiStageEventData : public proEventData {
+class PLASMA_DLL proMultiStageEventData : public proEventData
+{
     EVTDATA(proMultiStageEventData, kMultiStage)
 
 protected:
@@ -341,7 +364,8 @@ protected:
     plKey fAvatar;
 
 public:
-    proMultiStageEventData() : fStage(0), fEvent(kNothing) {
+    proMultiStageEventData() : fStage(), fEvent(kNothing)
+    {
         fEventType = kMultiStage;
     }
 
@@ -358,11 +382,12 @@ public:
 
     void setStage(int stage) { fStage = stage; }
     void setEvent(int event) { fEvent = event; }
-    void setAvatar(plKey avatar) { fAvatar = avatar; }
+    void setAvatar(plKey avatar) { fAvatar = std::move(avatar); }
 };
 
 
-class PLASMA_DLL proSpawnedEventData : public proEventData {
+class PLASMA_DLL proSpawnedEventData : public proEventData
+{
     EVTDATA(proSpawnedEventData, kSpawned)
 
 protected:
@@ -382,12 +407,13 @@ public:
     plKey getSpawner() const { return fSpawner; }
     plKey getSpawnee() const { return fSpawnee; }
 
-    void setSpawner(plKey spawner) { fSpawner = spawner; }
-    void setSpawnee(plKey spawnee) { fSpawnee = spawnee; }
+    void setSpawner(plKey spawner) { fSpawner = std::move(spawner); }
+    void setSpawnee(plKey spawnee) { fSpawnee = std::move(spawnee); }
 };
 
 
-class PLASMA_DLL proClickDragEventData : public proEventData {
+class PLASMA_DLL proClickDragEventData : public proEventData
+{
     EVTDATA(proClickDragEventData, kClickDrag)
 
 public:
@@ -400,7 +426,8 @@ protected:
 };
 
 
-class PLASMA_DLL proCoopEventData : public proEventData {
+class PLASMA_DLL proCoopEventData : public proEventData
+{
     EVTDATA(proCoopEventData, kCoop)
 
 protected:
@@ -408,7 +435,8 @@ protected:
     unsigned short fSerial;
 
 public:
-    proCoopEventData() : fID(0), fSerial(0) {
+    proCoopEventData() : fID(), fSerial()
+    {
         fEventType = kCoop;
     }
 
@@ -427,7 +455,8 @@ public:
 };
 
 
-class PLASMA_DLL proOfferLinkBookEventData : public proEventData {
+class PLASMA_DLL proOfferLinkBookEventData : public proEventData
+{
     EVTDATA(proOfferLinkBookEventData, kOfferLinkBook)
 
 protected:
@@ -435,7 +464,8 @@ protected:
     int fTargetAge, fOfferee;
 
 public:
-    proOfferLinkBookEventData() : fTargetAge(0), fOfferee(0) {
+    proOfferLinkBookEventData() : fTargetAge(), fOfferee()
+    {
         fEventType = kOfferLinkBook;
     }
 
@@ -450,20 +480,22 @@ public:
     int getTargetAge() const { return fTargetAge; }
     int getOfferee() const { return fOfferee; }
 
-    void setOfferer(plKey offerer) { fOfferer = offerer; }
+    void setOfferer(plKey offerer) { fOfferer = std::move(offerer); }
     void setTargetAge(int age) { fTargetAge = age; }
     void setOfferee(int offeree) { fOfferee = offeree; }
 };
 
 
-class PLASMA_DLL proBookEventData : public proEventData {
+class PLASMA_DLL proBookEventData : public proEventData
+{
     EVTDATA(proBookEventData, kBook)
 
 protected:
     unsigned int fEvent, fLinkID;
 
 public:
-    proBookEventData() : fEvent(0), fLinkID(0) {
+    proBookEventData() : fEvent(), fLinkID()
+    {
         fEventType = kBook;
     }
 
@@ -482,7 +514,8 @@ public:
 };
 
 
-class PLASMA_DLL proClimbingBlockerHitEventData : public proEventData {
+class PLASMA_DLL proClimbingBlockerHitEventData : public proEventData
+{
     EVTDATA(proClimbingBlockerHitEventData, kClimbingBlockerHit)
 
 protected:
@@ -499,7 +532,7 @@ protected:
 
 public:
     plKey getBlocker() const { return fBlockerKey; }
-    void setBlocker(plKey blocker) { fBlockerKey = blocker; }
+    void setBlocker(plKey blocker) { fBlockerKey = std::move(blocker); }
 };
 
 #endif

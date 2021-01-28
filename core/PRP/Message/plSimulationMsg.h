@@ -19,24 +19,27 @@
 
 #include "plMessage.h"
 
-class PLASMA_DLL plSimulationMsg : public plMessage {
+class PLASMA_DLL plSimulationMsg : public plMessage
+{
     CREATABLE(plSimulationMsg, kSimulationMsg, plMessage)
 };
 
 
-class PLASMA_DLL plSimStateMsg : public plSimulationMsg {
+class PLASMA_DLL plSimStateMsg : public plSimulationMsg
+{
     CREATABLE(plSimStateMsg, kSimStateMsg, plSimulationMsg)
 };
 
 
-class PLASMA_DLL plSimSuppressMsg : public plSimStateMsg {
+class PLASMA_DLL plSimSuppressMsg : public plSimStateMsg
+{
     CREATABLE(plSimSuppressMsg, kSimSuppressMsg, plSimStateMsg)
 
 protected:
     bool fSuppress;
 
 public:
-    plSimSuppressMsg() : fSuppress(false) { }
+    plSimSuppressMsg() : fSuppress() { }
 
     void read(hsStream* S, plResManager* mgr) HS_OVERRIDE;
     void write(hsStream* S, plResManager* mgr) HS_OVERRIDE;
@@ -44,10 +47,15 @@ public:
 protected:
     void IPrcWrite(pfPrcHelper* prc) HS_OVERRIDE;
     void IPrcParse(const pfPrcTag* tag, plResManager* mgr) HS_OVERRIDE;
+
+public:
+    bool getSuppress() const { return fSuppress; }
+    void setSuppress(bool value) { fSuppress = value; }
 };
 
 
-class PLASMA_DLL plSubWorldMsg : public plSimulationMsg {
+class PLASMA_DLL plSubWorldMsg : public plSimulationMsg
+{
     CREATABLE(plSubWorldMsg, kSubWorldMsg, plSimulationMsg)
 
 protected:
@@ -63,7 +71,7 @@ protected:
 
 public:
     plKey getWorldKey() const { return fWorldKey; }
-    void setWorldKey(const plKey& worldKey) { fWorldKey = worldKey; }
+    void setWorldKey(plKey worldKey) { fWorldKey = std::move(worldKey); }
 };
 
 #endif

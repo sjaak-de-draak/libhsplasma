@@ -24,11 +24,12 @@ PY_PLASMA_NEW(LightAmbientApplicator, plLightAmbientApplicator)
 PY_PLASMA_TYPE(LightAmbientApplicator, plLightAmbientApplicator,
                "plLightAmbientApplicator wrapper")
 
-PY_PLASMA_TYPE_INIT(LightAmbientApplicator) {
+PY_PLASMA_TYPE_INIT(LightAmbientApplicator)
+{
     pyLightAmbientApplicator_Type.tp_new = pyLightAmbientApplicator_new;
     pyLightAmbientApplicator_Type.tp_base = &pyAGApplicator_Type;
     if (PyType_CheckAndReady(&pyLightAmbientApplicator_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyLightAmbientApplicator_Type);
     return (PyObject*)&pyLightAmbientApplicator_Type;

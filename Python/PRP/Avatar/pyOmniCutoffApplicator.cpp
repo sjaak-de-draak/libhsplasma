@@ -24,11 +24,12 @@ PY_PLASMA_NEW(OmniCutoffApplicator, plOmniCutoffApplicator)
 PY_PLASMA_TYPE(OmniCutoffApplicator, plOmniCutoffApplicator,
                "plOmniCutoffApplicator wrapper")
 
-PY_PLASMA_TYPE_INIT(OmniCutoffApplicator) {
+PY_PLASMA_TYPE_INIT(OmniCutoffApplicator)
+{
     pyOmniCutoffApplicator_Type.tp_new = pyOmniCutoffApplicator_new;
     pyOmniCutoffApplicator_Type.tp_base = &pyAGApplicator_Type;
     if (PyType_CheckAndReady(&pyOmniCutoffApplicator_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyOmniCutoffApplicator_Type);
     return (PyObject*)&pyOmniCutoffApplicator_Type;

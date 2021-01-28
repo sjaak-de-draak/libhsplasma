@@ -32,12 +32,13 @@ PyGetSetDef pySimulationInterface_GetSet[] = {
 PY_PLASMA_TYPE(SimulationInterface, plSimulationInterface,
                "plSimulationInterface wrapper")
 
-PY_PLASMA_TYPE_INIT(SimulationInterface) {
+PY_PLASMA_TYPE_INIT(SimulationInterface)
+{
     pySimulationInterface_Type.tp_new = pySimulationInterface_new;
     pySimulationInterface_Type.tp_getset = pySimulationInterface_GetSet;
     pySimulationInterface_Type.tp_base = &pyObjInterface_Type;
     if (PyType_CheckAndReady(&pySimulationInterface_Type) < 0)
-        return NULL;
+        return nullptr;
 
     PY_TYPE_ADD_CONST(SimulationInterface, "kWeightless",
                       plSimulationInterface::kWeightless);

@@ -19,7 +19,8 @@
 
 #include "plMessage.h"
 
-class PLASMA_DLL plLoadCloneMsg : public plMessage {
+class PLASMA_DLL plLoadCloneMsg : public plMessage
+{
     CREATABLE(plLoadCloneMsg, kLoadCloneMsg, plMessage)
 
 protected:
@@ -29,11 +30,14 @@ protected:
     plMessage* fTriggerMsg;
 
 public:
-    plLoadCloneMsg() : fValidMsg(0), fIsLoading(0), fUserData(0),
-                       fOriginatingPlayerID(0), fTriggerMsg(NULL) {
+    plLoadCloneMsg()
+        : fValidMsg(), fIsLoading(), fUserData(), fOriginatingPlayerID(),
+          fTriggerMsg()
+    {
         fBCastFlags |= kNetPropagate;
     }
-    virtual ~plLoadCloneMsg();
+
+    ~plLoadCloneMsg();
 
     void read(hsStream* S, plResManager* mgr) HS_OVERRIDE;
     void write(hsStream* S, plResManager* mgr) HS_OVERRIDE;
@@ -51,8 +55,8 @@ public:
     unsigned int getOriginatingPlayerID() const { return fOriginatingPlayerID; }
     plMessage* getTriggerMsg() const { return fTriggerMsg; }
 
-    void setCloneKey(plKey key) { fCloneKey = key; }
-    void setRequestor(plKey key) { fRequestorKey = key; }
+    void setCloneKey(plKey key) { fCloneKey = std::move(key); }
+    void setRequestor(plKey key) { fRequestorKey = std::move(key); }
     void setValidMsg(unsigned char validMsg) { fValidMsg = validMsg; }
     void setIsLoading(unsigned char isLoading) { fIsLoading = isLoading; }
     void setUserData(unsigned int userData) { fUserData = userData; }

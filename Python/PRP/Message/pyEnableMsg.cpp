@@ -21,39 +21,43 @@
 
 PY_PLASMA_NEW(EnableMsg, plEnableMsg)
 
-PY_METHOD_VA(EnableMsg, getCmd, "Params: cmd") {
+PY_METHOD_VA(EnableMsg, getCmd, "Params: cmd")
+{
     Py_ssize_t idx;
     if (!PyArg_ParseTuple(args, "n", &idx)) {
         PyErr_SetString(PyExc_TypeError, "getCmd expects an int");
-        return NULL;
+        return nullptr;
     }
     return pyPlasma_convert(self->fThis->getCmd().get((size_t)idx));
 }
 
-PY_METHOD_VA(EnableMsg, getType, "Params: type") {
+PY_METHOD_VA(EnableMsg, getType, "Params: type")
+{
     Py_ssize_t idx;
     if (!PyArg_ParseTuple(args, "n", &idx)) {
         PyErr_SetString(PyExc_TypeError, "getType expects an int");
-        return NULL;
+        return nullptr;
     }
     return pyPlasma_convert(self->fThis->getTypes().get((size_t)idx));
 }
 
-PY_METHOD_VA(EnableMsg, setCmd, "Params: cmd, value") {
+PY_METHOD_VA(EnableMsg, setCmd, "Params: cmd, value")
+{
     Py_ssize_t idx, value;
     if (!PyArg_ParseTuple(args, "nn", &idx, &value)) {
         PyErr_SetString(PyExc_TypeError, "setCmd expects int, bool");
-        return NULL;
+        return nullptr;
     }
     self->fThis->getCmd().set(idx, value != 0);
     Py_RETURN_NONE;
 }
 
-PY_METHOD_VA(EnableMsg, setType, "Params: type, value") {
+PY_METHOD_VA(EnableMsg, setType, "Params: type, value")
+{
     Py_ssize_t idx, value;
     if (!PyArg_ParseTuple(args, "nn", &idx, &value)) {
         PyErr_SetString(PyExc_TypeError, "setType expects int, bool");
-        return NULL;
+        return nullptr;
     }
     self->fThis->getTypes().set(idx, value != 0);
     Py_RETURN_NONE;
@@ -69,12 +73,13 @@ static PyMethodDef pyEnableMsg_Methods[] = {
 
 PY_PLASMA_TYPE(EnableMsg, plEnableMsg, "plEnableMsg wrapper")
 
-PY_PLASMA_TYPE_INIT(EnableMsg) {
+PY_PLASMA_TYPE_INIT(EnableMsg)
+{
     pyEnableMsg_Type.tp_new = pyEnableMsg_new;
     pyEnableMsg_Type.tp_methods = pyEnableMsg_Methods;
     pyEnableMsg_Type.tp_base = &pyMessage_Type;
     if (PyType_CheckAndReady(&pyEnableMsg_Type) < 0)
-        return NULL;
+        return nullptr;
 
     PY_TYPE_ADD_CONST(EnableMsg, "kDisable", plEnableMsg::kDisable);
     PY_TYPE_ADD_CONST(EnableMsg, "kEnable", plEnableMsg::kEnable);

@@ -18,12 +18,15 @@
 #define _PLCREATABLELISTHELPER_H
 
 #include "plCreatable.h"
+#include "ResManager/plResManager.h"
 
-class PLASMA_DLL plCreatableListHelper : public plCreatable {
+class PLASMA_DLL plCreatableListHelper : public plCreatable
+{
     CREATABLE(plCreatableListHelper, kCreatableListHelper, plCreatable)
 
 public:
-    enum Flags {
+    enum Flags
+    {
         kWantCompression = (1<<0),
         kCompressed      = (1<<1),
         kWritten         = (1<<2),
@@ -35,7 +38,7 @@ protected:
 
 public:
     plCreatableListHelper() : fFlags(kWantCompression) { }
-    virtual ~plCreatableListHelper() { clearCreatables(); }
+    ~plCreatableListHelper() { clearCreatables(); }
 
     void read(hsStream* S, plResManager* mgr) HS_OVERRIDE;
     void write(hsStream* S, plResManager* mgr) HS_OVERRIDE;

@@ -40,13 +40,14 @@ static PyGetSetDef pyCompoundPosController_GetSet[] = {
 PY_PLASMA_TYPE(CompoundPosController, plCompoundPosController,
                "plCompoundPosController wrapper")
 
-PY_PLASMA_TYPE_INIT(CompoundPosController) {
+PY_PLASMA_TYPE_INIT(CompoundPosController)
+{
     pyCompoundPosController_Type.tp_init = pyCompoundPosController___init__;
     pyCompoundPosController_Type.tp_new = pyCompoundPosController_new;
     pyCompoundPosController_Type.tp_getset = pyCompoundPosController_GetSet;
     pyCompoundPosController_Type.tp_base = &pyPosController_Type;
     if (PyType_CheckAndReady(&pyCompoundPosController_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyCompoundPosController_Type);
     return (PyObject*)&pyCompoundPosController_Type;

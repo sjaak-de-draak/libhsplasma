@@ -16,11 +16,13 @@
 
 #include "plAxisAnimModifier.h"
 
-plAxisAnimModifier::~plAxisAnimModifier() {
+plAxisAnimModifier::~plAxisAnimModifier()
+{
     delete fNotify;
 }
 
-void plAxisAnimModifier::read(hsStream* S, plResManager* mgr) {
+void plAxisAnimModifier::read(hsStream* S, plResManager* mgr)
+{
     plSingleModifier::read(S, mgr);
 
     if (S->getVer().isNewPlasma()) {
@@ -33,7 +35,7 @@ void plAxisAnimModifier::read(hsStream* S, plResManager* mgr) {
     fNotificationKey = mgr->readKey(S);
     fAllOrNothing = S->readBool();
 
-    setNotify(plNotifyMsg::Convert(mgr->ReadCreatable(S)));
+    setNotify(mgr->ReadCreatableC<plNotifyMsg>(S));
     size_t len = S->readShort();
     fAnimLabel = S->readStr(len);
 
@@ -63,7 +65,8 @@ void plAxisAnimModifier::read(hsStream* S, plResManager* mgr) {
     }
 }
 
-void plAxisAnimModifier::write(hsStream* S, plResManager* mgr) {
+void plAxisAnimModifier::write(hsStream* S, plResManager* mgr)
+{
     plSingleModifier::write(S, mgr);
 
     if (S->getVer().isNewPlasma()) {
@@ -106,7 +109,8 @@ void plAxisAnimModifier::write(hsStream* S, plResManager* mgr) {
     }
 }
 
-void plAxisAnimModifier::IPrcWrite(pfPrcHelper* prc) {
+void plAxisAnimModifier::IPrcWrite(pfPrcHelper* prc)
+{
     plSingleModifier::IPrcWrite(prc);
 
     prc->startTag("AxisAnimParams");
@@ -174,7 +178,8 @@ void plAxisAnimModifier::IPrcWrite(pfPrcHelper* prc) {
     prc->closeTag();    // EoaUnknowns
 }
 
-void plAxisAnimModifier::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
+void plAxisAnimModifier::IPrcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     if (tag->getName() == "AxisAnimParams") {
         fAllOrNothing = tag->getParam("AllOrNothing", "false").to_bool();
         fAnimLabel = tag->getParam("AnimLabel", "");
@@ -189,7 +194,7 @@ void plAxisAnimModifier::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
             fNotificationKey = mgr->prcParseKey(tag->getFirstChild());
     } else if (tag->getName() == "Notify") {
         if (tag->hasChildren())
-            setNotify(plNotifyMsg::Convert(mgr->prcParseCreatable(tag->getFirstChild())));
+            setNotify(mgr->prcParseCreatableC<plNotifyMsg>(tag->getFirstChild()));
     } else if (tag->getName() == "EoaUnknowns") {
         // Blah, skip for now
     } else {
@@ -197,7 +202,8 @@ void plAxisAnimModifier::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
     }
 }
 
-void plAxisAnimModifier::setNotify(plNotifyMsg* msg) {
+void plAxisAnimModifier::setNotify(plNotifyMsg* msg)
+{
     delete fNotify;
     fNotify = msg;
 }

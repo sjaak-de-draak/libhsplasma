@@ -15,57 +15,77 @@
  */
 
 #include "plCreatable.h"
+#include "Stream/hsRAMStream.h"
 
 /* plCreatable */
-short plCreatable::ClassIndex(PlasmaVer ver) const {
+short plCreatable::ClassIndex(PlasmaVer ver) const
+{
     return pdUnifiedTypeMap::MappedToPlasma(ClassIndex(), ver);
 }
 
-const char* plCreatable::ClassName() const {
+const char* plCreatable::ClassName() const
+{
     return pdUnifiedTypeMap::ClassName(ClassIndex());
 }
 
-void plCreatable::prcWrite(pfPrcHelper* prc) {
+void plCreatable::prcWrite(pfPrcHelper* prc)
+{
     prc->writeSimpleTag(ClassName());
     IPrcWrite(prc);
     prc->closeTag();
 }
 
-void plCreatable::prcParse(const pfPrcTag* tag, plResManager* mgr) {
+void plCreatable::prcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     if (tag->getName() != ClassName())
         throw pfPrcTagException(__FILE__, __LINE__, tag->getName());
 
     const pfPrcTag* child = tag->getFirstChild();
-    while (child != NULL) {
+    while (child) {
         IPrcParse(child, mgr);
         child = child->getNextSibling();
     }
 }
 
-void plCreatable::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
+ST::string plCreatable::toPrc(pfPrcHelper::PrcExclude exclude)
+{
+    hsRAMStream S;
+    pfPrcHelper prc(&S);
+    prc.exclude(exclude);
+    prcWrite(&prc);
+    return ST::string::from_utf8((const char*)S.data(), S.size(), ST::assume_valid);
+}
+
+void plCreatable::IPrcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     throw pfPrcTagException(__FILE__, __LINE__, tag->getName());
 }
 
 
 /* plCreatableStub */
 plCreatableStub::plCreatableStub(short hClass, size_t length)
-              : fClassIdx(hClass), fDataLen(length) {
+    : fClassIdx(hClass), fDataLen(length)
+{
     fData = new uint8_t[fDataLen];
 }
 
-plCreatableStub::~plCreatableStub() {
+plCreatableStub::~plCreatableStub()
+{
     delete[] fData;
 }
 
-void plCreatableStub::read(hsStream* S, plResManager* mgr) {
+void plCreatableStub::read(hsStream* S, plResManager* mgr)
+{
     S->read(fDataLen, fData);
 }
 
-void plCreatableStub::write(hsStream* S, plResManager* mgr) {
+void plCreatableStub::write(hsStream* S, plResManager* mgr)
+{
     S->write(fDataLen, fData);
 }
 
-void plCreatableStub::prcWrite(pfPrcHelper* prc) {
+void plCreatableStub::prcWrite(pfPrcHelper* prc)
+{
     prc->startTag("plCreatableStub");
     prc->writeParam("Type", pdUnifiedTypeMap::ClassName(fClassIdx));
     prc->endTag();
@@ -73,7 +93,8 @@ void plCreatableStub::prcWrite(pfPrcHelper* prc) {
     prc->closeTag();
 }
 
-void plCreatableStub::prcParse(const pfPrcTag* tag, plResManager* mgr) {
+void plCreatableStub::prcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     if (tag->getName() != "plCreatableStub")
         throw pfPrcTagException(__FILE__, __LINE__, tag->getName());
     fClassIdx = pdUnifiedTypeMap::ClassIndex(tag->getParam("Type", "").c_str());

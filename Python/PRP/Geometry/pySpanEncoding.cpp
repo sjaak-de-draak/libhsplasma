@@ -30,11 +30,11 @@ PY_METHOD_VA(SpanEncoding, read,
     pyStream* stream;
     if (!PyArg_ParseTuple(args, "O", &stream)) {
         PyErr_SetString(PyExc_TypeError, "read expects a hsStream");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream)) {
         PyErr_SetString(PyExc_TypeError, "read expects a hsStream");
-        return NULL;
+        return nullptr;
     }
     self->fThis->read(stream->fThis);
     Py_RETURN_NONE;
@@ -47,11 +47,11 @@ PY_METHOD_VA(SpanEncoding, write,
     pyStream* stream;
     if (!PyArg_ParseTuple(args, "O", &stream)) {
         PyErr_SetString(PyExc_TypeError, "write expects a hsStream");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream)) {
         PyErr_SetString(PyExc_TypeError, "write expects a hsStream");
-        return NULL;
+        return nullptr;
     }
     self->fThis->write(stream->fThis);
     Py_RETURN_NONE;
@@ -74,14 +74,15 @@ static PyGetSetDef pySpanEncoding_GetSet[] = {
 
 PY_PLASMA_TYPE(SpanEncoding, plSpanEncoding, "plSpanEncoding wrapper")
 
-PY_PLASMA_TYPE_INIT(SpanEncoding) {
+PY_PLASMA_TYPE_INIT(SpanEncoding)
+{
     pySpanEncoding_Type.tp_dealloc = pySpanEncoding_dealloc;
     pySpanEncoding_Type.tp_init = pySpanEncoding___init__;
     pySpanEncoding_Type.tp_new = pySpanEncoding_new;
     pySpanEncoding_Type.tp_methods = pySpanEncoding_Methods;
     pySpanEncoding_Type.tp_getset = pySpanEncoding_GetSet;
     if (PyType_CheckAndReady(&pySpanEncoding_Type) < 0)
-        return NULL;
+        return nullptr;
 
     PY_TYPE_ADD_CONST(SpanEncoding, "kPosNone", plSpanEncoding::kPosNone);
     PY_TYPE_ADD_CONST(SpanEncoding, "kPos888", plSpanEncoding::kPos888);

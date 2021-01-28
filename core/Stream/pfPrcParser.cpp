@@ -18,14 +18,16 @@
 #include "Debug/plDebug.h"
 #include <cstdarg>
 
-static ST::string xmlUnescape(const ST::string& text) {
+static ST::string xmlUnescape(const ST::string& text)
+{
     return text.replace("&lt;", "<").replace("&gt;", ">")
                .replace("&quot;", "\"").replace("&apos;", "'")
                .replace("&amp;", "&");
 }
 
 /* pfPrcTag */
-pfPrcTag::~pfPrcTag() {
+pfPrcTag::~pfPrcTag()
+{
     /* This can cause a stack overflow if there are lots of tags
      * (e.g., hsGBufferGroup's verts.  For now, use Destroy() */
 
@@ -33,15 +35,17 @@ pfPrcTag::~pfPrcTag() {
     //delete fFirstChild;
 }
 
-pfPrcTag* pfPrcTag::Destroy() {
-    while (fFirstChild != NULL)
+pfPrcTag* pfPrcTag::Destroy()
+{
+    while (fFirstChild)
         fFirstChild = fFirstChild->Destroy();
     pfPrcTag* next = fNextSibling;
     delete this;
     return next;
 }
 
-ST::string pfPrcTag::getParam(const ST::string& key, const ST::string& def) const {
+ST::string pfPrcTag::getParam(const ST::string& key, const ST::string& def) const
+{
     std::map<ST::string, ST::string>::const_iterator f = fParams.find(key);
     if (f == fParams.end())
         return def;
@@ -49,22 +53,25 @@ ST::string pfPrcTag::getParam(const ST::string& key, const ST::string& def) cons
         return xmlUnescape(f->second);
 }
 
-bool pfPrcTag::hasParam(const ST::string& key) const {
+bool pfPrcTag::hasParam(const ST::string& key) const
+{
     std::map<ST::string, ST::string>::const_iterator f = fParams.find(key);
     return (f != fParams.end());
 }
 
-size_t pfPrcTag::countChildren() const {
+size_t pfPrcTag::countChildren() const
+{
     const pfPrcTag* childPtr = fFirstChild;
     size_t nChildren = 0;
-    while (childPtr != NULL) {
+    while (childPtr) {
         nChildren++;
         childPtr = childPtr->fNextSibling;
     }
     return nChildren;
 }
 
-void pfPrcTag::readHexStream(size_t maxLen, unsigned char* buf) const {
+void pfPrcTag::readHexStream(size_t maxLen, unsigned char* buf) const
+{
     std::list<ST::string> bytes = getContents();
     size_t i=0;
     auto iter = bytes.begin();
@@ -74,12 +81,14 @@ void pfPrcTag::readHexStream(size_t maxLen, unsigned char* buf) const {
 
 
 /* pfPrcParser */
-pfPrcParser::~pfPrcParser() {
-    if (fRootTag != NULL)
+pfPrcParser::~pfPrcParser()
+{
+    if (fRootTag)
         fRootTag->Destroy();
 }
 
-void pfPrcParser::read(hsStream* S) {
+void pfPrcParser::read(hsStream* S)
+{
     hsTokenStream* tok = new hsTokenStream(S);
     std::vector<hsTokenStream::Region> commentMarkers;
     std::vector<hsTokenStream::Region> stringMarkers;
@@ -95,9 +104,10 @@ void pfPrcParser::read(hsStream* S) {
     delete tok;
 }
 
-pfPrcTag* pfPrcParser::readTag(hsTokenStream* tok) {
+pfPrcTag* pfPrcParser::readTag(hsTokenStream* tok)
+{
     if (!tok->hasNext())
-        return NULL;
+        return nullptr;
 
     ST::string str = tok->next();
     while ((str != "<") && tok->hasNext()) {
@@ -170,25 +180,4 @@ pfPrcTag* pfPrcParser::readTag(hsTokenStream* tok) {
     }
     delete childPtr;
     return tag;
-}
-
-
-/* pfPrcParseException */
-pfPrcParseException::pfPrcParseException(const char* file, unsigned long line,
-                                         const char* msg) HS_NOEXCEPT
-                   : hsException(file, line) {
-    if (msg == NULL) {
-        fWhat = "Unknown Parse Error";
-    } else {
-        fWhat = ST::string("Parse Error: ") + msg;
-    }
-}
-
-/* pfPrcTagException */
-pfPrcTagException::pfPrcTagException(const char* file, unsigned long line,
-                                     const ST::string& tag) HS_NOEXCEPT
-                 : pfPrcParseException(file, line, NULL) {
-    fWhat = "Unexpected tag";
-    if (!tag.is_empty())
-        fWhat += ": " + tag;
 }

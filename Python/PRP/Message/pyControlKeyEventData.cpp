@@ -33,12 +33,13 @@ static PyGetSetDef pyControlKeyEventData_GetSet[] = {
 PY_PLASMA_TYPE(ControlKeyEventData, proControlKeyEventData,
                "proControlKeyEventData wrapper")
 
-PY_PLASMA_TYPE_INIT(ControlKeyEventData) {
+PY_PLASMA_TYPE_INIT(ControlKeyEventData)
+{
     pyControlKeyEventData_Type.tp_new = pyControlKeyEventData_new;
     pyControlKeyEventData_Type.tp_getset = pyControlKeyEventData_GetSet;
     pyControlKeyEventData_Type.tp_base = &pyEventData_Type;
     if (PyType_CheckAndReady(&pyControlKeyEventData_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyControlKeyEventData_Type);
     return (PyObject*)&pyControlKeyEventData_Type;

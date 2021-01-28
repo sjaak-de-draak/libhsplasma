@@ -28,12 +28,31 @@ PY_METHOD_VA(AgeInfo, readFromFile,
     "Params: filename\n"
     "Reads the AgeInfo from a .age file")
 {
-    const char* filename;
-    if (!PyArg_ParseTuple(args, "s", &filename)) {
-        PyErr_SetString(PyExc_TypeError, "readFromFile expects a string");
-        return NULL;
+    ST::string filename;
+    if (!PyArg_ParseTuple(args, "O&", PyAnyString_PathDecoder, &filename)) {
+        PyErr_SetString(PyExc_TypeError, "readFromFile expects a string or an os.PathLike object");
+        return nullptr;
     }
-    self->fThis->readFromFile(filename);
+
+    try {
+        self->fThis->readFromFile(filename);
+        Py_RETURN_NONE;
+    } catch (const hsException& ex) {
+        PyErr_SetString(PyExc_IOError, ex.what());
+        return nullptr;
+    }
+}
+
+PY_METHOD_VA(AgeInfo, readFromStream,
+    "Params: stream\n"
+    "Reads the AgeInfo from an arbitrary stream")
+{
+    pyStream* stream;
+    if (!PyArg_ParseTuple(args, "O", &stream) || !pyStream_Check((PyObject*)stream)) {
+        PyErr_SetString(PyExc_TypeError, "readFromStream expects an hsStream");
+        return nullptr;
+    }
+    self->fThis->readFromStream(stream->fThis);
     Py_RETURN_NONE;
 }
 
@@ -41,13 +60,31 @@ PY_METHOD_VA(AgeInfo, writeToFile,
     "Params: filename, version\n"
     "Write the AgeInfo to a .age file")
 {
-    const char* filename;
+    ST::string filename;
     int version;
-    if (!PyArg_ParseTuple(args, "si", &filename, &version)) {
-        PyErr_SetString(PyExc_TypeError, "writeToFile expects string, int");
-        return NULL;
+    if (!PyArg_ParseTuple(args, "O&i", PyAnyString_PathDecoder, &filename, &version)) {
+        PyErr_SetString(PyExc_TypeError, "writeToFile expects string or an os.PathLike object, int");
+        return nullptr;
     }
-    self->fThis->writeToFile(filename, (PlasmaVer)version);
+    try {
+        self->fThis->writeToFile(filename, (PlasmaVer)version);
+        Py_RETURN_NONE;
+    } catch (const hsException& ex) {
+        PyErr_SetString(PyExc_IOError, ex.what());
+        return nullptr;
+    }
+}
+
+PY_METHOD_VA(AgeInfo, writeToStream,
+    "Params: stream\n"
+    "Write the AgeInfo to an arbitrary stream")
+{
+    pyStream* stream;
+    if (!PyArg_ParseTuple(args, "O", &stream) || !pyStream_Check((PyObject*)stream)) {
+        PyErr_SetString(PyExc_TypeError, "writeToStream expects an hsStream");
+        return nullptr;
+    }
+    self->fThis->writeToStream(stream->fThis);
     Py_RETURN_NONE;
 }
 
@@ -64,14 +101,14 @@ PY_METHOD_VA(AgeInfo, getPage,
     int idx;
     if (!PyArg_ParseTuple(args, "i", &idx)) {
         PyErr_SetString(PyExc_TypeError, "getPage expects an int");
-        return NULL;
+        return nullptr;
     }
     try {
         plAgeInfo::PageEntry pe = self->fThis->getPage(idx);
         return Py_BuildValue("sii", pe.fName.c_str(), pe.fSeqSuffix, pe.fLoadFlags);
-    } catch (hsOutOfBoundsException) {
+    } catch (const hsOutOfBoundsException&) {
         PyErr_SetString(PyExc_IndexError, "page index out of range");
-        return NULL;
+        return nullptr;
     }
 }
 
@@ -82,7 +119,7 @@ PY_METHOD_VA(AgeInfo, getNumCommonPages,
     int version;
     if (!PyArg_ParseTuple(args, "i", &version)) {
         PyErr_SetString(PyExc_TypeError, "getNumCommonPages expects an int");
-        return NULL;
+        return nullptr;
     }
     return pyPlasma_convert(self->fThis->getNumCommonPages((PlasmaVer)version));
 }
@@ -94,14 +131,14 @@ PY_METHOD_VA(AgeInfo, getCommonPage,
     int idx, version;
     if (!PyArg_ParseTuple(args, "ii", &idx, &version)) {
         PyErr_SetString(PyExc_TypeError, "getCommonPage expects int, int");
-        return NULL;
+        return nullptr;
     }
     try {
         plAgeInfo::PageEntry pe = self->fThis->getCommonPage(idx, (PlasmaVer)version);
         return Py_BuildValue("sii", pe.fName.c_str(), pe.fSeqSuffix, pe.fLoadFlags);
-    } catch (hsOutOfBoundsException) {
+    } catch (const hsOutOfBoundsException&) {
         PyErr_SetString(PyExc_IndexError, "common page index out of range");
-        return NULL;
+        return nullptr;
     }
 }
 
@@ -115,7 +152,7 @@ PY_METHOD_VA(AgeInfo, setPage,
 
     if (!PyArg_ParseTuple(args, "i(sii)", &idx, &name, &seqSuffix, &flags)) {
         PyErr_SetString(PyExc_TypeError, "setPage expects int, (string, int, int)");
-        return NULL;
+        return nullptr;
     }
     self->fThis->setPage(idx, plAgeInfo::PageEntry(name, seqSuffix, flags));
     Py_RETURN_NONE;
@@ -130,7 +167,7 @@ PY_METHOD_VA(AgeInfo, addPage,
 
     if (!PyArg_ParseTuple(args, "(sii)", &name, &seqSuffix, &flags)) {
         PyErr_SetString(PyExc_TypeError, "addPage expects a tuple(string, int, int)");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addPage(plAgeInfo::PageEntry(name, seqSuffix, flags));
     Py_RETURN_NONE;
@@ -143,13 +180,13 @@ PY_METHOD_VA(AgeInfo, getPageFilename,
     int idx, version;
     if (!PyArg_ParseTuple(args, "ii", &idx, &version)) {
         PyErr_SetString(PyExc_TypeError, "getPageFilename expects int, int");
-        return NULL;
+        return nullptr;
     }
     try {
         return pyPlasma_convert(self->fThis->getPageFilename((size_t)idx, (PlasmaVer)version));
-    } catch (hsOutOfBoundsException) {
+    } catch (const hsOutOfBoundsException&) {
         PyErr_SetString(PyExc_IndexError, "page index out of range");
-        return NULL;
+        return nullptr;
     }
 }
 
@@ -160,53 +197,55 @@ PY_METHOD_VA(AgeInfo, getCommonPageFilename,
     int idx, version;
     if (!PyArg_ParseTuple(args, "ii", &idx, &version)) {
         PyErr_SetString(PyExc_TypeError, "getCommonPageFilename expects int, int");
-        return NULL;
+        return nullptr;
     }
     try {
         return pyPlasma_convert(self->fThis->getCommonPageFilename((size_t)idx, (PlasmaVer)version));
-    } catch (hsOutOfBoundsException) {
+    } catch (const hsOutOfBoundsException&) {
         PyErr_SetString(PyExc_IndexError, "common page index out of range");
-        return NULL;
+        return nullptr;
     }
 }
 
 PY_METHOD_VA(AgeInfo, getPageLoc,
-    "Params: idx\n"
+    "Params: idx, version\n"
     "Returns a plLocation for the specified page")
 {
     int idx, ver;
     if (!PyArg_ParseTuple(args, "ii", &idx, &ver)) {
         PyErr_SetString(PyExc_TypeError, "getPageLoc expects int, int");
-        return NULL;
+        return nullptr;
     }
     try {
         return pyLocation_FromLocation(self->fThis->getPageLoc((size_t)idx, (PlasmaVer)ver));
-    } catch (hsOutOfBoundsException) {
+    } catch (const hsOutOfBoundsException&) {
         PyErr_SetString(PyExc_IndexError, "page index out of range");
-        return NULL;
+        return nullptr;
     }
 }
 
 PY_METHOD_VA(AgeInfo, getCommonPageLoc,
-    "Params: idx\n"
+    "Params: idx, version\n"
     "Returns a plLocation for the specified common page")
 {
     int idx, ver;
     if (!PyArg_ParseTuple(args, "ii", &idx, &ver)) {
         PyErr_SetString(PyExc_TypeError, "getCommonPageLoc expects int, int");
-        return NULL;
+        return nullptr;
     }
     try {
         return pyLocation_FromLocation(self->fThis->getCommonPageLoc((size_t)idx, (PlasmaVer)ver));
-    } catch (hsOutOfBoundsException) {
+    } catch (const hsOutOfBoundsException&) {
         PyErr_SetString(PyExc_IndexError, "page index out of range");
-        return NULL;
+        return nullptr;
     }
 }
 
 static PyMethodDef pyAgeInfo_Methods[] = {
     pyAgeInfo_readFromFile_method,
+    pyAgeInfo_readFromStream_method,
     pyAgeInfo_writeToFile_method,
+    pyAgeInfo_writeToStream_method,
     pyAgeInfo_getNumPages_method,
     pyAgeInfo_getPage_method,
     pyAgeInfo_getNumCommonPages_method,
@@ -220,7 +259,7 @@ static PyMethodDef pyAgeInfo_Methods[] = {
     PY_METHOD_TERMINATOR
 };
 
-PY_PROPERTY(ST::string, AgeInfo, name, getAgeName, setAgeName)
+PY_PROPERTY_PATHLIKE(AgeInfo, name, getAgeName, setAgeName)
 PY_PROPERTY(unsigned int, AgeInfo, startDateTime, getStartDateTime, setStartDateTime)
 PY_PROPERTY(float, AgeInfo, dayLength, getDayLength, setDayLength)
 PY_PROPERTY(short, AgeInfo, maxCapacity, getMaxCapacity, setMaxCapacity)
@@ -241,14 +280,15 @@ static PyGetSetDef pyAgeInfo_GetSet[] = {
 
 PY_PLASMA_TYPE(AgeInfo, plAgeInfo, "plAgeInfo wrapper")
 
-PY_PLASMA_TYPE_INIT(AgeInfo) {
+PY_PLASMA_TYPE_INIT(AgeInfo)
+{
     pyAgeInfo_Type.tp_dealloc = pyAgeInfo_dealloc;
     pyAgeInfo_Type.tp_init = pyAgeInfo___init__;
     pyAgeInfo_Type.tp_new = pyAgeInfo_new;
     pyAgeInfo_Type.tp_methods = pyAgeInfo_Methods;
     pyAgeInfo_Type.tp_getset = pyAgeInfo_GetSet;
     if (PyType_CheckAndReady(&pyAgeInfo_Type) < 0)
-        return NULL;
+        return nullptr;
 
     PY_TYPE_ADD_CONST(AgeInfo, "kFlagPreventAutoLoad", plAgeInfo::kPreventAutoLoad);
     PY_TYPE_ADD_CONST(AgeInfo, "kFlagLoadIfSDLPresent", plAgeInfo::kLoadIfSDLPresent);

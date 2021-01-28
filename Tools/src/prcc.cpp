@@ -22,7 +22,8 @@
 #include <string_theory/stdio>
 #include <cstring>
 
-void doHelp(const char* exename) {
+static void doHelp(const char* exename)
+{
     ST::printf("Usage: {} infile [options]\n", exename);
     puts("");
     puts("Options:");
@@ -32,7 +33,8 @@ void doHelp(const char* exename) {
     puts("");
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
     ST::string inputFile, outputFile;
     PlasmaVer outVer = PlasmaVer::pvUnknown;
 
@@ -68,7 +70,7 @@ int main(int argc, char* argv[]) {
         } else if (argv[i][0] == '-') {
             ST::printf(stderr, "Warning: unrecognized option {}\n", argv[i]);
         } else {
-            if (inputFile.is_empty())
+            if (inputFile.empty())
                 inputFile = argv[i];
             else
                 ST::printf(stderr, "Warning: ignoring extra parameter {}\n", argv[i]);
@@ -92,20 +94,20 @@ int main(int argc, char* argv[]) {
         prc.read(&S);
         const pfPrcTag* root = prc.getRoot();
         if (root->getName() == "Page") {
-            if (outputFile.is_empty())
+            if (outputFile.empty())
                 outputFile = "out.prp";
             plPageInfo* page = rm.ReadPagePrc(root);
             rm.WritePage(outputFile, page);
         } else if (root->getName() == "Age") {
-            if (outputFile.is_empty())
+            if (outputFile.empty())
                 outputFile = "out.age";
             plAgeInfo* age = rm.ReadAgePrc(root);
             rm.WriteAge(outputFile, age);
         } else {
-            if (outputFile.is_empty())
+            if (outputFile.empty())
                 outputFile = "out.po";
             plCreatable* cre = rm.prcParseCreatable(root);
-            if (cre != NULL) {
+            if (cre) {
                 hsFileStream out;
                 out.setVer(outVer);
                 out.open(outputFile, fmCreate);

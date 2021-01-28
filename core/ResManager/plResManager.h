@@ -21,8 +21,10 @@
 #include <mutex>
 
 #include "PlasmaDefs.h"
+#include "Debug/plDebug.h"
 #include "Util/PlasmaVersions.h"
 #include "PRP/KeyedObject/plLocation.h"
+#include "PRP/plCreatable.h"
 #include "pdUnifiedTypeMap.h"
 #include "Stream/pfPrcHelper.h"
 #include "plKeyCollector.h"
@@ -35,7 +37,8 @@ typedef std::function<void (plPageInfo *page, size_t curObj, size_t maxObjs)> Lo
 /** Callback to be called before page is unloaded */
 typedef std::function<void (const plLocation& loc)> PageUnloadCallback;
 
-struct plPageStream {
+struct plPageStream
+{
     hsFileStream* stream;
     plPageInfo* page;
 };
@@ -49,7 +52,8 @@ struct plPageStream {
  * handle PRC data and store Age or PRP information.  Most of the
  * top-level file-based operations you'll do will start from here.
  */
-class PLASMA_DLL plResManager {
+class PLASMA_DLL plResManager
+{
 private:
     std::mutex fResMgrMutex;
 
@@ -121,13 +125,13 @@ public:
     plKey readUoid(hsStream* S);
 
     /** Write a plKey to a stream */
-    void writeKey(hsStream* S, plKey key);
+    void writeKey(hsStream* S, const plKey& key);
 
     /** Write the plKey that describes the specified hsKeyedObject to a stream */
     void writeKey(hsStream* S, hsKeyedObject* ko);
 
     /** Write a raw plKey to a stream (no "exists" bool for Uru streams) */
-    void writeUoid(hsStream* S, plKey key);
+    void writeUoid(hsStream* S, const plKey& key);
 
     /** Write the raw plKey that describes the hsKeyedObject to a stream */
     void writeUoid(hsStream* S, hsKeyedObject* ko);
@@ -142,7 +146,7 @@ public:
     plKey prcParseKeyNotify(const pfPrcTag* tag, plKeyData::AfterLoadCallback callback);
 
     /** Write a plKey to a PRC document. */
-    static void PrcWriteKey(pfPrcHelper* prc, plKey key);
+    static void PrcWriteKey(pfPrcHelper* prc, const plKey& key);
 
     /** Write the plKey that describes the specified hsKeyedObject to a PRC document. */
     static void PrcWriteKey(pfPrcHelper* prc, hsKeyedObject* ko);
@@ -154,7 +158,7 @@ public:
      * the key's internal object pointer.
      * \sa plKeyData::getObj()
      */
-    class hsKeyedObject* getObject(plKey key);
+    class hsKeyedObject* getObject(const plKey& key);
 
     /** Returns the total number of keys registered for the specified plLocation */
     unsigned int countKeys(const plLocation& loc) { return keys.countKeys(loc); }
@@ -165,6 +169,15 @@ public:
      * \sa ReadPageRaw(), ReadPagePrc(), ReadAge(), ReadAgePrc()
      */
     plPageInfo* ReadPage(const ST::string& filename, bool stub = false);
+
+    /**
+     * Read a Page from an arbitrary stream and register it with the ResManager.
+     * \param prxS stream containing the page header and keyring.
+     * \param prmS stream containing the keyed object data.
+     * \return a pointer to the plPageInfo describing the page.
+     * \sa ReadPageRaw(), ReadPagePrc(), ReadAge(), ReadAgePrc()
+     */
+    plPageInfo* ReadPage(hsStream* prxS, hsStream* prmS = nullptr, bool stub = false);
 
     /**
      * Parse a page from a PRC data source, and register it with the ResManager.
@@ -178,6 +191,12 @@ public:
      * \sa WritePagePrc(), WriteAge(), WriteAgePrc()
      */
     void WritePage(const ST::string& filename, plPageInfo* page);
+
+    /**
+     * Write the specified page to an arbitrary stream
+     * \sa WritePagePrc(), WriteAge(), WriteAgePrc()
+     */
+    void WritePage(hsStream* S, plPageInfo* page);
 
     /**
      * Write the specified page to a PRC document
@@ -254,20 +273,70 @@ public:
      * \return The plCreatable object.
      * \sa WriteCreatable(), prcParseCreatable()
      */
-    class plCreatable* ReadCreatable(hsStream* S, bool canStub = false, int stubLen = 0);
+    plCreatable* ReadCreatable(hsStream* S, bool canStub = false, int stubLen = 0);
+
+    /**
+     * Read a plCreatable from the stream.  This will be converted to the
+     * specified subclass if compatible.  If the read creatable is non-null
+     * but is not compatible with the expected type, this will print a
+     * warning.
+     * \param canStub Specifies whether an unsupported ClassIndex can be
+     *        made into a plCreatableStub without disrupting the stream.
+     * \param stubLen Specifies the size of the plCreatable for stubs
+     *        This only makes sense if canStub is true, and it MUST be
+     *        specified if canStub is true.
+     * \return The plCreatable object.
+     * \sa WriteCreatable(), prcParseCreatable()
+     */
+    template <class CreatableType>
+    CreatableType* ReadCreatableC(hsStream* S, bool canStub = false, int stubLen = 0)
+    {
+        plCreatable* pCre = ReadCreatable(S, canStub, stubLen);
+        if (!pCre)
+            return nullptr;
+
+        try {
+            return CreatableType::Convert(pCre);
+        } catch (...) {
+            delete pCre;
+            throw;
+        }
+    }
 
     /**
      * Writes a plCreatable to the stream.
      * \sa ReadCreatable(), prcParseCreatable()
      */
-    void WriteCreatable(hsStream* S, class plCreatable* pCre);
+    void WriteCreatable(hsStream* S, plCreatable* pCre);
 
     /**
      * Parse a plCreatable contained in the PRC tag.
      * \return a parsed plCreatable, or NULL if parsing failed.
      * \sa ReadCreatable(), WriteCreatable(), plCreatable::prcParse(), plCreatable::prcWrite()
      */
-    class plCreatable* prcParseCreatable(const pfPrcTag* tag);
+    plCreatable* prcParseCreatable(const pfPrcTag* tag);
+
+    /**
+     * Parse a plCreatable contained in the PRC tag, and convert it to the
+     * requested type.
+     * \return a parsed Creatable, or NULL if parsing failed.
+     * \sa ReadCreatable(), WriteCreatable(), plCreatable::prcParse(), plCreatable::prcWrite()
+     */
+    template <class CreatableType>
+    CreatableType* prcParseCreatableC(const pfPrcTag* tag)
+    {
+        plCreatable* pCre = prcParseCreatable(tag);
+        if (!pCre)
+            return nullptr;
+
+        try {
+            return CreatableType::Convert(pCre);
+        } catch (...) {
+            delete pCre;
+            throw;
+        }
+    }
+
 
     /**
      * Finds the plSceneNode associated with the page at loc.  If there is
@@ -323,7 +392,7 @@ public:
      * \return a copy of the key stored in the ResManager
      * \sa hsKeyedObject::init(), MoveKey(), AddObject()
      */
-    plKey AddKey(plKey key);
+    plKey AddKey(const plKey& key);
 
     /**
      * Change a plKey's location to the one specified.  This is probably
@@ -334,7 +403,7 @@ public:
      * updated location.
      * \sa AddKey(), AddObject()
      */
-    void MoveKey(plKey key, const plLocation& to) { keys.MoveKey(key, to); }
+    void MoveKey(const plKey& key, const plLocation& to) { keys.MoveKey(key, to); }
 
     /**
      * Manually register an hsKeyedObject with the ResManager.
@@ -370,7 +439,7 @@ public:
      * ResManager, and frees the memory associated with both.
      * This will allow you to delete an object from a page.
      */
-    void DelObject(plKey obj) { keys.del(obj); }
+    void DelObject(const plKey& obj) { keys.del(obj); }
 
     /**
      * Removes the page specified by loc from the ResManager, and

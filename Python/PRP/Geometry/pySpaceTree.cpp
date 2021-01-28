@@ -23,7 +23,8 @@
 PY_PLASMA_EMPTY_INIT(SpaceTree)
 PY_PLASMA_NEW(SpaceTree, plSpaceTree)
 
-PY_METHOD_NOARGS(SpaceTree, clear, "Clears the contents of this space tree") {
+PY_METHOD_NOARGS(SpaceTree, clear, "Clears the contents of this space tree")
+{
     self->fThis->clear();
     Py_RETURN_NONE;
 }
@@ -35,12 +36,13 @@ PY_METHOD_VA(SpaceTree, getNode,
     int idx;
     if (!PyArg_ParseTuple(args, "i", &idx)) {
         PyErr_SetString(PyExc_TypeError, "getNode expects an int");
-        return NULL;
+        return nullptr;
     }
     return pySpaceTreeNode_FromSpaceTreeNode(self->fThis->getNode(idx));
 }
 
-PY_METHOD_NOARGS(SpaceTree, getRoot, "Returns the root node") {
+PY_METHOD_NOARGS(SpaceTree, getRoot, "Returns the root node")
+{
     return pySpaceTreeNode_FromSpaceTreeNode(self->fThis->getRoot());
 }
 
@@ -51,11 +53,11 @@ PY_METHOD_VA(SpaceTree, addLeaf,
     pyBounds3Ext* bounds;
     if (!PyArg_ParseTuple(args, "O", &bounds)) {
         PyErr_SetString(PyExc_TypeError, "addLeaf expects an hsBounds3Ext");
-        return NULL;
+        return nullptr;
     }
     if (!pyBounds3Ext_Check((PyObject*)bounds)) {
         PyErr_SetString(PyExc_TypeError, "addLeaf expects an hsBounds3Ext");
-        return NULL;
+        return nullptr;
     }
     return pyPlasma_convert(self->fThis->addLeaf(*bounds->fThis));
 }
@@ -68,11 +70,11 @@ PY_METHOD_VA(SpaceTree, addParent,
     int left, right;
     if (!PyArg_ParseTuple(args, "Oii", &bounds, &left, &right)) {
         PyErr_SetString(PyExc_TypeError, "addParent expects hsBounds3Ext, int, int");
-        return NULL;
+        return nullptr;
     }
     if (!pyBounds3Ext_Check((PyObject*)bounds)) {
         PyErr_SetString(PyExc_TypeError, "addParent expects hsBounds3Ext, int, int");
-        return NULL;
+        return nullptr;
     }
     return pyPlasma_convert(self->fThis->addParent(*bounds->fThis, left, right));
 }
@@ -88,13 +90,14 @@ static PyMethodDef pySpaceTree_Methods[] = {
 
 PY_PLASMA_TYPE(SpaceTree, plSpaceTree, "plSpaceTree wrapper")
 
-PY_PLASMA_TYPE_INIT(SpaceTree) {
+PY_PLASMA_TYPE_INIT(SpaceTree)
+{
     pySpaceTree_Type.tp_init = pySpaceTree___init__;
     pySpaceTree_Type.tp_new = pySpaceTree_new;
     pySpaceTree_Type.tp_methods = pySpaceTree_Methods;
     pySpaceTree_Type.tp_base = &pyCreatable_Type;
     if (PyType_CheckAndReady(&pySpaceTree_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pySpaceTree_Type);
     return (PyObject*)&pySpaceTree_Type;

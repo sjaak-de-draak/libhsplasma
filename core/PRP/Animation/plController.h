@@ -18,9 +18,11 @@
 #define _PLCONTROLLER_H
 
 #include "PRP/plCreatable.h"
+#include "ResManager/plResManager.h"
 #include "hsKeys.h"
 
-class PLASMA_DLL plController : public plCreatable {
+class PLASMA_DLL plController : public plCreatable
+{
     CREATABLE(plController, kController, plCreatable)
 
 public:
@@ -28,7 +30,8 @@ public:
 };
 
 
-class PLASMA_DLL plCompoundController : public plController {
+class PLASMA_DLL plCompoundController : public plController
+{
     CREATABLE(plCompoundController, kCompoundController, plController)
 
 protected:
@@ -40,8 +43,8 @@ public:
     enum { kPosController, kRotController, kScaleController, kNumControllers };
 
     plCompoundController()
-        : fXController(NULL), fYController(NULL), fZController(NULL) { }
-    virtual ~plCompoundController();
+        : fXController(), fYController(), fZController() { }
+    ~plCompoundController();
 
     void read(hsStream* S, plResManager* mgr) HS_OVERRIDE;
     void write(hsStream* S, plResManager* mgr) HS_OVERRIDE;
@@ -55,7 +58,9 @@ public:
     plController* getXController() const { return fXController; }
     plController* getYController() const { return fYController; }
     plController* getZController() const { return fZController; }
-    plController* getController(unsigned int index) const {
+
+    plController* getController(unsigned int index) const
+    {
         switch (index)
         {
         case kPosController:
@@ -65,7 +70,7 @@ public:
         case kScaleController:
             return fZController;
         default:
-            return NULL;
+            return nullptr;
         }
     }
 

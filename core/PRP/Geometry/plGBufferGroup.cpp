@@ -15,22 +15,28 @@
  */
 
 #include "plGBufferGroup.h"
+#include "plGeometrySpan.h"
+#include "plIcicle.h"
+#include <cstring>
 #include <string_theory/format>
 
 /* plGBufferCell */
-void plGBufferCell::read(hsStream* S) {
+void plGBufferCell::read(hsStream* S)
+{
     fVtxStart = S->readInt();
     fColorStart = S->readInt();
     fLength = S->readInt();
 }
 
-void plGBufferCell::write(hsStream* S) {
+void plGBufferCell::write(hsStream* S)
+{
     S->writeInt(fVtxStart);
     S->writeInt(fColorStart);
     S->writeInt(fLength);
 }
 
-void plGBufferCell::prcWrite(pfPrcHelper* prc) {
+void plGBufferCell::prcWrite(pfPrcHelper* prc)
+{
     prc->startTag("plGBufferCell");
     prc->writeParam("VertexStart", fVtxStart);
     prc->writeParam("ColorStart", fColorStart);
@@ -38,7 +44,8 @@ void plGBufferCell::prcWrite(pfPrcHelper* prc) {
     prc->endTag(true);
 }
 
-void plGBufferCell::prcParse(const pfPrcTag* tag) {
+void plGBufferCell::prcParse(const pfPrcTag* tag)
+{
     if (tag->getName() != "plGBufferCell")
         throw pfPrcTagException(__FILE__, __LINE__, tag->getName());
 
@@ -49,7 +56,8 @@ void plGBufferCell::prcParse(const pfPrcTag* tag) {
 
 
 /* plGBufferTriangle */
-void plGBufferTriangle::read(hsStream* S) {
+void plGBufferTriangle::read(hsStream* S)
+{
     fIndex1 = S->readShort();
     fIndex2 = S->readShort();
     fIndex3 = S->readShort();
@@ -57,7 +65,8 @@ void plGBufferTriangle::read(hsStream* S) {
     fCenter.read(S);
 }
 
-void plGBufferTriangle::write(hsStream* S) {
+void plGBufferTriangle::write(hsStream* S)
+{
     S->writeShort(fIndex1);
     S->writeShort(fIndex2);
     S->writeShort(fIndex3);
@@ -65,7 +74,8 @@ void plGBufferTriangle::write(hsStream* S) {
     fCenter.write(S);
 }
 
-void plGBufferTriangle::prcWrite(pfPrcHelper* prc) {
+void plGBufferTriangle::prcWrite(pfPrcHelper* prc)
+{
     prc->writeSimpleTag("plGBufferTriangle");
       prc->startTag("Indices");
       prc->writeParam("Index1", fIndex1);
@@ -79,12 +89,13 @@ void plGBufferTriangle::prcWrite(pfPrcHelper* prc) {
     prc->closeTag();
 }
 
-void plGBufferTriangle::prcParse(const pfPrcTag* tag) {
+void plGBufferTriangle::prcParse(const pfPrcTag* tag)
+{
     if (tag->getName() != "plGBufferTriangle")
         throw pfPrcTagException(__FILE__, __LINE__, tag->getName());
 
     const pfPrcTag* child = tag->getFirstChild();
-    while (child != NULL) {
+    while (child) {
         if (child->getName() == "Indices") {
             fIndex1 = child->getParam("Index1", "0").to_uint();
             fIndex2 = child->getParam("Index2", "0").to_uint();
@@ -102,7 +113,8 @@ void plGBufferTriangle::prcParse(const pfPrcTag* tag) {
 
 
 /* plGBufferGroup */
-plGBufferGroup::~plGBufferGroup() {
+plGBufferGroup::~plGBufferGroup()
+{
     for (size_t i=0; i<fVertBuffStorage.size(); i++)
         delete[] fVertBuffStorage[i];
     for (size_t i=0; i<fIdxBuffStorage.size(); i++)
@@ -111,7 +123,8 @@ plGBufferGroup::~plGBufferGroup() {
         delete[] fCompGBuffStorage[i];
 }
 
-unsigned int plGBufferGroup::ICalcVertexSize(unsigned int& lStride) {
+unsigned int plGBufferGroup::ICalcVertexSize(unsigned int& lStride)
+{
     lStride = (getNumUVs() + 2) * 12;
     unsigned int numSkinWeights = getSkinWeights();
     if (numSkinWeights > 0) {
@@ -122,7 +135,8 @@ unsigned int plGBufferGroup::ICalcVertexSize(unsigned int& lStride) {
     return lStride + 8;
 }
 
-bool plGBufferGroup::INeedVertRecompression(PlasmaVer ver) const {
+bool plGBufferGroup::INeedVertRecompression(PlasmaVer ver) const
+{
     if ((fGBuffStorageType & kStoreIsDirty) != 0)
         return true;
     if (ver.isHexIsle())
@@ -133,7 +147,8 @@ bool plGBufferGroup::INeedVertRecompression(PlasmaVer ver) const {
         return (fGBuffStorageType & kStoreCompTypeMask) != kStoreCompV1;
 }
 
-void plGBufferGroup::read(hsStream* S) {
+void plGBufferGroup::read(hsStream* S)
+{
     if (S->getVer().isHexIsle()) {
         fFormat = S->readInt();
         S->readByte();
@@ -202,7 +217,7 @@ void plGBufferGroup::read(hsStream* S) {
                 S->read(colourcount * 8, cData);
             }
             fCompGBuffSizes[i] = 0;
-            fCompGBuffStorage[i] = NULL;
+            fCompGBuffStorage[i] = nullptr;
         }
     }
 
@@ -226,7 +241,8 @@ void plGBufferGroup::read(hsStream* S) {
     }
 }
 
-void plGBufferGroup::write(hsStream* S) {
+void plGBufferGroup::write(hsStream* S)
+{
     fFormat |= kEncoded;
     unsigned int totalSize = 0;
     for (size_t i=0; i<fVertBuffSizes.size(); i++)
@@ -244,7 +260,7 @@ void plGBufferGroup::write(hsStream* S) {
         if (S->getVer().isUniversal()) {
             S->writeInt(fVertBuffSizes[i]);
             S->write(fVertBuffSizes[i], fVertBuffStorage[i]);
-        } else if (INeedVertRecompression(S->getVer()) || fCompGBuffStorage[i] == NULL) {
+        } else if (INeedVertRecompression(S->getVer()) || fCompGBuffStorage[i] == nullptr) {
             coder.write(S, fVertBuffStorage[i], fFormat, fStride, count);
         } else {
             S->write(fCompGBuffSizes[i], fCompGBuffStorage[i]);
@@ -264,7 +280,8 @@ void plGBufferGroup::write(hsStream* S) {
     }
 }
 
-void plGBufferGroup::prcWrite(pfPrcHelper* prc) {
+void plGBufferGroup::prcWrite(pfPrcHelper* prc)
+{
     prc->startTag("plGBufferGroup");
     prc->writeParamHex("Format", fFormat);
     prc->endTag();
@@ -329,7 +346,8 @@ void plGBufferGroup::prcWrite(pfPrcHelper* prc) {
     prc->closeTag(); // plGBufferGroup
 }
 
-void plGBufferGroup::prcParse(const pfPrcTag* tag) {
+void plGBufferGroup::prcParse(const pfPrcTag* tag)
+{
     if (tag->getName() != "plGBufferGroup")
         throw pfPrcTagException(__FILE__, __LINE__, tag->getName());
     fFormat = tag->getParam("Format", "0").to_uint();
@@ -342,7 +360,7 @@ void plGBufferGroup::prcParse(const pfPrcTag* tag) {
     fGBuffStorageType = kStoreUncompressed;
 
     const pfPrcTag* child = tag->getFirstChild();
-    while (child != NULL) {
+    while (child) {
         if (child->getName() == "VertexGroup") {
             std::vector<plGBufferVertex> buf;
             buf.resize(child->countChildren());
@@ -352,7 +370,7 @@ void plGBufferGroup::prcParse(const pfPrcTag* tag) {
                     throw pfPrcTagException(__FILE__, __LINE__, vtxChild->getName());
 
                 const pfPrcTag* subChild = vtxChild->getFirstChild();
-                while (subChild != NULL) {
+                while (subChild) {
                     if (subChild->getName() == "Position") {
                         if (subChild->hasChildren())
                             buf[i].fPos.prcParse(subChild->getFirstChild());
@@ -419,7 +437,8 @@ void plGBufferGroup::prcParse(const pfPrcTag* tag) {
     }
 }
 
-std::vector<plGBufferVertex> plGBufferGroup::getVertices(size_t idx, size_t start, size_t count) const {
+std::vector<plGBufferVertex> plGBufferGroup::getVertices(size_t idx, size_t start, size_t count) const
+{
     std::vector<plGBufferVertex> buf;
 
     unsigned char* cp = fVertBuffStorage[idx] + (fStride * start);
@@ -462,7 +481,9 @@ std::vector<plGBufferVertex> plGBufferGroup::getVertices(size_t idx, size_t star
     return buf;
 }
 
-std::vector<unsigned short> plGBufferGroup::getIndices(size_t idx, size_t start, size_t count, size_t offset) const {
+std::vector<unsigned short> plGBufferGroup::getIndices(size_t idx, size_t start,
+                                                       size_t count, size_t offset) const
+{
     std::vector<unsigned short> buf;
 
     if (count == (size_t)-1)
@@ -473,12 +494,24 @@ std::vector<unsigned short> plGBufferGroup::getIndices(size_t idx, size_t start,
     return buf;
 }
 
-void plGBufferGroup::addVertices(const std::vector<plGBufferVertex>& verts) {
+unsigned int plGBufferGroup::getNumVertices(size_t cell) const
+{
+    if (fCells.size() <= cell)
+        return 0;
+
+    unsigned int count = 0;
+    for (const auto& i : fCells[cell])
+        count += i.fLength;
+    return count;
+}
+
+void plGBufferGroup::addVertices(const std::vector<plGBufferVertex>& verts)
+{
     size_t vtxSize = verts.size() * fStride;
     fVertBuffSizes.push_back(vtxSize);
     fVertBuffStorage.push_back(new unsigned char[vtxSize]);
     fCompGBuffSizes.push_back(0);
-    fCompGBuffStorage.push_back(NULL);
+    fCompGBuffStorage.push_back(nullptr);
     size_t idx = fVertBuffStorage.size() - 1;
 
     unsigned char* cp = fVertBuffStorage[idx];
@@ -518,7 +551,8 @@ void plGBufferGroup::addVertices(const std::vector<plGBufferVertex>& verts) {
     }
 }
 
-void plGBufferGroup::addIndices(const std::vector<unsigned short>& indices) {
+void plGBufferGroup::addIndices(const std::vector<unsigned short>& indices)
+{
     fIdxBuffCounts.push_back(indices.size());
     fIdxBuffStorage.push_back(new unsigned short[indices.size()]);
     size_t idx = fIdxBuffStorage.size() - 1;
@@ -527,25 +561,141 @@ void plGBufferGroup::addIndices(const std::vector<unsigned short>& indices) {
         fIdxBuffStorage[idx][i] = indices[i];
 }
 
-void plGBufferGroup::setFormat(unsigned int format) {
+void plGBufferGroup::IPackIcicle(const plGeometrySpan* geoSpan, plIcicle* ice)
+{
+    size_t i;
+    for (i = 0; i < fIdxBuffStorage.size(); ++i) {
+        if (geoSpan->getNumIndices() + fIdxBuffCounts[i] < kMaxIndicesPerBuffer)
+            break;
+    }
+    if (i == fIdxBuffStorage.size()) {
+        fIdxBuffStorage.push_back(nullptr);
+        fIdxBuffCounts.push_back(0);
+    }
+
+    unsigned int idxOffset = fIdxBuffCounts[i];
+    unsigned short* idxStorage = new unsigned short[idxOffset + geoSpan->getNumIndices()];
+    if (idxOffset != 0)
+        memcpy(idxStorage, fIdxBuffStorage[i], idxOffset * sizeof(unsigned short));
+    fIdxBuffCounts[i] += geoSpan->getNumIndices();
+    delete fIdxBuffStorage[i];
+    fIdxBuffStorage[i] = idxStorage;
+
+    for (size_t j = 0; j < geoSpan->getNumIndices(); ++j)
+        idxStorage[idxOffset + j] = geoSpan->getIndex(j) + (unsigned short)ice->getVStartIdx();
+
+    ice->setIBufferIdx(i);
+    ice->setIStartIdx(idxOffset);
+    ice->setILength(geoSpan->getNumIndices());
+}
+
+void plGBufferGroup::IPackVertexSpan(const plGeometrySpan* geoSpan, plVertexSpan* vSpan)
+{
+    size_t i;
+    for (i = 0; i < fVertBuffStorage.size(); ++i) {
+        if (geoSpan->getNumVertices() + getNumVertices(i) < kMaxVertsPerBuffer)
+            break;
+    }
+    if (i == fVertBuffStorage.size()) {
+        fVertBuffStorage.push_back(nullptr);
+        fVertBuffSizes.push_back(0);
+        fCompGBuffStorage.push_back(nullptr);
+        fCompGBuffSizes.push_back(0);
+        fCells.emplace_back();
+    }
+
+    unsigned int vertOffset = fVertBuffSizes[i];
+    unsigned int vertBuffSize = vertOffset + (geoSpan->getNumVertices() * fStride);
+    unsigned char* vertStorage = new unsigned char[vertBuffSize];
+    if (vertOffset != 0)
+        memcpy(vertStorage, fVertBuffStorage[i], vertOffset);
+    fVertBuffSizes[i] = vertBuffSize;
+    delete fVertBuffStorage[i];
+    fVertBuffStorage[i] = vertStorage;
+
+    unsigned char* destp = (unsigned char*)(vertStorage + vertOffset);
+    for (const auto& vertex : geoSpan->getVertices()) {
+        static_assert(sizeof(vertex.fPosition) == sizeof(float) * 3, "vertex position unexpected size");
+        memcpy(destp, &vertex.fPosition, sizeof(vertex.fPosition));
+        destp += sizeof(vertex.fPosition);
+
+        int weightCount = (fFormat & kSkinWeightMask) >> 4;
+        if (weightCount > 0) {
+            memcpy(destp, vertex.fWeights, weightCount * sizeof(float));
+            destp += weightCount * sizeof(float);
+
+            if (fFormat & kSkinIndices) {
+                memcpy(destp, &vertex.fIndices, sizeof(uint32_t));
+                destp += sizeof(uint32_t);
+            }
+        }
+
+        static_assert(sizeof(vertex.fNormal) == sizeof(float) * 3, "vertex normal unexpected size");
+        memcpy(destp, &vertex.fNormal, sizeof(vertex.fNormal));
+        destp += sizeof(vertex.fNormal);
+
+        memcpy(destp, &vertex.fColor, sizeof(uint32_t));
+        destp += sizeof(uint32_t);
+        memcpy(destp, &vertex.fSpecularColor, sizeof(uint32_t));
+        destp += sizeof(uint32_t);
+
+        static_assert(sizeof(vertex.fUVs[0]) == sizeof(float) * 3, "vertex uv unexpected size");
+        size_t uvCount = fFormat & kUVCountMask;
+        memcpy(destp, vertex.fUVs, sizeof(vertex.fUVs[0]) * uvCount);
+        destp += sizeof(vertex.fUVs[0]) * uvCount;
+    }
+
+    std::vector<plGBufferCell>& cells = fCells[i];
+    if (cells.empty()) {
+        vSpan->setCellIdx(0);
+        vSpan->setCellOffset(0);
+        cells.emplace_back(vertOffset, -1, geoSpan->getNumVertices());
+    } else {
+        vSpan->setCellIdx(cells.size() - 1);
+        vSpan->setCellOffset(cells.back().fLength);
+        cells.back().fLength += geoSpan->getNumVertices();
+    }
+
+    vSpan->setVBufferIdx(i);
+    for (size_t j = 0; j < cells.size() - 1; ++j)
+        vSpan->setVStartIdx(vSpan->getVStartIdx() + cells[j].fLength);
+    vSpan->setVStartIdx(vSpan->getVStartIdx() + vSpan->getCellOffset());
+    vSpan->setVLength(geoSpan->getNumVertices());
+}
+
+void plGBufferGroup::packGeoSpan(const plGeometrySpan* geoSpan, plIcicle* ice)
+{
+    if (fFormat != geoSpan->getFormat())
+        throw hsBadParamException(__FILE__, __LINE__, "Vertex formats do not match");
+
+    // In Plasma-speak, this is the non-isolated interleaved format.
+    IPackVertexSpan(geoSpan, ice);
+    IPackIcicle(geoSpan, ice);
+}
+
+void plGBufferGroup::setFormat(unsigned int format)
+{
     fFormat = format;
     fStride = ICalcVertexSize(fLiteStride);
     fGBuffStorageType |= kStoreIsDirty;
 }
 
-void plGBufferGroup::setSkinWeights(size_t skinWeights) {
+void plGBufferGroup::setSkinWeights(size_t skinWeights)
+{
     fFormat &= ~kSkinWeightMask;
     fFormat |= (skinWeights << 4) & kSkinWeightMask;
     fGBuffStorageType |= kStoreIsDirty;
 }
 
-void plGBufferGroup::setNumUVs(size_t numUVs) {
+void plGBufferGroup::setNumUVs(size_t numUVs)
+{
     fFormat &= ~kUVCountMask;
     fFormat |= numUVs & kUVCountMask;
     fGBuffStorageType |= kStoreIsDirty;
 }
 
-void plGBufferGroup::setHasSkinIndices(bool hasSI) {
+void plGBufferGroup::setHasSkinIndices(bool hasSI)
+{
     if (hasSI)
         fFormat |= kSkinIndices;
     else
@@ -553,7 +703,8 @@ void plGBufferGroup::setHasSkinIndices(bool hasSI) {
     fGBuffStorageType |= kStoreIsDirty;
 }
 
-void plGBufferGroup::delVertices(size_t idx) {
+void plGBufferGroup::delVertices(size_t idx)
+{
     delete[] fVertBuffStorage[idx];
     delete[] fCompGBuffStorage[idx];
     fVertBuffStorage.erase(fVertBuffStorage.begin() + idx);
@@ -562,13 +713,15 @@ void plGBufferGroup::delVertices(size_t idx) {
     fCompGBuffSizes.erase(fCompGBuffSizes.begin() + idx);
 }
 
-void plGBufferGroup::delIndices(size_t idx) {
+void plGBufferGroup::delIndices(size_t idx)
+{
     delete[] fIdxBuffStorage[idx];
     fIdxBuffStorage.erase(fIdxBuffStorage.begin() + idx);
     fIdxBuffCounts.erase(fIdxBuffCounts.begin() + idx);
 }
 
-void plGBufferGroup::clearVertices() {
+void plGBufferGroup::clearVertices()
+{
     for (size_t i=0; i<fVertBuffStorage.size(); i++)
         delete[] fVertBuffStorage[i];
     for (size_t i=0; i<fCompGBuffStorage.size(); i++)
@@ -579,7 +732,8 @@ void plGBufferGroup::clearVertices() {
     fCompGBuffSizes.clear();
 }
 
-void plGBufferGroup::clearIndices() {
+void plGBufferGroup::clearIndices()
+{
     for (size_t i=0; i<fIdxBuffStorage.size(); i++)
         delete[] fIdxBuffStorage[i];
     fIdxBuffStorage.clear();

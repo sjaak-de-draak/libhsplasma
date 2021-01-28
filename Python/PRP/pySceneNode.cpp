@@ -22,7 +22,8 @@
 
 PY_PLASMA_NEW(SceneNode, plSceneNode)
 
-PY_METHOD_NOARGS(SceneNode, clear, "Removes all objects from the Scene Node") {
+PY_METHOD_NOARGS(SceneNode, clear, "Removes all objects from the Scene Node")
+{
     self->fThis->clearSceneObjects();
     self->fThis->clearPoolObjects();
     Py_RETURN_NONE;
@@ -35,11 +36,11 @@ PY_METHOD_VA(SceneNode, addSceneObject,
     pyKey* key;
     if (!PyArg_ParseTuple(args, "O", &key)) {
         PyErr_SetString(PyExc_TypeError, "addSceneObject expects a plKey");
-        return NULL;
+        return nullptr;
     }
     if (!pyKey_Check((PyObject*)key)) {
         PyErr_SetString(PyExc_TypeError, "addSceneObject expects a plKey");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addSceneObject(*key->fThis);
     Py_RETURN_NONE;
@@ -52,11 +53,11 @@ PY_METHOD_VA(SceneNode, addPoolObject,
     pyKey* key;
     if (!PyArg_ParseTuple(args, "O", &key)) {
         PyErr_SetString(PyExc_TypeError, "addPoolObject expects a plKey");
-        return NULL;
+        return nullptr;
     }
     if (!pyKey_Check((PyObject*)key)) {
         PyErr_SetString(PyExc_TypeError, "addPoolObject expects a plKey");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addPoolObject(*key->fThis);
     Py_RETURN_NONE;
@@ -69,19 +70,19 @@ PY_METHOD_VA(SceneNode, addSceneObjects,
     PyObject* seqObj;
     if (!PyArg_ParseTuple(args, "O", &seqObj)) {
         PyErr_SetString(PyExc_TypeError, "addSceneObjects expects a sequence of plKeys");
-        return NULL;
+        return nullptr;
     }
     pySequenceFastRef list(seqObj);
     if (!list.isSequence()) {
         PyErr_SetString(PyExc_TypeError, "addSceneObjects expects a sequence of plKeys");
-        return NULL;
+        return nullptr;
     }
     std::vector<plKey> addend(list.size());
     for (size_t i=0; i<addend.size(); i++) {
         PyObject* key = list.get(i);
         if (!pyKey_Check(key)) {
             PyErr_SetString(PyExc_TypeError, "addSceneObjects expects a sequence of plKeys");
-            return NULL;
+            return nullptr;
         }
         addend[i] = pyPlasma_get<plKey>(key);
     }
@@ -97,19 +98,19 @@ PY_METHOD_VA(SceneNode, addPoolObjects,
     PyObject* seqObj;
     if (!PyArg_ParseTuple(args, "O", &seqObj)) {
         PyErr_SetString(PyExc_TypeError, "addPoolObjects expects a sequence of plKeys");
-        return NULL;
+        return nullptr;
     }
     pySequenceFastRef list(seqObj);
     if (!list.isSequence()) {
         PyErr_SetString(PyExc_TypeError, "addPoolObjects expects a sequence of plKeys");
-        return NULL;
+        return nullptr;
     }
     std::vector<plKey> addend(list.size());
     for (size_t i=0; i<addend.size(); i++) {
         PyObject* key = list.get(i);
         if (!pyKey_Check(key)) {
             PyErr_SetString(PyExc_TypeError, "addPoolObjects expects a sequence of plKeys");
-            return NULL;
+            return nullptr;
         }
         addend[i] = pyPlasma_get<plKey>(key);
     }
@@ -127,7 +128,8 @@ PyMethodDef pySceneNode_Methods[] = {
     PY_METHOD_TERMINATOR
 };
 
-PY_GETSET_GETTER_DECL(SceneNode, sceneObjects) {
+PY_GETSET_GETTER_DECL(SceneNode, sceneObjects)
+{
     PyObject* list = PyTuple_New(self->fThis->getSceneObjects().size());
     for (size_t i=0; i<self->fThis->getSceneObjects().size(); i++)
         PyTuple_SET_ITEM(list, i, pyKey_FromKey(self->fThis->getSceneObjects()[i]));
@@ -137,7 +139,8 @@ PY_GETSET_GETTER_DECL(SceneNode, sceneObjects) {
 PY_PROPERTY_SETTER_MSG(SceneNode, sceneObjects, "To add Scene Objects, use addSceneObjects")
 PY_PROPERTY_GETSET_DECL(SceneNode, sceneObjects)
 
-PY_GETSET_GETTER_DECL(SceneNode, poolObjects) {
+PY_GETSET_GETTER_DECL(SceneNode, poolObjects)
+{
     PyObject* list = PyTuple_New(self->fThis->getPoolObjects().size());
     for (size_t i=0; i<self->fThis->getPoolObjects().size(); i++)
         PyTuple_SET_ITEM(list, i, pyKey_FromKey(self->fThis->getPoolObjects()[i]));
@@ -155,13 +158,14 @@ PyGetSetDef pySceneNode_GetSet[] = {
 
 PY_PLASMA_TYPE(SceneNode, plSceneNode, "plSceneNode wrapper")
 
-PY_PLASMA_TYPE_INIT(SceneNode) {
+PY_PLASMA_TYPE_INIT(SceneNode)
+{
     pySceneNode_Type.tp_new = pySceneNode_new;
     pySceneNode_Type.tp_methods = pySceneNode_Methods;
     pySceneNode_Type.tp_getset = pySceneNode_GetSet;
     pySceneNode_Type.tp_base = &pyKeyedObject_Type;
     if (PyType_CheckAndReady(&pySceneNode_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pySceneNode_Type);
     return (PyObject*)&pySceneNode_Type;

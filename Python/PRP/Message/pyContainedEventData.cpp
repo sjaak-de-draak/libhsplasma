@@ -35,12 +35,13 @@ static PyGetSetDef pyContainedEventData_GetSet[] = {
 PY_PLASMA_TYPE(ContainedEventData, proContainedEventData,
                "proContainedEventData wrapper")
 
-PY_PLASMA_TYPE_INIT(ContainedEventData) {
+PY_PLASMA_TYPE_INIT(ContainedEventData)
+{
     pyContainedEventData_Type.tp_new = pyContainedEventData_new;
     pyContainedEventData_Type.tp_getset = pyContainedEventData_GetSet;
     pyContainedEventData_Type.tp_base = &pyEventData_Type;
     if (PyType_CheckAndReady(&pyContainedEventData_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyContainedEventData_Type);
     return (PyObject*)&pyContainedEventData_Type;

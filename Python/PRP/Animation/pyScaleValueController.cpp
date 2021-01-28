@@ -25,12 +25,13 @@ PY_PLASMA_NEW(ScaleValueController, plScaleValueController)
 PY_PLASMA_TYPE(ScaleValueController, plScaleValueController,
                "plScaleValueController wrapper")
 
-PY_PLASMA_TYPE_INIT(ScaleValueController) {
+PY_PLASMA_TYPE_INIT(ScaleValueController)
+{
     pyScaleValueController_Type.tp_init = pyScaleValueController___init__;
     pyScaleValueController_Type.tp_new = pyScaleValueController_new;
     pyScaleValueController_Type.tp_base = &pyLeafController_Type;
     if (PyType_CheckAndReady(&pyScaleValueController_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyScaleValueController_Type);
     return (PyObject*)&pyScaleValueController_Type;

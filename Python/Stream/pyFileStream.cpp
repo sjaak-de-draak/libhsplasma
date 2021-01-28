@@ -25,32 +25,34 @@ PY_METHOD_VA(FileStream, open,
     "Opens the specified file.\n"
     "Mode is: fmRead, fmWrite, fmReadWrite, fmCreate")
 {
-    const char* filename;
+    ST::string filename;
     int mode;
 
-    if (!PyArg_ParseTuple(args, "si", &filename, &mode)) {
-        PyErr_SetString(PyExc_TypeError, "open expects string, int");
-        return NULL;
+    if (!PyArg_ParseTuple(args, "O&i", PyAnyString_PathDecoder, &filename, &mode)) {
+        PyErr_SetString(PyExc_TypeError, "open expects string or an os.PathLike object, int");
+        return nullptr;
     }
     try {
         if (!self->fThis->open(filename, (FileMode)mode)) {
             PyErr_SetString(PyExc_IOError, "Error opening file");
-            return NULL;
+            return nullptr;
         }
         Py_INCREF(self);
         return (PyObject*)self;
     } catch (...) {
         PyErr_SetString(PyExc_IOError, "Error opening file");
-        return NULL;
+        return nullptr;
     }
 }
 
-PY_METHOD_NOARGS(FileStream, __enter__, NULL) {
+PY_METHOD_NOARGS(FileStream, __enter__, nullptr)
+{
     Py_INCREF(self);
     return (PyObject*)self;
 }
 
-PY_METHOD_VA(FileStream, __exit__, NULL) {
+PY_METHOD_VA(FileStream, __exit__, nullptr)
+{
     self->fThis->close();
     Py_RETURN_NONE;
 }
@@ -64,12 +66,13 @@ static PyMethodDef pyFileStream_Methods[] = {
 
 PY_PLASMA_TYPE(FileStream, hsFileStream, "hsFileStream wrapper")
 
-PY_PLASMA_TYPE_INIT(FileStream) {
+PY_PLASMA_TYPE_INIT(FileStream)
+{
     pyFileStream_Type.tp_new = pyFileStream_new;
     pyFileStream_Type.tp_methods = pyFileStream_Methods;
     pyFileStream_Type.tp_base = &pyStream_Type;
     if (PyType_CheckAndReady(&pyFileStream_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyFileStream_Type);
     return (PyObject*)&pyFileStream_Type;

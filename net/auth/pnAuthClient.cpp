@@ -16,6 +16,7 @@
 
 #include "pnAuthClient.h"
 #include "AuthMessages.h"
+#include "ResManager/plResManager.h"
 #include "Debug/plDebug.h"
 #include "Stream/hsRAMStream.h"
 #include "crypt/pnBigInteger.h"
@@ -59,7 +60,7 @@ bool pnAuthClient::Dispatch::dispatch(pnSocket* sock)
 
     sock->recv(&msgId, sizeof(uint16_t));
     const pnNetMsg* msgDesc = GET_Auth2Cli(msgId);
-    if (msgDesc == NULL) {
+    if (msgDesc == nullptr) {
         plDebug::Error("Got invalid message ID ({})", msgId);
         return false;
     }
@@ -248,14 +249,14 @@ bool pnAuthClient::Dispatch::dispatch(pnSocket* sock)
             pnNetGameScore* scores = new pnNetGameScore[scoreCount];
             const uint8_t* buf = msgbuf[3].fData;
             for (size_t i=0; i<scoreCount; i++) {
-                scores[i].fScoreId     = *(uint32_t*)(buf     );
-                scores[i].fOwnerId     = *(uint32_t*)(buf +  4);
-                scores[i].fCreatedTime = *(uint32_t*)(buf +  8);
-                scores[i].fGameType    = *(uint32_t*)(buf + 12);
-                scores[i].fValue       = *(int32_t* )(buf + 16);
-                size_t strDataSize     = *(uint32_t*)(buf + 20);
-                scores[i].fGameName    = ST::string::from_utf16((const char16_t*)(buf + 24));
-                buf += 24 + strDataSize;
+                scores[i].fScoreId     = NCReadBuffer<uint32_t>(buf);
+                scores[i].fOwnerId     = NCReadBuffer<uint32_t>(buf);
+                scores[i].fCreatedTime = NCReadBuffer<uint32_t>(buf);
+                scores[i].fGameType    = NCReadBuffer<uint32_t>(buf);
+                scores[i].fValue       = NCReadBuffer<int32_t>(buf);
+                size_t strDataSize     = NCReadBuffer<uint32_t>(buf);
+                scores[i].fGameName    = ST::string::from_utf16((const char16_t*)buf);
+                buf += strDataSize;
             }
             fReceiver->onScoreGetScoresReply(msgbuf[0].fUint, (ENetError)msgbuf[1].fUint,
                             scoreCount, scores);
@@ -277,11 +278,11 @@ bool pnAuthClient::Dispatch::dispatch(pnSocket* sock)
             pnNetGameRank* ranks = new pnNetGameRank[rankCount];
             const uint8_t* buf = msgbuf[3].fData;
             for (size_t i=0; i<rankCount; i++) {
-                ranks[i].fRank     = *(uint32_t*)(buf    );
-                ranks[i].fScore    = *(uint32_t*)(buf + 4);
-                size_t strDataSize = *(uint32_t*)(buf + 8);
-                ranks[i].fName     = ST::string::from_utf16((const char16_t*)(buf + 12));
-                buf += 12 + strDataSize;
+                ranks[i].fRank     = NCReadBuffer<uint32_t>(buf);
+                ranks[i].fScore    = NCReadBuffer<uint32_t>(buf);
+                size_t strDataSize = NCReadBuffer<uint32_t>(buf);
+                ranks[i].fName     = ST::string::from_utf16((const char16_t*)buf);
+                buf += strDataSize;
             }
             fReceiver->onScoreGetRanksReply(msgbuf[0].fUint, (ENetError)msgbuf[1].fUint,
                             rankCount, ranks);
@@ -292,18 +293,18 @@ bool pnAuthClient::Dispatch::dispatch(pnSocket* sock)
         {
             hsRAMStream rs(PlasmaVer::pvMoul);
             rs.copyFrom(msgbuf[2].fData, msgbuf[1].fUint);
-            plCreatable* pCre = NULL;
+            plCreatable* pCre = nullptr;
             {
                 std::lock_guard<plResManager> resMgrLock(*fReceiver->fResMgr);
                 try {
                     pCre = fReceiver->fResMgr->ReadCreatable(&rs, true, msgbuf[1].fUint);
-                } catch (hsException& ex) {
+                } catch (const hsException& ex) {
                     plDebug::Error("Error reading propagated message: {}\n", ex.what());
                     delete pCre;
-                    pCre = NULL;
+                    pCre = nullptr;
                 }
             }
-            if (pCre != NULL) {
+            if (pCre) {
                 fReceiver->onPropagateMessage(pCre);
                 if (fDeleteMsgs)
                     delete pCre;
@@ -366,29 +367,29 @@ void pnAuthClient::disconnect()
     delete fIface;
     delete fDispatch;
     delete fSock;
-    fIface = NULL;
-    fSock = NULL;
-    fDispatch = NULL;
+    fIface = nullptr;
+    fSock = nullptr;
+    fDispatch = nullptr;
 }
 
 ENetError pnAuthClient::performConnect()
 {
-    uint8_t connectHeader[51];  // ConnectHeader + AuthConnectHeader
+    hsRAMStream connectHeader;
     /* Begin ConnectHeader */
-    *(uint8_t* )(connectHeader     ) = kConnTypeCliToAuth;
-    *(uint16_t*)(connectHeader +  1) = 31;
-    *(uint32_t*)(connectHeader +  3) = fBuildId;
-    *(uint32_t*)(connectHeader +  7) = fBuildType;
-    *(uint32_t*)(connectHeader + 11) = fBranchId;
-    fProductId.write(connectHeader + 15);
+    connectHeader.writeByte(kConnTypeCliToAuth);
+    connectHeader.writeShort(31);
+    connectHeader.writeInt(fBuildId);
+    connectHeader.writeInt(fBuildType);
+    connectHeader.writeInt(fBranchId);
+    fProductId.write(&connectHeader);
     /* Begin AuthConnectHeader */
-    *(uint32_t*)(connectHeader + 31) = 20;
-    memset(connectHeader + 35, 0, 16);
-    fSock->send(connectHeader, 51);
+    connectHeader.writeInt(20);
+    plUuid::Null.write(&connectHeader);
+    fSock->send(connectHeader.data(), connectHeader.size());
 
     if (!fSock->isConnected()) {
         delete fSock;
-        fSock = NULL;
+        fSock = nullptr;
         plDebug::Error("Error establishing Auth connection");
         return kNetErrConnectFailed;
     }
@@ -405,16 +406,16 @@ ENetError pnAuthClient::performConnect()
         serverSeed.getData(y_data, 64);
     }
 
-    uint8_t cryptHeader[66];
-    *(uint8_t*)(cryptHeader    ) = kNetCliCli2SrvConnect;
-    *(uint8_t*)(cryptHeader + 1) = 66;
-    memcpy(cryptHeader + 2, y_data, 64);
-    fSock->send(cryptHeader, 66);
+    hsRAMStream cryptHeader;
+    cryptHeader.writeByte(kNetCliCli2SrvConnect);
+    cryptHeader.writeByte(66);
+    cryptHeader.write(64, y_data);
+    fSock->send(cryptHeader.data(), cryptHeader.size());
 
     uint8_t msg, len;
     if (fSock->recv(&msg, 1) <= 0 || fSock->recv(&len, 1) <= 0) {
         delete fSock;
-        fSock = NULL;
+        fSock = nullptr;
         plDebug::Error("Error negotiating Auth connection");
         return kNetErrConnectFailed;
     }
@@ -431,13 +432,13 @@ ENetError pnAuthClient::performConnect()
         uint32_t errorCode;
         fSock->recv(&errorCode, sizeof(uint32_t));
         delete fSock;
-        fSock = NULL;
+        fSock = nullptr;
         plDebug::Error("Error connecting to Auth server: {}",
                        GetNetErrorString(errorCode));
         return (ENetError)errorCode;
     } else {
         delete fSock;
-        fSock = NULL;
+        fSock = nullptr;
         plDebug::Error("Got junk response from server");
         return kNetErrConnectFailed;
     }
@@ -458,7 +459,7 @@ uint32_t pnAuthClient::sendPingRequest(uint32_t pingTimeMs)
     msg[0].fUint = pingTimeMs;
     msg[1].fUint = transId;
     msg[2].fUint = 0;
-    msg[3].fData = NULL;
+    msg[3].fData = nullptr;
     fSock->sendMsg(msg, desc);
     NCFreeMessage(msg, desc);
     return transId;

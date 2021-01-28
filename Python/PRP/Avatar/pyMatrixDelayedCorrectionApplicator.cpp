@@ -24,11 +24,12 @@ PY_PLASMA_NEW(MatrixDelayedCorrectionApplicator, plMatrixDelayedCorrectionApplic
 PY_PLASMA_TYPE(MatrixDelayedCorrectionApplicator, plMatrixDelayedCorrectionApplicator,
                "plMatrixDelayedCorrectionApplicator wrapper")
 
-PY_PLASMA_TYPE_INIT(MatrixDelayedCorrectionApplicator) {
+PY_PLASMA_TYPE_INIT(MatrixDelayedCorrectionApplicator)
+{
     pyMatrixDelayedCorrectionApplicator_Type.tp_new = pyMatrixDelayedCorrectionApplicator_new;
     pyMatrixDelayedCorrectionApplicator_Type.tp_base = &pyMatrixChannelApplicator_Type;
     if (PyType_CheckAndReady(&pyMatrixDelayedCorrectionApplicator_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyMatrixDelayedCorrectionApplicator_Type);
     return (PyObject*)&pyMatrixDelayedCorrectionApplicator_Type;

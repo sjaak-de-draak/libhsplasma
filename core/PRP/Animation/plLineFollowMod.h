@@ -20,11 +20,13 @@
 #include "PRP/Modifier/plModifier.h"
 #include "plAnimPath.h"
 
-class PLASMA_DLL plLineFollowMod : public plMultiModifier {
+class PLASMA_DLL plLineFollowMod : public plMultiModifier
+{
     CREATABLE(plLineFollowMod, kLineFollowMod, plMultiModifier)
 
 public:
-    enum FollowMode {
+    enum FollowMode
+    {
         kFollowObject, kFollowListener, kFollowCamera, kFollowLocalAvatar
     };
 
@@ -49,9 +51,10 @@ protected:
     float fOffset, fOffsetClamp, fSpeedClamp;
 
 public:
-    plLineFollowMod() : fFollowMode(kFollowObject), fFollowFlags(0), fPath(NULL),
-                        fOffset(0.0f), fOffsetClamp(0.0f), fSpeedClamp(0.0f) { }
-    virtual ~plLineFollowMod();
+    plLineFollowMod()
+        : fFollowMode(kFollowObject), fFollowFlags(), fPath(), fOffset(),
+          fOffsetClamp(), fSpeedClamp() { }
+    ~plLineFollowMod();
 
     void read(hsStream* S, plResManager* mgr) HS_OVERRIDE;
     void write(hsStream* S, plResManager* mgr) HS_OVERRIDE;
@@ -72,8 +75,8 @@ public:
 
     void setFollowMode(FollowMode mode) { fFollowMode = mode; }
     void setFollowFlags(unsigned short flags) { fFollowFlags = flags; }
-    void setPathParent(plKey parent) { fPathParent = parent; }
-    void setRefObj(plKey obj) { fRefObj = obj; }
+    void setPathParent(plKey parent) { fPathParent = std::move(parent); }
+    void setRefObj(plKey obj) { fRefObj = std::move(obj); }
     void setOffset(float offset) { fOffset = offset; }
     void setOffsetClamp(float clamp) { fOffsetClamp = clamp; }
     void setSpeedClamp(float clamp) { fSpeedClamp = clamp; }
@@ -81,12 +84,13 @@ public:
 
     const std::vector<plKey>& getStereizers() const { return fStereizers; }
     std::vector<plKey>& getStereizers() { return fStereizers; }
-    void addStereizer(plKey stereizer) { fStereizers.push_back(stereizer); }
+    void addStereizer(plKey stereizer) { fStereizers.emplace_back(std::move(stereizer)); }
     void delStereizer(size_t idx) { fStereizers.erase(fStereizers.begin() + idx); }
     void clearStereizers() { fStereizers.clear(); }
 };
 
-class PLASMA_DLL plRailCameraMod : public plLineFollowMod {
+class PLASMA_DLL plRailCameraMod : public plLineFollowMod
+{
     CREATABLE(plRailCameraMod, kRailCameraMod, plLineFollowMod)
 };
 

@@ -23,7 +23,8 @@
 
 PY_PLASMA_NEW(GMaterial, hsGMaterial)
 
-PY_METHOD_NOARGS(GMaterial, clearLayers, "Remove all layer keys from the material") {
+PY_METHOD_NOARGS(GMaterial, clearLayers, "Remove all layer keys from the material")
+{
     self->fThis->clearLayers();
     Py_RETURN_NONE;
 }
@@ -35,11 +36,11 @@ PY_METHOD_VA(GMaterial, addLayer,
     pyKey* key;
     if (!PyArg_ParseTuple(args, "O", &key)) {
         PyErr_SetString(PyExc_TypeError, "addLayer expects a plKey");
-        return NULL;
+        return nullptr;
     }
     if (!pyKey_Check((PyObject*)key)) {
         PyErr_SetString(PyExc_TypeError, "addLayer expects a plKey");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addLayer(*key->fThis);
     Py_RETURN_NONE;
@@ -52,7 +53,7 @@ PY_METHOD_VA(GMaterial, delLayer,
     int idx;
     if (!PyArg_ParseTuple(args, "i", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delLayer expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->delLayer(idx);
     Py_RETURN_NONE;
@@ -72,11 +73,11 @@ PY_METHOD_VA(GMaterial, addPiggyBack,
     pyKey* key;
     if (!PyArg_ParseTuple(args, "O", &key)) {
         PyErr_SetString(PyExc_TypeError, "addPiggyBack expects a plKey");
-        return NULL;
+        return nullptr;
     }
     if (!pyKey_Check((PyObject*)key)) {
         PyErr_SetString(PyExc_TypeError, "addPiggyBack expects a plKey");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addPiggyBack(*key->fThis);
     Py_RETURN_NONE;
@@ -89,7 +90,7 @@ PY_METHOD_VA(GMaterial, delPiggyBack,
     int idx;
     if (!PyArg_ParseTuple(args, "i", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delPiggyBack expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->delPiggyBack(idx);
     Py_RETURN_NONE;
@@ -105,7 +106,8 @@ static PyMethodDef pyGMaterial_Methods[] = {
     PY_METHOD_TERMINATOR
 };
 
-PY_GETSET_GETTER_DECL(GMaterial, layers) {
+PY_GETSET_GETTER_DECL(GMaterial, layers)
+{
     PyObject* list = PyTuple_New(self->fThis->getLayers().size());
     for (size_t i=0; i<self->fThis->getLayers().size(); i++)
         PyTuple_SET_ITEM(list, i, pyKey_FromKey(self->fThis->getLayers()[i]));
@@ -115,7 +117,8 @@ PY_GETSET_GETTER_DECL(GMaterial, layers) {
 PY_PROPERTY_SETTER_MSG(GMaterial, layers, "To add layers, use addLayer()")
 PY_PROPERTY_GETSET_DECL(GMaterial, layers)
 
-PY_GETSET_GETTER_DECL(GMaterial, piggyBacks) {
+PY_GETSET_GETTER_DECL(GMaterial, piggyBacks)
+{
     PyObject* list = PyTuple_New(self->fThis->getPiggyBacks().size());
     for (size_t i=0; i<self->fThis->getPiggyBacks().size(); i++)
         PyTuple_SET_ITEM(list, i, pyKey_FromKey(self->fThis->getPiggyBacks()[i]));
@@ -138,13 +141,14 @@ static PyGetSetDef pyGMaterial_GetSet[] = {
 
 PY_PLASMA_TYPE(GMaterial, hsGMaterial, "hsGMaterial wrapper")
 
-PY_PLASMA_TYPE_INIT(GMaterial) {
+PY_PLASMA_TYPE_INIT(GMaterial)
+{
     pyGMaterial_Type.tp_new = pyGMaterial_new;
     pyGMaterial_Type.tp_methods = pyGMaterial_Methods;
     pyGMaterial_Type.tp_getset = pyGMaterial_GetSet;
     pyGMaterial_Type.tp_base = &pySynchedObject_Type;
     if (PyType_CheckAndReady(&pyGMaterial_Type) < 0)
-        return NULL;
+        return nullptr;
 
     PY_TYPE_ADD_CONST(GMaterial, "kCompShaded", hsGMaterial::kCompShaded);
     PY_TYPE_ADD_CONST(GMaterial, "kCompEnvironMap", hsGMaterial::kCompEnvironMap);

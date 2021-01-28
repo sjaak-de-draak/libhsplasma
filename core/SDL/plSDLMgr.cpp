@@ -19,14 +19,17 @@
 #include "Stream/plEncryptedStream.h"
 #include <memory>
 #include <stdarg.h>
+#include <unordered_set>
 
 /* plSDLMgr */
-plSDLMgr::~plSDLMgr() {
+plSDLMgr::~plSDLMgr()
+{
     for (auto desc = fDescriptors.begin(); desc != fDescriptors.end(); ++desc)
         delete *desc;
 }
 
-void plSDLMgr::ReadDescriptors(const ST::string& filename) {
+void plSDLMgr::ReadDescriptors(const ST::string& filename)
+{
     if (plEncryptedStream::IsFileEncrypted(filename)) {
         plEncryptedStream stream;
         stream.open(filename, fmRead, plEncryptedStream::kEncAuto);
@@ -38,7 +41,8 @@ void plSDLMgr::ReadDescriptors(const ST::string& filename) {
     }
 }
 
-void plSDLMgr::ReadDescriptors(hsStream* fileStream) {
+void plSDLMgr::ReadDescriptors(hsStream* fileStream)
+{
     std::unique_ptr<hsTokenStream> tokStream(new hsTokenStream(fileStream));
     tokStream->setDelimiters("{}[]()=,;");
     std::vector<hsTokenStream::Region> commentMarkers;
@@ -257,17 +261,19 @@ void plSDLMgr::ReadDescriptors(hsStream* fileStream) {
         throw plSDLParseException(__FILE__, __LINE__, "Unexpected End of File");
 }
 
-void plSDLMgr::ClearDescriptors() {
+void plSDLMgr::ClearDescriptors()
+{
     for (size_t i=0; i<fDescriptors.size(); i++)
         delete fDescriptors[i];
     fDescriptors.clear();
 }
 
-plStateDescriptor* plSDLMgr::GetDescriptor(const ST::string& name, int version) {
-    plStateDescriptor* desc = NULL;
+plStateDescriptor* plSDLMgr::GetDescriptor(const ST::string& name, int version)
+{
+    plStateDescriptor* desc = nullptr;
     int hiVersion = 0;
     for (size_t i=0; i<fDescriptors.size(); i++) {
-        if (fDescriptors[i]->getName() == name) {
+        if (fDescriptors[i]->getName().compare_i(name) == 0) {
             if (version == -1 && hiVersion <= fDescriptors[i]->getVersion()) {
                 desc = fDescriptors[i];
                 hiVersion = desc->getVersion();
@@ -276,7 +282,7 @@ plStateDescriptor* plSDLMgr::GetDescriptor(const ST::string& name, int version) 
             }
         }
     }
-    if (desc != NULL) {
+    if (desc) {
         for (size_t i=0; i<desc->getNumVars(); i++) {
             if (desc->get(i)->getType() == plVarDescriptor::kStateDescriptor)
                 desc->get(i)->setStateDesc(GetDescriptor(desc->get(i)->getStateDescType(),
@@ -286,7 +292,16 @@ plStateDescriptor* plSDLMgr::GetDescriptor(const ST::string& name, int version) 
     return desc;
 }
 
-void plSDLMgr::read(hsStream* S) {
+std::vector<ST::string> plSDLMgr::GetDescriptorNames() const
+{
+    std::unordered_set<ST::string, ST::hash_i, ST::equal_i> descs;
+    for (const auto& it : fDescriptors)
+        descs.insert(it->getName());
+    return std::vector<ST::string>(descs.begin(), descs.end());
+}
+
+void plSDLMgr::read(hsStream* S)
+{
     ClearDescriptors();
     fDescriptors.resize(S->readShort());
     for (size_t i=0; i<fDescriptors.size(); i++) {
@@ -306,19 +321,9 @@ void plSDLMgr::read(hsStream* S) {
     }
 }
 
-void plSDLMgr::write(hsStream* S) {
+void plSDLMgr::write(hsStream* S)
+{
     S->writeShort(fDescriptors.size());
     for (size_t i=0; i<fDescriptors.size(); i++)
         fDescriptors[i]->write(S);
-}
-
-
-/* plSDLParseException */
-plSDLParseException::plSDLParseException(const char* file, unsigned long line,
-                                         const char* msg) HS_NOEXCEPT
-                   : hsException(file, line) {
-    if (msg == NULL)
-        fWhat = "Unknown SDL Parse Error";
-    else
-        fWhat = ST::string("SDL Error: ") + msg;
 }

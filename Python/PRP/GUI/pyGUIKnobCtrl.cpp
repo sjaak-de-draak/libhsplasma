@@ -29,11 +29,11 @@ PY_METHOD_VA(GUIKnobCtrl, addAnimationKey,
     pyKey* key;
     if (!PyArg_ParseTuple(args, "O", &key)) {
         PyErr_SetString(PyExc_TypeError, "addAnimationKey expects a plKey");
-        return NULL;
+        return nullptr;
     }
     if (!pyKey_Check((PyObject*)key)) {
         PyErr_SetString(PyExc_TypeError, "addAnimationKey expects a plKey");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addAnimationKey(*key->fThis);
     Py_RETURN_NONE;
@@ -46,7 +46,7 @@ PY_METHOD_VA(GUIKnobCtrl, delAnimationKey,
     int idx;
     if (!PyArg_ParseTuple(args, "i", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delAnimationKey expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->delAnimationKey(idx);
     Py_RETURN_NONE;
@@ -66,7 +66,8 @@ static PyMethodDef pyGUIKnobCtrl_Methods[] = {
     PY_METHOD_TERMINATOR
 };
 
-PY_GETSET_GETTER_DECL(GUIKnobCtrl, animationKeys) {
+PY_GETSET_GETTER_DECL(GUIKnobCtrl, animationKeys)
+{
     PyObject* list = PyTuple_New(self->fThis->getAnimationKeys().size());
     for (size_t i = 0; i<self->fThis->getAnimationKeys().size(); i++)
         PyTuple_SET_ITEM(list, i, pyPlasma_convert(self->fThis->getAnimationKeys()[i]));
@@ -89,13 +90,14 @@ static PyGetSetDef pyGUIKnobCtrl_GetSet[] = {
 
 PY_PLASMA_TYPE(GUIKnobCtrl, pfGUIKnobCtrl, "pfGUIKnobCtrl wrapper")
 
-PY_PLASMA_TYPE_INIT(GUIKnobCtrl) {
+PY_PLASMA_TYPE_INIT(GUIKnobCtrl)
+{
     pyGUIKnobCtrl_Type.tp_new = pyGUIKnobCtrl_new;
     pyGUIKnobCtrl_Type.tp_methods = pyGUIKnobCtrl_Methods;
     pyGUIKnobCtrl_Type.tp_getset = pyGUIKnobCtrl_GetSet;
     pyGUIKnobCtrl_Type.tp_base = &pyGUIValueCtrl_Type;
     if (PyType_CheckAndReady(&pyGUIKnobCtrl_Type) < 0)
-        return NULL;
+        return nullptr;
 
     /* Konstants */
     PY_TYPE_ADD_CONST(GUIKnobCtrl, "kReverseValues", pfGUIKnobCtrl::kReverseValues);

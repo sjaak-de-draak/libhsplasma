@@ -22,22 +22,23 @@
 
 PY_PLASMA_DEALLOC(ResponderModifier_Cmd)
 
-PY_PLASMA_INIT_DECL(ResponderModifier_Cmd) {
-    pyMessage* msg = NULL;
+PY_PLASMA_INIT_DECL(ResponderModifier_Cmd)
+{
+    pyMessage* msg = nullptr;
     int waitOn = -1;
     if (!PyArg_ParseTuple(args, "|Oi", &msg, &waitOn)) {
         PyErr_SetString(PyExc_TypeError, "__init__ expects a message and an int");
         return -1;
     }
-    if (msg != NULL && !pyMessage_Check((PyObject*)msg)) {
+    if (msg && !pyMessage_Check((PyObject*)msg)) {
         PyErr_SetString(PyExc_TypeError, "__init__ expects a message and an int");
         return -1;
     }
-    if (msg != NULL) {
+    if (msg) {
         self->fThis->fMsg = msg->fThis;
         msg->fPyOwned = false;
     } else {
-        self->fThis->fMsg = NULL;
+        self->fThis->fMsg = nullptr;
     }
     self->fThis->fWaitOn = waitOn;
     return 0;
@@ -57,13 +58,14 @@ static PyGetSetDef pyResponderModifier_Cmd_GetSet[] = {
 PY_PLASMA_TYPE(ResponderModifier_Cmd, plResponderModifier_Cmd,
                "plResponderModifier::plResponderCmd wrapper")
 
-PY_PLASMA_TYPE_INIT(ResponderModifier_Cmd) {
+PY_PLASMA_TYPE_INIT(ResponderModifier_Cmd)
+{
     pyResponderModifier_Cmd_Type.tp_dealloc = pyResponderModifier_Cmd_dealloc;
     pyResponderModifier_Cmd_Type.tp_init = pyResponderModifier_Cmd___init__;
     pyResponderModifier_Cmd_Type.tp_new = pyResponderModifier_Cmd_new;
     pyResponderModifier_Cmd_Type.tp_getset = pyResponderModifier_Cmd_GetSet;
     if (PyType_CheckAndReady(&pyResponderModifier_Cmd_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyResponderModifier_Cmd_Type);
     return (PyObject*)&pyResponderModifier_Cmd_Type;

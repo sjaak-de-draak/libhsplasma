@@ -30,12 +30,13 @@ static PyGetSetDef pyCallbackEventData_GetSet[] = {
 
 PY_PLASMA_TYPE(CallbackEventData, proCallbackEventData, "proCallbackEventData wrapper")
 
-PY_PLASMA_TYPE_INIT(CallbackEventData) {
+PY_PLASMA_TYPE_INIT(CallbackEventData)
+{
     pyCallbackEventData_Type.tp_new = pyCallbackEventData_new;
     pyCallbackEventData_Type.tp_getset = pyCallbackEventData_GetSet;
     pyCallbackEventData_Type.tp_base = &pyEventData_Type;
     if (PyType_CheckAndReady(&pyCallbackEventData_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyCallbackEventData_Type);
     return (PyObject*)&pyCallbackEventData_Type;

@@ -22,16 +22,17 @@
 
 PY_PLASMA_VALUE_DEALLOC(Plane3)
 
-PY_PLASMA_INIT_DECL(Plane3) {
+PY_PLASMA_INIT_DECL(Plane3)
+{
     float x = 0.0f, y = 0.0f, z = 0.0f, w = 0.0f;
-    PyObject* init = NULL;
-    static char* kwlist[] = { _pycs("X"), _pycs("Y"), _pycs("Z"), _pycs("W"), NULL };
-    static char* kwlist2[] = { _pycs("Plane"), NULL };
+    PyObject* init = nullptr;
+    static char* kwlist[] = { _pycs("X"), _pycs("Y"), _pycs("Z"), _pycs("W"), nullptr };
+    static char* kwlist2[] = { _pycs("Plane"), nullptr };
 
     if (PyArg_ParseTupleAndKeywords(args, kwds, "ffff", kwlist, &x, &y, &z, &w)) {
         (*self->fThis) = hsPlane3(hsVector3(x, y, z), w);
     } else if (PyErr_Clear(), PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist2, &init)) {
-        if (init == NULL) {
+        if (init == nullptr) {
             (*self->fThis) = hsPlane3();
             return 0;
         }
@@ -50,7 +51,8 @@ PY_PLASMA_INIT_DECL(Plane3) {
 
 PY_PLASMA_VALUE_NEW(Plane3, hsPlane3)
 
-PY_PLASMA_REPR_DECL(Plane3) {
+PY_PLASMA_REPR_DECL(Plane3)
+{
     ST::string repr = ST::format("hsPlane3({f}, {f}, {f}, {f})",
              self->fThis->N.X, self->fThis->N.Y, self->fThis->N.Z, self->fThis->W);
     return pyPlasma_convert(repr);
@@ -63,11 +65,11 @@ PY_METHOD_VA(Plane3, read,
     pyStream* stream;
     if (!PyArg_ParseTuple(args, "O", &stream)) {
         PyErr_SetString(PyExc_TypeError, "read expects a hsStream");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream)) {
         PyErr_SetString(PyExc_TypeError, "read expects a hsStream");
-        return NULL;
+        return nullptr;
     }
     self->fThis->read(stream->fThis);
     Py_RETURN_NONE;
@@ -80,11 +82,11 @@ PY_METHOD_VA(Plane3, write,
     pyStream* stream;
     if (!PyArg_ParseTuple(args, "O", &stream)) {
         PyErr_SetString(PyExc_TypeError, "write expects a hsStream");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream)) {
         PyErr_SetString(PyExc_TypeError, "write expects a hsStream");
-        return NULL;
+        return nullptr;
     }
     self->fThis->write(stream->fThis);
     Py_RETURN_NONE;
@@ -111,7 +113,8 @@ PyGetSetDef pyPlane3_GetSet[] = {
 
 PY_PLASMA_TYPE(Plane3, hsPlane3, "hsPlane3 wrapper")
 
-PY_PLASMA_TYPE_INIT(Plane3) {
+PY_PLASMA_TYPE_INIT(Plane3)
+{
     pyPlane3_Type.tp_dealloc = pyPlane3_dealloc;
     pyPlane3_Type.tp_init = pyPlane3___init__;
     pyPlane3_Type.tp_new = pyPlane3_new;
@@ -119,7 +122,7 @@ PY_PLASMA_TYPE_INIT(Plane3) {
     pyPlane3_Type.tp_methods = pyPlane3_Methods;
     pyPlane3_Type.tp_getset = pyPlane3_GetSet;
     if (PyType_CheckAndReady(&pyPlane3_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyPlane3_Type);
     return (PyObject*)&pyPlane3_Type;

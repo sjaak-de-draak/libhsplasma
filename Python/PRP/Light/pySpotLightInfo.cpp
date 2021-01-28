@@ -34,12 +34,13 @@ static PyGetSetDef pySpotLightInfo_GetSet[] = {
 
 PY_PLASMA_TYPE(SpotLightInfo, plSpotLightInfo, "plSpotLightInfo wrapper")
 
-PY_PLASMA_TYPE_INIT(SpotLightInfo) {
+PY_PLASMA_TYPE_INIT(SpotLightInfo)
+{
     pySpotLightInfo_Type.tp_new = pySpotLightInfo_new;
     pySpotLightInfo_Type.tp_getset = pySpotLightInfo_GetSet;
     pySpotLightInfo_Type.tp_base = &pyOmniLightInfo_Type;
     if (PyType_CheckAndReady(&pySpotLightInfo_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pySpotLightInfo_Type);
     return (PyObject*)&pySpotLightInfo_Type;

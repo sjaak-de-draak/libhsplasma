@@ -31,13 +31,14 @@ static PyGetSetDef pyMatrix44Key_GetSet[] = {
 
 PY_PLASMA_TYPE(Matrix44Key, hsMatrix44Key, "hsMatrix44Key wrapper")
 
-PY_PLASMA_TYPE_INIT(Matrix44Key) {
+PY_PLASMA_TYPE_INIT(Matrix44Key)
+{
     pyMatrix44Key_Type.tp_init = pyMatrix44Key___init__;
     pyMatrix44Key_Type.tp_new = pyMatrix44Key_new;
     pyMatrix44Key_Type.tp_getset = pyMatrix44Key_GetSet;
     pyMatrix44Key_Type.tp_base = &pyKeyFrame_Type;
     if (PyType_CheckAndReady(&pyMatrix44Key_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyMatrix44Key_Type);
     return (PyObject*)&pyMatrix44Key_Type;

@@ -44,11 +44,11 @@ PY_METHOD_VA(PythonFileMod, addReceiver,
     pyKey* key;
     if (!PyArg_ParseTuple(args, "O", &key)) {
         PyErr_SetString(PyExc_TypeError, "addReceiver expects a plKey");
-        return NULL;
+        return nullptr;
     }
     if (!pyKey_Check((PyObject*)key)) {
         PyErr_SetString(PyExc_TypeError, "addReceiver expects a plKey");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addReceiver(*key->fThis);
     Py_RETURN_NONE;
@@ -61,11 +61,11 @@ PY_METHOD_VA(PythonFileMod, addParameter,
     pyPythonParameter* param;
     if (!PyArg_ParseTuple(args, "O", &param)) {
         PyErr_SetString(PyExc_TypeError, "addParameter expects a plPythonParameter");
-        return NULL;
+        return nullptr;
     }
     if (!pyPythonParameter_Check((PyObject*)param)) {
         PyErr_SetString(PyExc_TypeError, "addParameter expects a plPythonParameter");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addParameter(*param->fThis);
     Py_RETURN_NONE;
@@ -79,7 +79,8 @@ static PyMethodDef pyPythonFileMod_Methods[] = {
     PY_METHOD_TERMINATOR
 };
 
-PY_GETSET_GETTER_DECL(PythonFileMod, receivers) {
+PY_GETSET_GETTER_DECL(PythonFileMod, receivers)
+{
     PyObject* list = PyTuple_New(self->fThis->getReceivers().size());
     for (size_t i=0; i<self->fThis->getReceivers().size(); i++)
         PyTuple_SET_ITEM(list, i, pyKey_FromKey(self->fThis->getReceivers()[i]));
@@ -89,7 +90,8 @@ PY_GETSET_GETTER_DECL(PythonFileMod, receivers) {
 PY_PROPERTY_SETTER_MSG(PythonFileMod, receivers, "To add receivers, use addReceiver")
 PY_PROPERTY_GETSET_DECL(PythonFileMod, receivers)
 
-PY_GETSET_GETTER_DECL(PythonFileMod, parameters) {
+PY_GETSET_GETTER_DECL(PythonFileMod, parameters)
+{
     PyObject* list = PyTuple_New(self->fThis->getParameters().size());
     for (size_t i=0; i<self->fThis->getParameters().size(); i++)
         PyTuple_SET_ITEM(list, i, pyPythonParameter_FromPythonParameter(self->fThis->getParameters()[i]));
@@ -99,7 +101,7 @@ PY_GETSET_GETTER_DECL(PythonFileMod, parameters) {
 PY_PROPERTY_SETTER_MSG(PythonFileMod, parameters, "To add parameters, use addParameter")
 PY_PROPERTY_GETSET_DECL(PythonFileMod, parameters)
 
-PY_PROPERTY(ST::string, PythonFileMod, filename, getFilename, setFilename)
+PY_PROPERTY_PATHLIKE(PythonFileMod, filename, getFilename, setFilename)
 
 static PyGetSetDef pyPythonFileMod_GetSet[] = {
     pyPythonFileMod_filename_getset,
@@ -110,13 +112,14 @@ static PyGetSetDef pyPythonFileMod_GetSet[] = {
 
 PY_PLASMA_TYPE(PythonFileMod, plPythonFileMod, "plPythonFileMod wrapper")
 
-PY_PLASMA_TYPE_INIT(PythonFileMod) {
+PY_PLASMA_TYPE_INIT(PythonFileMod)
+{
     pyPythonFileMod_Type.tp_new = pyPythonFileMod_new;
     pyPythonFileMod_Type.tp_methods = pyPythonFileMod_Methods;
     pyPythonFileMod_Type.tp_getset = pyPythonFileMod_GetSet;
     pyPythonFileMod_Type.tp_base = &pyMultiModifier_Type;
     if (PyType_CheckAndReady(&pyPythonFileMod_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyPythonFileMod_Type);
     return (PyObject*)&pyPythonFileMod_Type;

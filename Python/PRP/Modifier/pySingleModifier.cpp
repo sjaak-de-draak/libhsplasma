@@ -28,7 +28,7 @@ PY_METHOD_VA(SingleModifier, getFlag,
     int flag;
     if (!PyArg_ParseTuple(args, "i", &flag)) {
         PyErr_SetString(PyExc_TypeError, "getFlag expects an int");
-        return NULL;
+        return nullptr;
     }
     return pyPlasma_convert(self->fThis->getFlag(flag));
 }
@@ -40,7 +40,7 @@ PY_METHOD_VA(SingleModifier, setFlag,
     int flag, value;
     if (!PyArg_ParseTuple(args, "ii", &flag, &value)) {
         PyErr_SetString(PyExc_TypeError, "setFlag expects int, bool");
-        return NULL;
+        return nullptr;
     }
     self->fThis->setFlag(flag, value != 0);
     Py_RETURN_NONE;
@@ -54,12 +54,13 @@ static PyMethodDef pySingleModifier_Methods[] = {
 
 PY_PLASMA_TYPE(SingleModifier, plSingleModifier, "plSingleModifier wrapper")
 
-PY_PLASMA_TYPE_INIT(SingleModifier) {
+PY_PLASMA_TYPE_INIT(SingleModifier)
+{
     pySingleModifier_Type.tp_new = pySingleModifier_new;
     pySingleModifier_Type.tp_methods = pySingleModifier_Methods;
     pySingleModifier_Type.tp_base = &pyModifier_Type;
     if (PyType_CheckAndReady(&pySingleModifier_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pySingleModifier_Type);
     return (PyObject*)&pySingleModifier_Type;

@@ -22,17 +22,19 @@
 
 PY_PLASMA_NEW(DynamicTextMap, plDynamicTextMap)
 
-PY_GETSET_GETTER_DECL(DynamicTextMap, initBuffer) {
+PY_GETSET_GETTER_DECL(DynamicTextMap, initBuffer)
+{
     PyObject* data = PyTuple_New(self->fThis->getInitBufferSize());
     for (size_t i=0; i<self->fThis->getInitBufferSize(); i++)
         PyTuple_SET_ITEM(data, i, pyPlasma_convert(self->fThis->getInitBuffer()[i]));
     return data;
 }
 
-PY_GETSET_SETTER_DECL(DynamicTextMap, initBuffer) {
+PY_GETSET_SETTER_DECL(DynamicTextMap, initBuffer)
+{
     PY_PROPERTY_CHECK_NULL(initBuffer)
     if (value == Py_None) {
-        self->fThis->setInitBuffer(NULL, 0);
+        self->fThis->setInitBuffer(nullptr, 0);
         return 0;
     }
     pySequenceFastRef seq(value);
@@ -70,12 +72,13 @@ static PyGetSetDef pyDynamicTextMap_GetSet[] = {
 
 PY_PLASMA_TYPE(DynamicTextMap, plDynamicTextMap, "plDynamicTextMap wrapper")
 
-PY_PLASMA_TYPE_INIT(DynamicTextMap) {
+PY_PLASMA_TYPE_INIT(DynamicTextMap)
+{
     pyDynamicTextMap_Type.tp_new = pyDynamicTextMap_new;
     pyDynamicTextMap_Type.tp_getset = pyDynamicTextMap_GetSet;
     pyDynamicTextMap_Type.tp_base = &pyMipmap_Type;
     if (PyType_CheckAndReady(&pyDynamicTextMap_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyDynamicTextMap_Type);
     return (PyObject*)&pyDynamicTextMap_Type;

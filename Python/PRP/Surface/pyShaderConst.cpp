@@ -21,9 +21,10 @@
 
 PY_PLASMA_VALUE_DEALLOC(ShaderConst)
 
-PY_PLASMA_INIT_DECL(ShaderConst) {
+PY_PLASMA_INIT_DECL(ShaderConst)
+{
     float sc[4];
-    PyObject* init = NULL;
+    PyObject* init = nullptr;
 
     if (PyArg_ParseTuple(args, "ffff", &sc[0], &sc[1], &sc[2], &sc[3])) {
         self->fThis->fArray[0] = sc[0];
@@ -31,7 +32,7 @@ PY_PLASMA_INIT_DECL(ShaderConst) {
         self->fThis->fArray[2] = sc[2];
         self->fThis->fArray[3] = sc[3];
     } else if (PyErr_Clear(), PyArg_ParseTuple(args, "|O", &init)) {
-        if (init == NULL)
+        if (init == nullptr)
             return 0;
         if (pyShaderConst_Check(init)) {
             self->fThis->fArray[0] = ((pyShaderConst*)init)->fThis->fArray[0];
@@ -50,15 +51,17 @@ PY_PLASMA_INIT_DECL(ShaderConst) {
 
 PY_PLASMA_VALUE_NEW(ShaderConst, plShaderConst)
 
-PY_PLASMA_SUBSCRIPT_DECL(ShaderConst) {
+PY_PLASMA_SUBSCRIPT_DECL(ShaderConst)
+{
     if (!pyPlasma_check<size_t>(key)) {
         PyErr_SetString(PyExc_IndexError, "subscript should be an int");
-        return NULL;
+        return nullptr;
     }
     return pyPlasma_convert(self->fThis->fArray[pyPlasma_get<size_t>(key)]);
 }
 
-PY_PLASMA_ASS_SUBSCRIPT_DECL(ShaderConst) {
+PY_PLASMA_ASS_SUBSCRIPT_DECL(ShaderConst)
+{
     if (!pyPlasma_check<size_t>(key)) {
         PyErr_SetString(PyExc_IndexError, "subscript should be an int");
         return -1;
@@ -71,7 +74,8 @@ PY_PLASMA_ASS_SUBSCRIPT_DECL(ShaderConst) {
     return 0;
 }
 
-PY_PLASMA_REPR_DECL(ShaderConst) {
+PY_PLASMA_REPR_DECL(ShaderConst)
+{
     ST::string repr = ST::format("plShaderConst({f}, {f}, {f}, {f})",
         self->fThis->fX, self->fThis->fY, self->fThis->fZ, self->fThis->fW);
     return pyPlasma_convert(repr);
@@ -84,11 +88,11 @@ PY_METHOD_VA(ShaderConst, read,
     pyStream* stream;
     if (!PyArg_ParseTuple(args, "O", &stream)) {
         PyErr_SetString(PyExc_TypeError, "read expects a hsStream");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream)) {
         PyErr_SetString(PyExc_TypeError, "read expects a hsStream");
-        return NULL;
+        return nullptr;
     }
     self->fThis->read(stream->fThis);
     Py_RETURN_NONE;
@@ -101,11 +105,11 @@ PY_METHOD_VA(ShaderConst, write,
     pyStream* stream;
     if (!PyArg_ParseTuple(args, "O", &stream)) {
         PyErr_SetString(PyExc_TypeError, "write expects a hsStream");
-        return NULL;
+        return nullptr;
     }
     if (!pyStream_Check((PyObject*)stream)) {
         PyErr_SetString(PyExc_TypeError, "write expects a hsStream");
-        return NULL;
+        return nullptr;
     }
     self->fThis->write(stream->fThis);
     Py_RETURN_NONE;
@@ -141,7 +145,8 @@ static PyGetSetDef pyShaderConst_GetSet[] = {
 PY_PLASMA_TYPE(ShaderConst, plShaderConst, "plShaderConst wrapper")
 PY_PLASMA_TYPE_AS_MAPPING(ShaderConst)
 
-PY_PLASMA_TYPE_INIT(ShaderConst) {
+PY_PLASMA_TYPE_INIT(ShaderConst)
+{
     pyShaderConst_As_Mapping.mp_subscript = pyShaderConst_mp_subscript;
     pyShaderConst_As_Mapping.mp_ass_subscript = pyShaderConst_mp_ass_subscript;
     pyShaderConst_Type.tp_dealloc = pyShaderConst_dealloc;
@@ -152,7 +157,7 @@ PY_PLASMA_TYPE_INIT(ShaderConst) {
     pyShaderConst_Type.tp_methods = pyShaderConst_Methods;
     pyShaderConst_Type.tp_getset = pyShaderConst_GetSet;
     if (PyType_CheckAndReady(&pyShaderConst_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyShaderConst_Type);
     return (PyObject*)&pyShaderConst_Type;

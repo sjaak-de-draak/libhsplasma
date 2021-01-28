@@ -20,11 +20,13 @@
 #include "plObjInterface.h"
 #include "Math/hsMatrix44.h"
 
-class PLASMA_DLL plCoordinateInterface : public plObjInterface {
+class PLASMA_DLL plCoordinateInterface : public plObjInterface
+{
     CREATABLE(plCoordinateInterface, kCoordinateInterface, plObjInterface)
 
 public:
-    enum plCoordinateProperties {
+    enum plCoordinateProperties
+    {
         kDisable, kCanEverDelayTransform, kDelayedTransformEval, kNumProps
     };
 
@@ -59,12 +61,12 @@ public:
 
     const std::vector<plKey>& getChildren() const { return fChildren; }
     std::vector<plKey>& getChildren() { return fChildren; }
-    void addChild(plKey child) { fChildren.push_back(child); }
+    void addChild(plKey child) { fChildren.emplace_back(std::move(child)); }
     void delChild(size_t idx) { fChildren.erase(fChildren.begin() + idx); }
     void clearChildren() { fChildren.clear(); }
 
     /** Set parent coordinate interface */
-    void setParent(plKey parent) { fParent = parent; }
+    void setParent(plKey parent) { fParent = std::move(parent); }
 
     /** Get parent coordinate interface */
     plKey getParent() const { return fParent; }

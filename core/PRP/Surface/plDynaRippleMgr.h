@@ -20,7 +20,8 @@
 #include "plDynaDecalMgr.h"
 #include "PRP/Animation/plAnimPath.h"
 
-class PLASMA_DLL plDynaRippleMgr : public plDynaDecalMgr {
+class PLASMA_DLL plDynaRippleMgr : public plDynaDecalMgr
+{
     CREATABLE(plDynaRippleMgr, kDynaRippleMgr, plDynaDecalMgr)
 
 protected:
@@ -33,10 +34,18 @@ public:
 protected:
     void IPrcWrite(pfPrcHelper* prc) HS_OVERRIDE;
     void IPrcParse(const pfPrcTag* tag, plResManager* mgr) HS_OVERRIDE;
+
+public:
+    hsVector3 getInitUVW() const { return fInitUVW; }
+    hsVector3 getFinalUVW() const { return fFinalUVW; }
+
+    void setInitUVW(const hsVector3& value) { fInitUVW = value; }
+    void setFinalUVW(const hsVector3& value) { fFinalUVW = value; }
 };
 
 
-class PLASMA_DLL plDynaRippleVSMgr : public plDynaRippleMgr {
+class PLASMA_DLL plDynaRippleVSMgr : public plDynaRippleMgr
+{
     CREATABLE(plDynaRippleVSMgr, kDynaRippleVSMgr, plDynaRippleMgr)
 
 protected:
@@ -49,15 +58,21 @@ public:
 protected:
     void IPrcWrite(pfPrcHelper* prc) HS_OVERRIDE;
     void IPrcParse(const pfPrcTag* tag, plResManager* mgr) HS_OVERRIDE;
+
+public:
+    plKey getWaveSet() const { return fWaveSetBase; }
+    void setWaveSet(plKey value) { fWaveSetBase = std::move(value); }
 };
 
 
-class PLASMA_DLL plDynaTorpedoMgr : public plDynaRippleMgr {
+class PLASMA_DLL plDynaTorpedoMgr : public plDynaRippleMgr
+{
     CREATABLE(plDynaTorpedoMgr, kDynaTorpedoMgr, plDynaRippleMgr)
 };
 
 
-class PLASMA_DLL plDynaTorpedoVSMgr : public plDynaTorpedoMgr {
+class PLASMA_DLL plDynaTorpedoVSMgr : public plDynaTorpedoMgr
+{
     CREATABLE(plDynaTorpedoVSMgr, kDynaTorpedoVSMgr, plDynaTorpedoMgr)
 
 protected:
@@ -70,14 +85,20 @@ public:
 protected:
     void IPrcWrite(pfPrcHelper* prc) HS_OVERRIDE;
     void IPrcParse(const pfPrcTag* tag, plResManager* mgr) HS_OVERRIDE;
+
+public:
+    plKey getWaveSet() const { return fWaveSetBase; }
+    void setWaveSet(plKey value) { fWaveSetBase = std::move(value); }
 };
 
 
-class PLASMA_DLL plDynaPuddleMgr : public plDynaRippleMgr {
+class PLASMA_DLL plDynaPuddleMgr : public plDynaRippleMgr
+{
     CREATABLE(plDynaPuddleMgr, kDynaPuddleMgr, plDynaRippleMgr)
 };
 
-class PLASMA_DLL plDynaWakeMgr : public plDynaRippleMgr {
+class PLASMA_DLL plDynaWakeMgr : public plDynaRippleMgr
+{
     CREATABLE(plDynaWakeMgr, kDynaWakeMgr, plDynaRippleMgr)
 
 protected:
@@ -86,8 +107,8 @@ protected:
     float fAnimWgt, fVelWgt;
 
 public:
-    plDynaWakeMgr() : fAnimPath(NULL), fAnimWgt(0.0f), fVelWgt(0.0f) { }
-    virtual ~plDynaWakeMgr();
+    plDynaWakeMgr() : fAnimPath(), fAnimWgt(), fVelWgt() { }
+    ~plDynaWakeMgr();
 
     void read(hsStream* S, plResManager* mgr) HS_OVERRIDE;
     void write(hsStream* S, plResManager* mgr) HS_OVERRIDE;
@@ -97,7 +118,15 @@ protected:
     void IPrcParse(const pfPrcTag* tag, plResManager* mgr) HS_OVERRIDE;
 
 public:
+    hsVector3 getDefaultDir() const { return fDefaultDir; }
+    plAnimPath* getAnimPath() const { return fAnimPath; }
+    float getAnimWgt() const { return fAnimWgt; }
+    float getVelWgt() const { return fVelWgt; }
+
+    void setDefaultDir(const hsVector3& value) { fDefaultDir = value; }
     void setAnimPath(plAnimPath* path);
+    void setAnimWgt(float value) { fAnimWgt = value; }
+    void setVelWgt(float value) { fVelWgt = value; }
 };
 
 #endif

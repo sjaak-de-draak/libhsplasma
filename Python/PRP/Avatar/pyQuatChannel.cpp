@@ -31,12 +31,13 @@ static PyGetSetDef pyQuatChannel_GetSet[] = {
 
 PY_PLASMA_TYPE(QuatChannel, plQuatChannel, "plQuatChannel wrapper")
 
-PY_PLASMA_TYPE_INIT(QuatChannel) {
+PY_PLASMA_TYPE_INIT(QuatChannel)
+{
     pyQuatChannel_Type.tp_new = pyQuatChannel_new;
     pyQuatChannel_Type.tp_getset = pyQuatChannel_GetSet;
     pyQuatChannel_Type.tp_base = &pyAGChannel_Type;
     if (PyType_CheckAndReady(&pyQuatChannel_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyQuatChannel_Type);
     return (PyObject*)&pyQuatChannel_Type;

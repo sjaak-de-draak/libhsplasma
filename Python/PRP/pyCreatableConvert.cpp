@@ -50,8 +50,8 @@
 #include "PRP/Avatar/plPointChannel.h"
 #include "PRP/Avatar/plQuatChannel.h"
 #include "PRP/Avatar/plScalarChannel.h"
-#include "PRP/Avatar/plSittingModifier.h"
 #include "PRP/Avatar/plSeekPointMod.h"
+#include "PRP/Avatar/plSittingModifier.h"
 #include "PRP/Camera/plCameraBrain.h"
 #include "PRP/Camera/plCameraModifier.h"
 #include "PRP/ConditionalObject/plActivatorConditionalObject.h"
@@ -112,6 +112,7 @@
 #include "PRP/Message/plSwimMsg.h"
 #include "PRP/Message/plTimerCallbackMsg.h"
 #include "PRP/Message/plTransitionMsg.h"
+#include "PRP/Message/plWarpMsg.h"
 #include "PRP/Misc/plFogEnvironment.h"
 #include "PRP/Modifier/plAliasModifier.h"
 #include "PRP/Modifier/plAnimEventModifier.h"
@@ -187,6 +188,7 @@
 #include "PRP/Avatar/pyATCAnim.h"
 #include "PRP/Avatar/pyLadderModifier.h"
 #include "PRP/Avatar/pyMultistageBehMod.h"
+#include "PRP/Avatar/pySeekPointMod.h"
 #include "PRP/Avatar/pySittingModifier.h"
 #include "PRP/Audio/pyAudible.h"
 #include "PRP/Audio/pySound.h"
@@ -208,6 +210,7 @@
 #include "PRP/Geometry/pyClusterGroup.h"
 #include "PRP/Geometry/pyDrawableSpans.h"
 #include "PRP/Geometry/pyOccluder.h"
+#include "PRP/Geometry/pySharedMesh.h"
 #include "PRP/Geometry/pySpaceTree.h"
 #include "PRP/GUI/pyGUIButtonMod.h"
 #include "PRP/GUI/pyGUICheckBoxCtrl.h"
@@ -249,6 +252,7 @@
 #include "PRP/Message/pySoundMsg.h"
 #include "PRP/Message/pySwimMsg.h"
 #include "PRP/Message/pyTimerCallbackMsg.h"
+#include "PRP/Message/pyWarpMsg.h"
 #include "PRP/Misc/pyRenderLevel.h"
 #include "PRP/Misc/pyAgeLinkInfo.h"
 #include "PRP/Misc/pyFogEnvironment.h"
@@ -287,14 +291,19 @@
 #include "PRP/Surface/pyBitmap.h"
 #include "PRP/Surface/pyCubicEnvironmap.h"
 #include "PRP/Surface/pyDistOpacityMod.h"
+#include "PRP/Surface/pyDynaDecalMgr.h"
+#include "PRP/Surface/pyDynaRippleMgr.h"
 #include "PRP/Surface/pyDynamicEnvMap.h"
 #include "PRP/Surface/pyDynamicTextMap.h"
 #include "PRP/Surface/pyFadeOpacityMod.h"
+#include "PRP/Surface/pyFont.h"
 #include "PRP/Surface/pyGMaterial.h"
 #include "PRP/Surface/pyGMatState.h"
+#include "PRP/Surface/pyGrassShaderMod.h"
 #include "PRP/Surface/pyLayer.h"
 #include "PRP/Surface/pyLayerAnimation.h"
 #include "PRP/Surface/pyLayerMovie.h"
+#include "PRP/Surface/pyPrintShape.h"
 #include "PRP/Surface/pyRenderTarget.h"
 #include "PRP/Surface/pyShader.h"
 #include "PRP/Surface/pyWaveSet.h"
@@ -302,7 +311,7 @@
 
 PyObject* ICreate(plCreatable* pCre)
 {
-    if (pCre == NULL)
+    if (pCre == nullptr)
         Py_RETURN_NONE;
     if ((typeid(*pCre)) == typeid(hsKeyedObjectStub))
         return pyKeyedObjectStub_FromKeyedObjectStub(dynamic_cast<hsKeyedObjectStub*>(pCre));
@@ -388,6 +397,7 @@ PyObject* ICreate(plCreatable* pCre)
         case kAGMasterMod: return pyAGMasterMod_FromAGMasterMod(plAGMasterMod::Convert(pCre));
         case kAgeGlobalAnim: return pyAgeGlobalAnim_FromAgeGlobalAnim(plAgeGlobalAnim::Convert(pCre));
         case kATCAnim: return pyATCAnim_FromATCAnim(plATCAnim::Convert(pCre));
+        case kSeekPointMod: return pySeekPointMod_FromSeekPointMod(plSeekPointMod::Convert(pCre));
         case kSubworldRegionDetector: return pySubworldRegionDetector_FromSubworldRegionDetector(plSubworldRegionDetector::Convert(pCre));
         case kHKSubWorld: return pyHKSubWorld_FromHKSubWorld(plHKSubWorld::Convert(pCre));
         case kPanicLinkRegion: return pyPanicLinkRegion_FromPanicLinkRegion(plPanicLinkRegion::Convert(pCre));
@@ -397,6 +407,7 @@ PyObject* ICreate(plCreatable* pCre)
         case kMsgForwarder: return pyMsgForwarder_FromMsgForwarder(plMsgForwarder::Convert(pCre));
         case kOccluder: return pyOccluder_FromOccluder(plOccluder::Convert(pCre));
         case kMobileOccluder: return pyMobileOccluder_FromMobileOccluder(plMobileOccluder::Convert(pCre));
+        case kSharedMesh: return pySharedMesh_FromSharedMesh(plSharedMesh::Convert(pCre));
         case kMultistageBehMod: return pyMultistageBehMod_FromMultistageBehMod(plMultistageBehMod::Convert(pCre));
         case kInterfaceInfoModifier: return pyInterfaceInfoModifier_FromInterfaceInfoModifier(plInterfaceInfoModifier::Convert(pCre));
         case kPickingDetector: return pyPickingDetector_FromPickingDetector(plPickingDetector::Convert(pCre));
@@ -582,6 +593,21 @@ PyObject* ICreate(plCreatable* pCre)
         case kFilterCoordInterface: return pyFilterCoordInterface_FromFilterCoordInterface(plFilterCoordInterface::Convert(pCre));
         case kRidingAnimatedPhysicalDetector: return pyRidingAnimatedPhysicalDetector_FromRidingAnimatedPhysicalDetector(plRidingAnimatedPhysicalDetector::Convert(pCre));
         case kRideAnimatedPhysMsg: return pyRideAnimatedPhysMsg_FromRideAnimatedPhysMsg(plRideAnimatedPhysMsg::Convert(pCre));
+        case kDynaDecalMgr: return pyDynaDecalMgr_FromDynaDecalMgr(plDynaDecalMgr::Convert(pCre));
+        case kDynaBulletMgr: return pyDynaBulletMgr_FromDynaBulletMgr(plDynaBulletMgr::Convert(pCre));
+        case kDynaFootMgr: return pyDynaFootMgr_FromDynaFootMgr(plDynaFootMgr::Convert(pCre));
+        case kDynaRippleMgr: return pyDynaRippleMgr_FromDynaRippleMgr(plDynaRippleMgr::Convert(pCre));
+        case kDynaRippleVSMgr: return pyDynaRippleVSMgr_FromDynaRippleVSMgr(plDynaRippleVSMgr::Convert(pCre));
+        case kDynaTorpedoMgr: return pyDynaTorpedoMgr_FromDynaTorpedoMgr(plDynaTorpedoMgr::Convert(pCre));
+        case kDynaTorpedoVSMgr: return pyDynaTorpedoVSMgr_FromDynaTorpedoVSMgr(plDynaTorpedoVSMgr::Convert(pCre));
+        case kDynaPuddleMgr: return pyDynaPuddleMgr_FromDynaPuddleMgr(plDynaPuddleMgr::Convert(pCre));
+        case kDynaWakeMgr: return pyDynaWakeMgr_FromDynaWakeMgr(plDynaWakeMgr::Convert(pCre));
+        case kFont: return pyFont_FromFont(plFont::Convert(pCre));
+        case kPrintShape: return pyPrintShape_FromPrintShape(plPrintShape::Convert(pCre));
+        case kActivePrintShape: return pyActivePrintShape_FromActivePrintShape(plActivePrintShape::Convert(pCre));
+        case kSimSuppressMsg: return pySimSuppressMsg_FromSimSuppressMsg(plSimSuppressMsg::Convert(pCre));
+        case kGrassShaderMod: return pyGrassShaderMod_FromGrassShaderMod(plGrassShaderMod::Convert(pCre));
+        case kWarpMsg: return pyWarpMsg_FromWarpMsg(plWarpMsg::Convert(pCre));
         default:
             // many messages are not implemented, make sure they are at least a plMessage
             if (pCre->ClassInstance(kMessage))

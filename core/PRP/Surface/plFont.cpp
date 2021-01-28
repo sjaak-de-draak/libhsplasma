@@ -20,7 +20,8 @@
 const plFont::plCharacter plFont::kNullChar;
 
 /* plFont::plCharacter */
-void plFont::plCharacter::read(hsStream* S) {
+void plFont::plCharacter::read(hsStream* S)
+{
     fBitmapOffset = S->readInt();
     fHeight = S->readInt();
     fBaseline = S->readInt();
@@ -28,7 +29,8 @@ void plFont::plCharacter::read(hsStream* S) {
     fRightKern = S->readFloat();
 }
 
-void plFont::plCharacter::write(hsStream* S) const {
+void plFont::plCharacter::write(hsStream* S) const
+{
     S->writeInt(fBitmapOffset);
     S->writeInt(fHeight);
     S->writeInt(fBaseline);
@@ -36,7 +38,8 @@ void plFont::plCharacter::write(hsStream* S) const {
     S->writeFloat(fRightKern);
 }
 
-void plFont::plCharacter::prcWrite(pfPrcHelper* prc) const {
+void plFont::plCharacter::prcWrite(pfPrcHelper* prc) const
+{
     prc->startTag("plCharacter");
     prc->writeParam("BitmapOffset", fBitmapOffset);
     prc->writeParam("Height", fHeight);
@@ -46,7 +49,8 @@ void plFont::plCharacter::prcWrite(pfPrcHelper* prc) const {
     prc->endTag(true);
 }
 
-void plFont::plCharacter::prcParse(const pfPrcTag* tag) {
+void plFont::plCharacter::prcParse(const pfPrcTag* tag)
+{
     if (tag->getName() != "plCharacter")
         throw pfPrcTagException(__FILE__, __LINE__, tag->getName());
 
@@ -63,7 +67,8 @@ plFont::plFont(const plFont& copy)
       : fFace(copy.fFace), fSize(copy.fSize), fBPP(copy.fBPP),
         fFirstChar(copy.fFirstChar), fFlags(copy.fFlags),
         fWidth(copy.fWidth), fHeight(copy.fHeight),
-        fBmpData(NULL), fMaxCharHeight(copy.fMaxCharHeight) {
+        fBmpData(), fMaxCharHeight(copy.fMaxCharHeight)
+{
     fCharacters = copy.fCharacters;
 
     size_t size = (fBPP * fWidth * fHeight) / 8;
@@ -73,11 +78,13 @@ plFont::plFont(const plFont& copy)
     }
 }
 
-plFont::~plFont() {
+plFont::~plFont()
+{
     delete[] fBmpData;
 }
 
-plFont& plFont::operator=(const plFont& copy) {
+plFont& plFont::operator=(const plFont& copy)
+{
     delete[] fBmpData;
 
     fFace = copy.fFace;
@@ -95,22 +102,25 @@ plFont& plFont::operator=(const plFont& copy) {
         fBmpData = new unsigned char[size];
         memcpy(fBmpData, copy.fBmpData, size);
     } else {
-        fBmpData = NULL;
+        fBmpData = nullptr;
     }
     return *this;
 }
 
-void plFont::read(hsStream* S, plResManager* mgr) {
+void plFont::read(hsStream* S, plResManager* mgr)
+{
     hsKeyedObject::read(S, mgr);
     readP2F(S);
 }
 
-void plFont::write(hsStream* S, plResManager* mgr) {
+void plFont::write(hsStream* S, plResManager* mgr)
+{
     hsKeyedObject::write(S, mgr);
     writeP2F(S);
 }
 
-void plFont::IPrcWrite(pfPrcHelper* prc) {
+void plFont::IPrcWrite(pfPrcHelper* prc)
+{
     hsKeyedObject::IPrcWrite(prc);
 
     prc->startTag("FontParams");
@@ -138,7 +148,8 @@ void plFont::IPrcWrite(pfPrcHelper* prc) {
     prc->closeTag();
 }
 
-void plFont::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
+void plFont::IPrcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     if (tag->getName() == "FontParams") {
         fFace = tag->getParam("Fontface", "");
         fSize = tag->getParam("Size", "0").to_uint();
@@ -164,7 +175,8 @@ void plFont::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
     }
 }
 
-void plFont::readP2F(hsStream* S) {
+void plFont::readP2F(hsStream* S)
+{
     char buf[256];
     S->read(256, buf);
     buf[255] = 0;
@@ -177,13 +189,13 @@ void plFont::readP2F(hsStream* S) {
     fMaxCharHeight = S->readInt();
     fBPP = S->readByte();
 
-    size_t size = (fBPP * fWidth * fHeight) / 8;
+    const size_t size = fHeight * getStride();
     delete[] fBmpData;
     if (size > 0) {
         fBmpData = new unsigned char[size];
         S->read(size, fBmpData);
     } else {
-        fBmpData = NULL;
+        fBmpData = nullptr;
     }
 
     fFirstChar = S->readShort();
@@ -192,7 +204,8 @@ void plFont::readP2F(hsStream* S) {
         fCharacters[i].read(S);
 }
 
-void plFont::writeP2F(hsStream* S) const {
+void plFont::writeP2F(hsStream* S) const
+{
     char buf[256];
     strncpy(buf, fFace.c_str(), 256);
     S->write(256, buf);
@@ -204,7 +217,7 @@ void plFont::writeP2F(hsStream* S) const {
     S->writeInt(fMaxCharHeight);
     S->writeByte(fBPP);
 
-    S->write((fBPP * fWidth * fHeight) / 8, fBmpData);
+    S->write(fHeight * getStride(), fBmpData);
 
     S->writeShort(fFirstChar);
     S->writeInt(fCharacters.size());
@@ -212,7 +225,8 @@ void plFont::writeP2F(hsStream* S) const {
         fCharacters[i].write(S);
 }
 
-void plFont::readBitmap(hsStream* S) {
+void plFont::readBitmap(hsStream* S)
+{
     // BITMAPFILEHEADER
     char magic[3];
     S->read(2, magic);
@@ -239,17 +253,17 @@ void plFont::readBitmap(hsStream* S) {
     unsigned int nColors = S->readInt();
     S->readInt();           // # Important
 
-    unsigned int lineSize = ((fBPP * fWidth) / 8);
-    unsigned int linePad = lineSize % 4 == 0 ? 0 : 4 - (lineSize % 4);
-    unsigned int dataSize = lineSize * fHeight;
+    const size_t lineSize = getStride();
+    const size_t linePad = lineSize % 4 == 0 ? 0 : 4 - (lineSize % 4);
+    const size_t dataSize = lineSize * fHeight;
 
     // Color Table
     for (size_t i=0; i<nColors; i++)
-        S->readInt();
+        (void)S->readInt();
 
     // Bitmap Data:
     delete[] fBmpData;
-    fBmpData = new unsigned char [(fBPP * fWidth * fHeight) / 8];
+    fBmpData = new unsigned char[dataSize];
     unsigned char padding[4];
     for (size_t lin = fHeight; lin > 0; lin++) {
         S->read(lineSize, fBmpData + ((lin - 1) * lineSize));
@@ -262,14 +276,15 @@ void plFont::readBitmap(hsStream* S) {
     }
 }
 
-void plFont::writeBitmap(hsStream* S) const {
-    unsigned int lineSize = ((fBPP * fWidth) / 8);
-    unsigned int linePad = lineSize % 4 == 0 ? 0 : 4 - (lineSize % 4);
-    unsigned int dataSize = lineSize * fHeight;
-    unsigned int nColors = (fBPP == 1) ? 2 : ((fBPP == 8) ? 256 : 0);
-    unsigned int hdrSize = 54 + nColors * 4;
+void plFont::writeBitmap(hsStream* S) const
+{
+    const size_t lineSize = getStride();
+    const size_t linePad = lineSize % 4 == 0 ? 0 : 4 - (lineSize % 4);
+    const size_t dataSize = lineSize * fHeight;
+    const size_t nColors = (fBPP == 1) ? 2 : ((fBPP == 8) ? 256 : 0);
+    const size_t hdrSize = 54 + nColors * 4;
 
-    unsigned char* bmpDataInv = new unsigned char[dataSize];
+    auto bmpDataInv = new unsigned char[dataSize];
     memcpy(bmpDataInv, fBmpData, dataSize);
     if (fBPP == 8) {
         for (size_t i=0; i<dataSize; i++)
@@ -315,14 +330,16 @@ void plFont::writeBitmap(hsStream* S) const {
     delete[] bmpDataInv;
 }
 
-void plFont::setBold(bool bold) {
+void plFont::setBold(bool bold)
+{
     if (bold)
         fFlags |= kFontBold;
     else
         fFlags &= ~kFontBold;
 }
 
-void plFont::setItalic(bool italic) {
+void plFont::setItalic(bool italic)
+{
     if (italic)
         fFlags |= kFontItalic;
     else

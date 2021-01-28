@@ -18,17 +18,18 @@
 #include <cstdarg>
 #include <cstdlib>
 
-hsStream* plDebug::fDebugStream = NULL;
+hsStream* plDebug::fDebugStream = nullptr;
 int plDebug::fDebugLevel = kDLWarning;
 bool plDebug::fIOwnStream = false;
 bool plDebug::fIsExitRegistered = false;
 ST::string plDebug::fDebugFile;
 
-void plDebug::Init(int level, hsStream* stream) {
+void plDebug::Init(int level, hsStream* stream)
+{
     DeInit();
 
     fDebugLevel = level;
-    if (stream == NULL) {
+    if (stream == nullptr) {
         fDebugStream = new hsStdioStream(true);
         fIOwnStream = true;
     } else {
@@ -43,7 +44,8 @@ void plDebug::Init(int level, hsStream* stream) {
     }
 }
 
-void plDebug::InitFile(int level, const char* filename) {
+void plDebug::InitFile(int level, const ST::string& filename)
+{
     DeInit();
 
     fDebugLevel = level;
@@ -56,10 +58,11 @@ void plDebug::InitFile(int level, const char* filename) {
     }
 }
 
-void plDebug::DelayInit() {
-    if (fDebugFile.is_empty()) {
+void plDebug::DelayInit()
+{
+    if (fDebugFile.empty()) {
         // Nobody ever called Init(), so use stderr
-        Init(kDLWarning, NULL);
+        Init(kDLWarning, nullptr);
     } else {
         // Init to the provided filename
         fDebugStream = new hsFileStream();
@@ -68,14 +71,16 @@ void plDebug::DelayInit() {
     }
 }
 
-void plDebug::DeInit() {
+void plDebug::DeInit()
+{
     if (fIOwnStream)
         delete fDebugStream;
-    fDebugStream = NULL;
+    fDebugStream = nullptr;
 }
 
-void plDebug::WriteLn(const ST::string& line) {
-    if (fDebugStream == NULL)
+void plDebug::WriteLn(const ST::string& line)
+{
+    if (fDebugStream == nullptr)
         DelayInit();
 
     fDebugStream->writeLine(line);

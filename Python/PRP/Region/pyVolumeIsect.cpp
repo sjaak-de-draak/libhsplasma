@@ -23,11 +23,12 @@ PY_PLASMA_NEW_MSG(VolumeIsect, "plVolumeIsect is abstract")
 
 PY_PLASMA_TYPE(VolumeIsect, plVolumeIsect, "plVolumeIsect wrapper")
 
-PY_PLASMA_TYPE_INIT(VolumeIsect) {
+PY_PLASMA_TYPE_INIT(VolumeIsect)
+{
     pyVolumeIsect_Type.tp_new = pyVolumeIsect_new;
     pyVolumeIsect_Type.tp_base = &pyCreatable_Type;
     if (PyType_CheckAndReady(&pyVolumeIsect_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyVolumeIsect_Type);
     return (PyObject*)&pyVolumeIsect_Type;

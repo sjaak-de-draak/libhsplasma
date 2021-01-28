@@ -25,12 +25,13 @@ PY_PLASMA_NEW(Matrix44Controller, plMatrix44Controller)
 PY_PLASMA_TYPE(Matrix44Controller, plMatrix44Controller,
                "plMatrix44Controller wrapper")
 
-PY_PLASMA_TYPE_INIT(Matrix44Controller) {
+PY_PLASMA_TYPE_INIT(Matrix44Controller)
+{
     pyMatrix44Controller_Type.tp_init = pyMatrix44Controller___init__;
     pyMatrix44Controller_Type.tp_new = pyMatrix44Controller_new;
     pyMatrix44Controller_Type.tp_base = &pyLeafController_Type;
     if (PyType_CheckAndReady(&pyMatrix44Controller_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyMatrix44Controller_Type);
     return (PyObject*)&pyMatrix44Controller_Type;

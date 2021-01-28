@@ -39,11 +39,12 @@ static PyGetSetDef pyFadeParams_GetSet[] = {
 
 PY_PLASMA_TYPE(FadeParams, plFadeParams, "plFadeParams wrapper")
 
-PY_PLASMA_TYPE_INIT(FadeParams) {
+PY_PLASMA_TYPE_INIT(FadeParams)
+{
     pyFadeParams_Type.tp_new = pyFadeParams_new;
     pyFadeParams_Type.tp_getset = pyFadeParams_GetSet;
     if (PyType_CheckAndReady(&pyFadeParams_Type) < 0)
-        return NULL;
+        return nullptr;
 
     PY_TYPE_ADD_CONST(FadeParams, "kLinear", plSound::plFadeParams::kLinear);
     PY_TYPE_ADD_CONST(FadeParams, "kLogarithmic", plSound::plFadeParams::kLogarithmic);

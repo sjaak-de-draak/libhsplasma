@@ -31,7 +31,7 @@ PY_METHOD_STATIC_VA(Factory, ClassName,
 
     if (!PyArg_ParseTuple(args, "i|i", &classIdx, &version)) {
         PyErr_SetString(PyExc_TypeError, "ClassName expects int, int");
-        return NULL;
+        return nullptr;
     }
     if (version == PlasmaVer::pvUnknown)
         return pyPlasma_convert(plFactory::ClassName(classIdx));
@@ -47,7 +47,7 @@ PY_METHOD_STATIC_VA(Factory, ClassIndex,
 
     if (!PyArg_ParseTuple(args, "s", &className)) {
         PyErr_SetString(PyExc_TypeError, "ClassIndex expects a string");
-        return NULL;
+        return nullptr;
     }
     return pyPlasma_convert(plFactory::ClassIndex(className));
 }
@@ -60,7 +60,7 @@ PY_METHOD_STATIC_VA(Factory, ClassVersion,
 
     if (!PyArg_ParseTuple(args, "ii", &classIdx, &version)) {
         PyErr_SetString(PyExc_TypeError, "ClassVersion expects int, int");
-        return NULL;
+        return nullptr;
     }
     return pyPlasma_convert(plFactory::ClassVersion(classIdx, (PlasmaVer)version));
 }
@@ -78,11 +78,12 @@ PY_PLASMA_TYPE(Factory, plFactory, "Creatable Factory")
 #define ADD_CREATABLE(class) \
     PY_TYPE_ADD_CONST(Factory, #class, class)
 
-PY_PLASMA_TYPE_INIT(Factory) {
+PY_PLASMA_TYPE_INIT(Factory)
+{
     pyFactory_Type.tp_new = pyFactory_new;
     pyFactory_Type.tp_methods = pyFactory_Methods;
     if (PyType_CheckAndReady(&pyFactory_Type) < 0)
-        return NULL;
+        return nullptr;
 
     ADD_CREATABLE(kSceneNode);
     ADD_CREATABLE(kSceneObject);

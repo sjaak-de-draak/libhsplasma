@@ -21,40 +21,49 @@
 #include "Math/hsGeometry3.h"
 #include "Util/hsBitVector.h"
 
-class PLASMA_DLL plCameraBrain : public hsKeyedObject {
+class PLASMA_DLL plCameraBrain : public hsKeyedObject
+{
     CREATABLE(plCameraBrain, kCameraBrain, hsKeyedObject)
 };
 
-class PLASMA_DLL plCameraBrain_M5 : public plCameraBrain {
+class PLASMA_DLL plCameraBrain_M5 : public plCameraBrain
+{
     CREATABLE(plCameraBrain_M5, kCameraBrain_M5, plCameraBrain)
 };
 
-class PLASMA_DLL plCameraBrain_Novice : public plCameraBrain_M5 {
+class PLASMA_DLL plCameraBrain_Novice : public plCameraBrain_M5
+{
     CREATABLE(plCameraBrain_Novice, kCameraBrain_Novice, plCameraBrain_M5)
 };
 
-class PLASMA_DLL plCameraBrain_NovicePlus : public plCameraBrain_M5 {
+class PLASMA_DLL plCameraBrain_NovicePlus : public plCameraBrain_M5
+{
     CREATABLE(plCameraBrain_NovicePlus, kCameraBrain_NovicePlus, plCameraBrain_M5)
 };
 
-class PLASMA_DLL plCameraBrain_Expert : public plCameraBrain_M5 {
+class PLASMA_DLL plCameraBrain_Expert : public plCameraBrain_M5
+{
     CREATABLE(plCameraBrain_Expert, kCameraBrain_Expert, plCameraBrain_M5)
 };
 
-class PLASMA_DLL plCameraBrain_Flight : public plCameraBrain_M5 {
+class PLASMA_DLL plCameraBrain_Flight : public plCameraBrain_M5
+{
     CREATABLE(plCameraBrain_Flight, kCameraBrain_Flight, plCameraBrain_M5)
 };
 
-class PLASMA_DLL plCameraBrain_Ground : public plCameraBrain_M5 {
+class PLASMA_DLL plCameraBrain_Ground : public plCameraBrain_M5
+{
     CREATABLE(plCameraBrain_Ground, kCameraBrain_Ground, plCameraBrain_M5)
 };
 
 
-class PLASMA_DLL plCameraBrain1 : public plCameraBrain {
+class PLASMA_DLL plCameraBrain1 : public plCameraBrain
+{
     CREATABLE(plCameraBrain1, kCameraBrain1, plCameraBrain)
 
 public:
-    enum {
+    enum
+    {
         kCutPos, kCutPosOnce, kCutPOA, kCutPOAOnce, kAnimateFOV,
         kFollowLocalAvatar, kPanicVelocity, kRailComponent, kSubject,
         kCircleTarget, kMaintainLOS, kZoomEnabled, kIsTransitionCamera,
@@ -79,6 +88,8 @@ public:
     void read(hsStream* S, plResManager* mgr) HS_OVERRIDE;
     void write(hsStream* S, plResManager* mgr) HS_OVERRIDE;
 
+    plKey getSubject() const { return fSubject; }
+    plKey getRail() const { return fRail; }
     float getVelocity() const { return fVelocity; }
     float getAcceleration() const { return fAccel; }
     float getDeceleration() const { return fDecel; }
@@ -97,13 +108,15 @@ public:
     const hsBitVector& getEoAFlags() const { return fEoaFlags; }
     hsBitVector& getEoAFlags() { return fEoaFlags; }
 
+    void setSubject(plKey subject) { fSubject = std::move(subject); }
+    void setRail(plKey rail) { fRail = std::move(rail); }
     void setVelocity(float velocity) { fVelocity = velocity; }
     void setAcceleration(float acceleration) { fAccel = acceleration; }
     void setDeceleration(float deceleration) { fDecel = deceleration; }
     void setPOAVelocity(float poaVelocity) { fPOAVelocity = poaVelocity; }
     void setPOAAcceleration(float poaAcceleration) { fPOAAccel = poaAcceleration; }
     void setPOADeceleration(float poaDeceleration) { fPOADecel = poaDeceleration; }
-    void setPOAOffset(hsVector3 poaOffset) { fPOAOffset = poaOffset; }
+    void setPOAOffset(const hsVector3& poaOffset) { fPOAOffset = poaOffset; }
     void setXPanLimit(float xPanLimit) { fXPanLimit = xPanLimit; }
     void setZPanLimit(float zPanLimit) { fZPanLimit = zPanLimit; }
     void setPanSpeed(float panSpeed) { fPanSpeed = panSpeed; }
@@ -117,12 +130,14 @@ protected:
 };
 
 
-class PLASMA_DLL plCameraBrain1_Drive : public plCameraBrain1 {
+class PLASMA_DLL plCameraBrain1_Drive : public plCameraBrain1
+{
     CREATABLE(plCameraBrain1_Drive, kCameraBrain1_Drive, plCameraBrain1)
 };
 
 
-class PLASMA_DLL plCameraBrain1_Avatar : public plCameraBrain1 {
+class PLASMA_DLL plCameraBrain1_Avatar : public plCameraBrain1
+{
     CREATABLE(plCameraBrain1_Avatar, kCameraBrain1_Avatar, plCameraBrain1)
 
 protected:
@@ -142,13 +157,15 @@ public:
 };
 
 
-class PLASMA_DLL plCameraBrain1_FirstPerson : public plCameraBrain1_Avatar {
+class PLASMA_DLL plCameraBrain1_FirstPerson : public plCameraBrain1_Avatar
+{
     CREATABLE(plCameraBrain1_FirstPerson, kCameraBrain1_FirstPerson,
               plCameraBrain1_Avatar)
 };
 
 
-class PLASMA_DLL plCameraBrain1_Fixed : public plCameraBrain1 {
+class PLASMA_DLL plCameraBrain1_Fixed : public plCameraBrain1
+{
     CREATABLE(plCameraBrain1_Fixed, kCameraBrain1_Fixed, plCameraBrain1)
 
 protected:
@@ -164,15 +181,17 @@ protected:
 
 public:
     plKey getTargetPoint() const { return fTargetPoint; }
-    void setTargetPoint(const plKey& targetPoint) { fTargetPoint = targetPoint; }
+    void setTargetPoint(plKey targetPoint) { fTargetPoint = std::move(targetPoint); }
 };
 
 
-class PLASMA_DLL plCameraBrain1_Circle : public plCameraBrain1_Fixed {
+class PLASMA_DLL plCameraBrain1_Circle : public plCameraBrain1_Fixed
+{
     CREATABLE(plCameraBrain1_Circle, kCameraBrain1_Circle, plCameraBrain1_Fixed)
 
 public:
-    enum CircleFlags {
+    enum CircleFlags
+    {
         kLagged = 0x1,
         kAbsoluteLag = 0x3,
         kFarthest = 0x4,
@@ -190,7 +209,7 @@ protected:
     float fCirPerSec;
 
 public:
-    plCameraBrain1_Circle() : fCircleFlags(0), fRadius(0), fCirPerSec(0) { }
+    plCameraBrain1_Circle() : fCircleFlags(), fRadius(), fCirPerSec() { }
 
     void read(hsStream* S, plResManager* mgr) HS_OVERRIDE;
     void write(hsStream* S, plResManager* mgr) HS_OVERRIDE;
@@ -210,8 +229,8 @@ public:
     void setCircleFlags(unsigned int flags) { fCircleFlags = flags; }
     void setCenter(const hsVector3& center) { fCenter = center; }
     void setRadius(float radius) { fRadius = radius; }
-    void setCenterObject(const plKey& center) { fCenterObject = center; }
-    void setPOAObject(const plKey& poa) { fPOAObject = poa; }
+    void setCenterObject(plKey center) { fCenterObject = std::move(center); }
+    void setPOAObject(plKey poa) { fPOAObject = std::move(poa); }
     void setCirPerSec(float cirPerSec) { fCirPerSec = cirPerSec; }
 };
 

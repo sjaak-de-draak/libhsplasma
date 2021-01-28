@@ -17,12 +17,14 @@
 #include "plArmatureMod.h"
 
 /* plArmatureModBase */
-plArmatureModBase::~plArmatureModBase() {
+plArmatureModBase::~plArmatureModBase()
+{
     for (auto brain = fBrains.begin(); brain != fBrains.end(); ++brain)
         delete *brain;
 }
 
-void plArmatureModBase::read(hsStream* S, plResManager* mgr) {
+void plArmatureModBase::read(hsStream* S, plResManager* mgr)
+{
     plAGMasterMod::read(S, mgr);
 
     fMeshKeys.resize(S->readInt());
@@ -37,12 +39,13 @@ void plArmatureModBase::read(hsStream* S, plResManager* mgr) {
     clearBrains();
     fBrains.resize(S->readInt());
     for (size_t i=0; i<fBrains.size(); i++)
-        fBrains[i] = plArmatureBrain::Convert(mgr->ReadCreatable(S));
+        fBrains[i] = mgr->ReadCreatableC<plArmatureBrain>(S);
 
     fDetector = mgr->readKey(S);
 }
 
-void plArmatureModBase::write(hsStream* S, plResManager* mgr) {
+void plArmatureModBase::write(hsStream* S, plResManager* mgr)
+{
     plAGMasterMod::write(S, mgr);
 
     S->writeInt(fMeshKeys.size());
@@ -60,7 +63,8 @@ void plArmatureModBase::write(hsStream* S, plResManager* mgr) {
     mgr->writeKey(S, fDetector);
 }
 
-void plArmatureModBase::IPrcWrite(pfPrcHelper* prc) {
+void plArmatureModBase::IPrcWrite(pfPrcHelper* prc)
+{
     plAGMasterMod::IPrcWrite(prc);
 
     prc->writeSimpleTag("Meshes");
@@ -85,7 +89,8 @@ void plArmatureModBase::IPrcWrite(pfPrcHelper* prc) {
     prc->closeTag();
 }
 
-void plArmatureModBase::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
+void plArmatureModBase::IPrcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     if (tag->getName() == "Meshes") {
         fMeshKeys.resize(tag->countChildren());
         fUnusedBones.resize(fMeshKeys.size());
@@ -95,7 +100,7 @@ void plArmatureModBase::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
                 throw pfPrcTagException(__FILE__, __LINE__, child->getName());
 
             const pfPrcTag* subchild = child->getFirstChild();
-            while (subchild != NULL) {
+            while (subchild) {
                 if (subchild->getName() == "plKey") {
                     fMeshKeys[i] = mgr->prcParseKey(subchild);
                 } else if (subchild->getName() == "UnusedBones") {
@@ -117,7 +122,7 @@ void plArmatureModBase::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
         fBrains.resize(tag->countChildren());
         const pfPrcTag* child = tag->getFirstChild();
         for (size_t i=0; i<fBrains.size(); i++) {
-            fBrains[i] = plArmatureBrain::Convert(mgr->prcParseCreatable(child));
+            fBrains[i] = mgr->prcParseCreatableC<plArmatureBrain>(child);
             child = child->getNextSibling();
         }
     } else if (tag->getName() == "Detector") {
@@ -127,7 +132,8 @@ void plArmatureModBase::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
     }
 }
 
-void plArmatureModBase::clearBrains() {
+void plArmatureModBase::clearBrains()
+{
     for (auto brain = fBrains.begin(); brain != fBrains.end(); ++brain)
         delete *brain;
     fBrains.clear();
@@ -135,7 +141,8 @@ void plArmatureModBase::clearBrains() {
 
 
 /* plArmatureMod */
-void plArmatureMod::read(hsStream* S, plResManager* mgr) {
+void plArmatureMod::read(hsStream* S, plResManager* mgr)
+{
     if (S->getVer().isUru()) {
         plAGMasterMod::read(S, mgr);
         fDefaultMesh = mgr->readKey(S);
@@ -149,7 +156,7 @@ void plArmatureMod::read(hsStream* S, plResManager* mgr) {
         clearBrains();
         fBrains.resize(S->readInt());
         for (size_t i=0; i<fBrains.size(); i++)
-            fBrains[i] = plArmatureBrain::Convert(mgr->ReadCreatable(S));
+            fBrains[i] = mgr->ReadCreatableC<plArmatureBrain>(S);
 
         if (S->readBool())
             fClothingOutfit = mgr->readKey(S);
@@ -191,7 +198,8 @@ void plArmatureMod::read(hsStream* S, plResManager* mgr) {
     }
 }
 
-void plArmatureMod::write(hsStream* S, plResManager* mgr) {
+void plArmatureMod::write(hsStream* S, plResManager* mgr)
+{
     if (S->getVer().isUru()) {
         plAGMasterMod::write(S, mgr);
         mgr->writeKey(S, fDefaultMesh);
@@ -231,7 +239,8 @@ void plArmatureMod::write(hsStream* S, plResManager* mgr) {
     }
 }
 
-void plArmatureMod::IPrcWrite(pfPrcHelper* prc) {
+void plArmatureMod::IPrcWrite(pfPrcHelper* prc)
+{
     plArmatureModBase::IPrcWrite(prc);
 
     prc->writeSimpleTag("DefaultMesh");
@@ -272,7 +281,8 @@ void plArmatureMod::IPrcWrite(pfPrcHelper* prc) {
     prc->closeTag();
 }
 
-void plArmatureMod::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
+void plArmatureMod::IPrcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     if (tag->getName() == "DefaultMesh") {
         fDefaultMesh = mgr->prcParseKey(tag->getFirstChild());
     } else if (tag->getName() == "ArmatureParams") {
@@ -281,7 +291,7 @@ void plArmatureMod::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
         fPhysHeight = tag->getParam("PhysHeight", "0").to_float();
         fPhysWidth = tag->getParam("PhysWidth", "0").to_float();
         const pfPrcTag* child = tag->getFirstChild();
-        while (child != NULL) {
+        while (child) {
             if (child->getName() == "Mins")
                 fMins.prcParse(child->getFirstChild());
             else if (child->getName() == "Maxs")
@@ -298,7 +308,7 @@ void plArmatureMod::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
         fBrains.resize(tag->countChildren());
         const pfPrcTag* child = tag->getFirstChild();
         for (size_t i=0; i<fBrains.size(); i++) {
-            fBrains[i] = plArmatureBrain::Convert(mgr->prcParseCreatable(child));
+            fBrains[i] = mgr->prcParseCreatableC<plArmatureBrain>(child);
             child = child->getNextSibling();
         }
     } else if (tag->getName() == "ClothingOutfit") {
@@ -312,7 +322,8 @@ void plArmatureMod::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
 
 
 /* plArmatureLODMod */
-void plArmatureLODMod::read(hsStream* S, plResManager* mgr) {
+void plArmatureLODMod::read(hsStream* S, plResManager* mgr)
+{
     plArmatureMod::read(S, mgr);
 
     fMeshKeys.resize(S->readInt());
@@ -325,7 +336,8 @@ void plArmatureLODMod::read(hsStream* S, plResManager* mgr) {
     }
 }
 
-void plArmatureLODMod::write(hsStream* S, plResManager* mgr) {
+void plArmatureLODMod::write(hsStream* S, plResManager* mgr)
+{
     plArmatureMod::write(S, mgr);
 
     S->writeInt(fMeshKeys.size());
@@ -337,7 +349,8 @@ void plArmatureLODMod::write(hsStream* S, plResManager* mgr) {
     }
 }
 
-void plArmatureLODMod::IPrcWrite(pfPrcHelper* prc) {
+void plArmatureLODMod::IPrcWrite(pfPrcHelper* prc)
+{
     plArmatureMod::IPrcWrite(prc);
 
     prc->writeSimpleTag("Meshes");
@@ -353,7 +366,8 @@ void plArmatureLODMod::IPrcWrite(pfPrcHelper* prc) {
     prc->closeTag();
 }
 
-void plArmatureLODMod::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
+void plArmatureLODMod::IPrcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     if (tag->getName() == "Meshes") {
         fMeshKeys.resize(tag->countChildren());
         fUnusedBones.resize(fMeshKeys.size());
@@ -363,7 +377,7 @@ void plArmatureLODMod::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
                 throw pfPrcTagException(__FILE__, __LINE__, child->getName());
 
             const pfPrcTag* subchild = child->getFirstChild();
-            while (subchild != NULL) {
+            while (subchild) {
                 if (subchild->getName() == "plKey") {
                     fMeshKeys[i] = mgr->prcParseKey(subchild);
                 } else if (subchild->getName() == "UnusedBones") {

@@ -28,7 +28,8 @@ plDISpanIndex& plDISpanIndex::operator=(const plDISpanIndex& cpy) {
 
 
 /* plDrawableSpans */
-plDrawableSpans::~plDrawableSpans() {
+plDrawableSpans::~plDrawableSpans()
+{
     for (auto group = fGroups.begin(); group != fGroups.end(); ++group)
         delete *group;
     for (auto span = fSpans.begin(); span != fSpans.end(); ++span)
@@ -36,7 +37,8 @@ plDrawableSpans::~plDrawableSpans() {
     delete fSpaceTree;
 }
 
-void plDrawableSpans::read(hsStream* S, plResManager* mgr) {
+void plDrawableSpans::read(hsStream* S, plResManager* mgr)
+{
     hsKeyedObject::read(S, mgr);
 
     fProps = S->readInt();
@@ -101,10 +103,10 @@ void plDrawableSpans::read(hsStream* S, plResManager* mgr) {
     if (fSourceSpans.size() > 0 && !S->getVer().isUniversal())
         plDebug::Debug("Reading deprecated SourceSpans");
     for (size_t i=0; i<fSourceSpans.size(); i++) {
-        fSourceSpans[i].reset(new plGeometrySpan());
+        fSourceSpans[i] = new plGeometrySpan();
         fSourceSpans[i]->read(S);
         if (fSpans[i]->getMaterialIdx() == 0xFFFFFFFF)
-            fSourceSpans[i]->setMaterial(NULL);
+            fSourceSpans[i]->setMaterial(plKey());
         else
             fSourceSpans[i]->setMaterial(fMaterials[fSpans[i]->getMaterialIdx()]);
         fSourceSpans[i]->setFogEnvironment(fSpans[i]->getFogEnvironment());
@@ -138,11 +140,12 @@ void plDrawableSpans::read(hsStream* S, plResManager* mgr) {
         fGroups[i]->read(S);
     }
 
-    setSpaceTree(plSpaceTree::Convert(mgr->ReadCreatable(S)));
+    setSpaceTree(mgr->ReadCreatableC<plSpaceTree>(S));
     fSceneNode = mgr->readKey(S);
 }
 
-void plDrawableSpans::write(hsStream* S, plResManager* mgr) {
+void plDrawableSpans::write(hsStream* S, plResManager* mgr)
+{
     hsKeyedObject::write(S, mgr);
 
     S->writeInt(fProps);
@@ -213,7 +216,8 @@ void plDrawableSpans::write(hsStream* S, plResManager* mgr) {
     mgr->writeKey(S, fSceneNode);
 }
 
-void plDrawableSpans::IPrcWrite(pfPrcHelper* prc) {
+void plDrawableSpans::IPrcWrite(pfPrcHelper* prc)
+{
     hsKeyedObject::IPrcWrite(prc);
 
     prc->startTag("Properties");
@@ -326,7 +330,7 @@ void plDrawableSpans::IPrcWrite(pfPrcHelper* prc) {
     prc->closeTag();
 
     prc->writeSimpleTag("SpaceTree");
-    if (fSpaceTree != NULL)
+    if (fSpaceTree)
         fSpaceTree->prcWrite(prc);
     prc->closeTag();
 
@@ -335,7 +339,8 @@ void plDrawableSpans::IPrcWrite(pfPrcHelper* prc) {
     prc->closeTag();
 }
 
-void plDrawableSpans::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
+void plDrawableSpans::IPrcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     if (tag->getName() == "Properties") {
         fProps = tag->getParam("Flags", "0").to_uint();
         fCriteria = tag->getParam("Criteria", "0").to_uint();
@@ -411,7 +416,7 @@ void plDrawableSpans::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
             if (child->getName() != "Span")
                 throw pfPrcTagException(__FILE__, __LINE__, child->getName());
             const pfPrcTag* subChild = child->getFirstChild();
-            while (subChild != NULL) {
+            while (subChild) {
                 if (subChild->getName() == "PermaLights") {
                     size_t nLights = subChild->countChildren();
                     const pfPrcTag* light = subChild->getFirstChild();
@@ -437,10 +442,10 @@ void plDrawableSpans::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
         fSourceSpans.resize(tag->countChildren());
         const pfPrcTag* child = tag->getFirstChild();
         for (size_t i=0; i<fSourceSpans.size(); i++) {
-            fSourceSpans[i].reset(new plGeometrySpan());
+            fSourceSpans[i] = new plGeometrySpan();
             fSourceSpans[i]->prcParse(tag);
             if (fSpans[i]->getMaterialIdx() == 0xFFFFFFFF)
-                fSourceSpans[i]->setMaterial(NULL);
+                fSourceSpans[i]->setMaterial(plKey());
             else
                 fSourceSpans[i]->setMaterial(fMaterials[fSpans[i]->getMaterialIdx()]);
             fSourceSpans[i]->setFogEnvironment(fSpans[i]->getFogEnvironment());
@@ -456,7 +461,7 @@ void plDrawableSpans::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
             if (child->getName() != "TransformSet")
                 throw pfPrcTagException(__FILE__, __LINE__, child->getName());
             const pfPrcTag* subChild = child->getFirstChild();
-            while (subChild != NULL) {
+            while (subChild) {
                 if (subChild->getName() == "LocalToWorld") {
                     if (subChild->hasChildren())
                         fLocalToWorlds[i].prcParse(subChild->getFirstChild());
@@ -506,7 +511,7 @@ void plDrawableSpans::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
         }
     } else if (tag->getName() == "SpaceTree") {
         if (tag->hasChildren())
-            setSpaceTree(plSpaceTree::Convert(mgr->prcParseCreatable(tag->getFirstChild())));
+            setSpaceTree(mgr->prcParseCreatableC<plSpaceTree>(tag->getFirstChild()));
     } else if (tag->getName() == "SceneNode") {
         if (tag->hasChildren())
             fSceneNode = mgr->prcParseKey(tag->getFirstChild());
@@ -515,7 +520,8 @@ void plDrawableSpans::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
     }
 }
 
-void plDrawableSpans::calcBounds() {
+void plDrawableSpans::calcBounds()
+{
     for (size_t i=0; i<fIcicles.size(); i++) {
         std::vector<plGBufferVertex> verts = getVerts(fIcicles[i]);
         hsBounds3Ext loc;
@@ -544,7 +550,8 @@ void plDrawableSpans::calcBounds() {
     fLocalBounds.unalign();
 }
 
-void plDrawableSpans::BuildSpaceTree() {
+void plDrawableSpans::BuildSpaceTree()
+{
     plSpaceTree* tree = new plSpaceTree();
     std::vector<plSpaceBuilderNode*> leaves;
     leaves.resize(fIcicles.size());
@@ -560,9 +567,10 @@ void plDrawableSpans::BuildSpaceTree() {
     delete root;
 }
 
-plSpaceBuilderNode* plDrawableSpans::IBuildTree(std::vector<plSpaceBuilderNode*>& nodes) {
+plSpaceBuilderNode* plDrawableSpans::IBuildTree(std::vector<plSpaceBuilderNode*>& nodes)
+{
     if (nodes.empty())
-        return NULL;
+        return nullptr;
     if (nodes.size() == 1)
         return nodes[0];
 
@@ -582,7 +590,8 @@ plSpaceBuilderNode* plDrawableSpans::IBuildTree(std::vector<plSpaceBuilderNode*>
 
 void plDrawableSpans::ISplitSpace(std::vector<plSpaceBuilderNode*>& nodes,
                                   std::vector<plSpaceBuilderNode*>& left,
-                                  std::vector<plSpaceBuilderNode*>& right) {
+                                  std::vector<plSpaceBuilderNode*>& right)
+{
     hsVector3 big(0.0f, 0.0f, 0.0f);
     for (size_t i=0; i<nodes.size(); i++) {
         if (nodes[i]->fBounds.getMaxs().X - nodes[i]->fBounds.getMins().X > big.X)
@@ -604,7 +613,8 @@ void plDrawableSpans::ISplitSpace(std::vector<plSpaceBuilderNode*>& nodes,
     std::copy(nodes.begin() + left.size(), nodes.end(), right.begin());
 }
 
-void plDrawableSpans::ISortSpace(std::vector<plSpaceBuilderNode*>& nodes, int axis) {
+void plDrawableSpans::ISortSpace(std::vector<plSpaceBuilderNode*>& nodes, int axis)
+{
     if (nodes.size() < 2)
         // Already sorted
         return;
@@ -629,7 +639,7 @@ void plDrawableSpans::ISortSpace(std::vector<plSpaceBuilderNode*>& nodes, int ax
         it->fNext = it + 1;
         it++;
     }
-    list[nodes.size() - 1].fNext = NULL;
+    list[nodes.size() - 1].fNext = nullptr;
 
     it = rad.sort(list, hsRadixSort::kFloat);
 
@@ -641,7 +651,8 @@ void plDrawableSpans::ISortSpace(std::vector<plSpaceBuilderNode*>& nodes, int ax
     delete[] list;
 }
 
-void plDrawableSpans::clearSpans() {
+void plDrawableSpans::clearSpans()
+{
     for (auto span = fSpans.begin(); span != fSpans.end(); ++span)
         delete *span;
     fIcicles.clear();
@@ -650,123 +661,112 @@ void plDrawableSpans::clearSpans() {
     fSpanSourceIndices.clear();
 }
 
-size_t plDrawableSpans::addIcicle(const plIcicle& span) {
-    plIcicle* iceCopy = new plIcicle(span);
-    fIcicles.push_back(iceCopy);
-    size_t iceId = fIcicles.size() - 1;
-    fSpans.push_back(fIcicles[iceId]);
-    fSpanSourceIndices.push_back(iceId | kSpanTypeIcicle);
-    return fSpans.size() - 1;
+size_t plDrawableSpans::addIcicle(plIcicle* span)
+{
+    fIcicles.push_back(span);
+    fSpans.push_back(span);
+    fSpanSourceIndices.push_back((fIcicles.size() - 1) | kSpanTypeIcicle);
+    return fIcicles.size() - 1;
 }
 
-size_t plDrawableSpans::createBufferGroup(unsigned char format) {
+size_t plDrawableSpans::createBufferGroup(unsigned char format)
+{
     fGroups.push_back(new plGBufferGroup(format));
     return fGroups.size() - 1;
 }
 
-void plDrawableSpans::deleteBufferGroup(size_t group) {
+void plDrawableSpans::deleteBufferGroup(size_t group)
+{
     delete fGroups[group];
     fGroups.erase(fGroups.begin() + group);
 }
 
-std::vector<plGBufferVertex> plDrawableSpans::getVerts(const plIcicle* span) const {
+std::vector<plGBufferVertex> plDrawableSpans::getVerts(const plIcicle* span) const
+{
     return fGroups[span->getGroupIdx()]->getVertices(span->getVBufferIdx(),
                 span->getVStartIdx(), span->getVLength());
 }
 
-std::vector<unsigned short> plDrawableSpans::getIndices(const plIcicle* span) const {
+std::vector<unsigned short> plDrawableSpans::getIndices(const plIcicle* span) const
+{
     return fGroups[span->getGroupIdx()]->getIndices(span->getIBufferIdx(),
                 span->getIStartIdx(), span->getILength(), span->getVStartIdx());
 }
 
-std::vector<plGBufferCell> plDrawableSpans::getCells(size_t group, size_t buffer) const {
+std::vector<plGBufferCell> plDrawableSpans::getCells(size_t group, size_t buffer) const
+{
     return fGroups[group]->getCells(buffer);
 }
 
-void plDrawableSpans::addVerts(size_t group, const std::vector<plGBufferVertex>& verts) {
+void plDrawableSpans::addVerts(size_t group, const std::vector<plGBufferVertex>& verts)
+{
     fGroups[group]->addVertices(verts);
 }
 
-void plDrawableSpans::addIndices(size_t group, const std::vector<unsigned short>& indices) {
+void plDrawableSpans::addIndices(size_t group, const std::vector<unsigned short>& indices)
+{
     fGroups[group]->addIndices(indices);
 }
 
-void plDrawableSpans::addCells(size_t group, const std::vector<plGBufferCell>& cells) {
+void plDrawableSpans::addCells(size_t group, const std::vector<plGBufferCell>& cells)
+{
     fGroups[group]->addCells(cells);
 }
 
-size_t plDrawableSpans::addDIIndex(const plDISpanIndex& idx) {
+size_t plDrawableSpans::addDIIndex(const plDISpanIndex& idx)
+{
     fDIIndices.push_back(idx);
     return fDIIndices.size() - 1;
 }
 
-void plDrawableSpans::clearTransforms() {
+void plDrawableSpans::clearTransforms()
+{
     fLocalToWorlds.clear();
     fWorldToLocals.clear();
     fLocalToBones.clear();
     fBoneToLocals.clear();
 }
 
-void plDrawableSpans::addTransform(const hsMatrix44& l2w, const hsMatrix44& w2l,
-                                   const hsMatrix44& l2b, const hsMatrix44& b2l) {
+size_t plDrawableSpans::addTransform(const hsMatrix44& l2w, const hsMatrix44& w2l,
+                                     const hsMatrix44& l2b, const hsMatrix44& b2l)
+{
     fLocalToWorlds.push_back(l2w);
     fWorldToLocals.push_back(w2l);
     fLocalToBones.push_back(l2b);
     fBoneToLocals.push_back(b2l);
+    return fLocalToBones.size() - 1;
 }
 
-void plDrawableSpans::setSpaceTree(plSpaceTree* tree) {
+void plDrawableSpans::setSpaceTree(plSpaceTree* tree)
+{
     delete fSpaceTree;
     fSpaceTree = tree;
 }
 
-void plDrawableSpans::composeGeometry(bool clearspans, bool calcbounds) {
-    std::map<unsigned int, std::pair<plGBufferGroup*, size_t> > groups;
+size_t plDrawableSpans::IFindBufferGroup(unsigned int format, unsigned int vertsNeeded)
+{
+    // For some reason, Plasma attempts to maintain only one vertex storage buffer per group
+    for (size_t i = 0; i < fGroups.size(); ++i) {
+        plGBufferGroup* group = fGroups[i];
+        if (group->getFormat() == format) {
+            if (group->getNumVertices() + vertsNeeded < plGBufferGroup::kMaxVertsPerBuffer)
+                return i;
+        }
+    }
+
+    return createBufferGroup(format);
+}
+
+void plDrawableSpans::composeGeometry(bool clearspans, bool calcbounds)
+{
     for (auto group = fGroups.begin(); group != fGroups.end(); ++group)
         delete *group;
     for (auto span = fSpans.begin(); span != fSpans.end(); ++span)
         delete *span;
 
     for (size_t i=0; i<fSourceSpans.size(); i++) {
-        plGeometrySpan* span = fSourceSpans[i].get();
-        unsigned int format = span->getFormat();
-        plGBufferGroup* group = groups[format].first;
-        if (!group) {
-            group = new plGBufferGroup(format);
-            groups[format] = std::make_pair(group, fGroups.size());
-            fGroups.push_back(group);
-        }
-        size_t buf_idx = group->getNumVertBuffers();
-        std::vector<unsigned short> indices = span->getIndices();
-        std::vector<plGeometrySpan::TempVertex> verts = span->getVertices();
-
-        plGBufferCell cell;
-        cell.fColorStart = -1;
-        cell.fVtxStart = 0;
-        cell.fLength = verts.size();
-        std::vector<plGBufferCell> cell_tmp;
-        cell_tmp.push_back(cell);
-
-        std::vector<plGBufferVertex> new_verts;
-        new_verts.resize(verts.size());
-        for (size_t j=0; j<verts.size(); j++) {
-            plGeometrySpan::TempVertex v1 = verts[j];
-            plGBufferVertex v2;
-            v2.fPos = v1.fPosition;
-            v2.fNormal = v1.fNormal;
-            for (size_t k=0; k<8; k++) {
-                v2.fUVWs[k] = v1.fUVs[k];
-            }
-            for (size_t k=0; k<3; k++) {
-                v2.fSkinWeights[k] = v1.fWeights[k];
-            }
-            v2.fSkinIdx = v1.fIndices;
-            v2.fColor = v1.fColor;
-            new_verts[j] = v2;
-        }
-        group->addIndices(indices);
-        group->addVertices(new_verts);
-        group->addCells(cell_tmp);
+        plGeometrySpan* span = fSourceSpans[i];
+        size_t group = IFindBufferGroup(span->getFormat(), span->getNumVertices());
 
         auto mat_f = std::find(fMaterials.begin(), fMaterials.end(), span->getMaterial());
         size_t mat_idx = -1;
@@ -777,38 +777,32 @@ void plDrawableSpans::composeGeometry(bool clearspans, bool calcbounds) {
             mat_idx = mat_f - fMaterials.begin();
         }
 
-        plIcicle icicle;
-        icicle.setIBufferIdx(buf_idx);
-        icicle.setIStartIdx(0);
-        icicle.setILength(indices.size());
-        icicle.setVBufferIdx(buf_idx);
-        icicle.setVStartIdx(0);
-        icicle.setVLength(verts.size());
-        icicle.setCellIdx(0);
-        icicle.setCellOffset(0);
-        icicle.setLocalToWorld(span->getLocalToWorld());
-        icicle.setWorldToLocal(span->getWorldToLocal());
-        icicle.setMaterialIdx(mat_idx);
-        icicle.setGroupIdx(groups[format].second);
+        plIcicle* icicle = new plIcicle;
+        fGroups[group]->packGeoSpan(span, icicle);
+
+        icicle->setLocalToWorld(span->getLocalToWorld());
+        icicle->setWorldToLocal(span->getWorldToLocal());
+        icicle->setMaterialIdx(mat_idx);
+        icicle->setGroupIdx(group);
         uint32_t props = plSpan::deswizzleGeoFlags(span->getProps());
         if (span->getPermaLights().size() > 0)
             props |= plSpan::kPropHasPermaLights;
         if (span->getPermaProjs().size() > 0)
             props |= plSpan::kPropHasPermaProjs;
-        icicle.setProps(props);
-        icicle.setBaseMatrix(span->getBaseMatrix());
-        icicle.setFogEnvironment(span->getFogEnvironment());
-        icicle.setLocalBounds(span->getLocalBounds());
-        icicle.setWorldBounds(span->getWorldBounds());
-        icicle.setLocalUVWChans(span->getLocalUVWChans());
-        icicle.setMaxBoneIdx(span->getMaxBoneIdx());
-        icicle.setMinDist(span->getMinDist());
-        icicle.setMaxDist(span->getMaxDist());
-        icicle.setWaterHeight(span->getWaterHeight());
-        icicle.setPenBoneIdx(span->getPenBoneIdx());
-        icicle.setNumMatrices(span->getNumMatrices());
-        icicle.setPermaLights(span->getPermaLights());
-        icicle.setPermaProjs(span->getPermaProjs());
+        icicle->setProps(props);
+        icicle->setBaseMatrix(span->getBaseMatrix());
+        icicle->setFogEnvironment(span->getFogEnvironment());
+        icicle->setLocalBounds(span->getLocalBounds());
+        icicle->setWorldBounds(span->getWorldBounds());
+        icicle->setLocalUVWChans(span->getLocalUVWChans());
+        icicle->setMaxBoneIdx(span->getMaxBoneIdx());
+        icicle->setMinDist(span->getMinDist());
+        icicle->setMaxDist(span->getMaxDist());
+        icicle->setWaterHeight(span->getWaterHeight());
+        icicle->setPenBoneIdx(span->getPenBoneIdx());
+        icicle->setNumMatrices(span->getNumMatrices());
+        icicle->setPermaLights(span->getPermaLights());
+        icicle->setPermaProjs(span->getPermaProjs());
         addIcicle(icicle);
     }
 
@@ -820,10 +814,11 @@ void plDrawableSpans::composeGeometry(bool clearspans, bool calcbounds) {
         fSourceSpans.clear();
 }
 
-void plDrawableSpans::decomposeGeometry(bool clearcolors) {
+void plDrawableSpans::decomposeGeometry(bool clearcolors)
+{
     for (size_t i=0; i<fIcicles.size(); i++) {
         plIcicle* icicle = fIcicles[i];
-        std::shared_ptr<plGeometrySpan> span(new plGeometrySpan());
+        plGeometrySpan* span = new plGeometrySpan();
         plGBufferGroup* group = fGroups[icicle->getGroupIdx()];
 
         span->setLocalToWorld(icicle->getLocalToWorld());
@@ -887,7 +882,8 @@ void plDrawableSpans::decomposeGeometry(bool clearcolors) {
     }
 }
 
-size_t plDrawableSpans::buildDIIndex(const std::vector<std::shared_ptr<plGeometrySpan> >& spans) {
+size_t plDrawableSpans::buildDIIndex(const std::vector<plGeometrySpan*>& spans)
+{
     plDISpanIndex di_idx;
     for (size_t i=0; i<spans.size(); ++i) {
         auto span_f = std::find(fSourceSpans.begin(), fSourceSpans.end(), spans[i]);
@@ -901,7 +897,7 @@ size_t plDrawableSpans::buildDIIndex(const std::vector<std::shared_ptr<plGeometr
     return result;
 }
 
-size_t plDrawableSpans::addSourceSpan(const std::shared_ptr<plGeometrySpan>& span)
+size_t plDrawableSpans::addSourceSpan(plGeometrySpan* span)
 {
     fSourceSpans.push_back(span);
     return fSourceSpans.size() - 1;

@@ -29,13 +29,14 @@ PY_METHOD_VA(AGMasterMod, addPrivateAnim,
     PyObject* key;
     if (!(PyArg_ParseTuple(args, "O", &key) && pyKey_Check(key))) {
         PyErr_SetString(PyExc_TypeError, "addPrivateAnim expects a plKey");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addPrivateAnim(*((pyKey*)key)->fThis);
     Py_RETURN_NONE;
 }
 
-PY_METHOD_NOARGS(AGMasterMod, clearPrivateAnims, "Removes all animation keys") {
+PY_METHOD_NOARGS(AGMasterMod, clearPrivateAnims, "Removes all animation keys")
+{
     self->fThis->clearPrivateAnims();
     Py_RETURN_NONE;
 }
@@ -47,7 +48,7 @@ PY_METHOD_VA(AGMasterMod, delPrivateAnim,
     Py_ssize_t idx;
     if (!PyArg_ParseTuple(args, "n", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delPrivateAnim expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->delPrivateAnim((size_t)idx);
     Py_RETURN_NONE;
@@ -60,13 +61,14 @@ PY_METHOD_VA(AGMasterMod, addEoaKey,
     PyObject* key;
     if (!(PyArg_ParseTuple(args, "O", &key) && pyKey_Check(key))) {
         PyErr_SetString(PyExc_TypeError, "addEoaKey expects a plKey");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addEoaKey(*((pyKey*)key)->fThis);
     Py_RETURN_NONE;
 }
 
-PY_METHOD_NOARGS(AGMasterMod, clearEoaKeys, "Removes all EoA keys") {
+PY_METHOD_NOARGS(AGMasterMod, clearEoaKeys, "Removes all EoA keys")
+{
     self->fThis->clearEoaKeys();
     Py_RETURN_NONE;
 }
@@ -78,7 +80,7 @@ PY_METHOD_VA(AGMasterMod, delEoaKey,
     Py_ssize_t idx;
     if (!PyArg_ParseTuple(args, "n", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delEoaKey expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->delEoaKey((size_t)idx);
     Py_RETURN_NONE;
@@ -94,7 +96,8 @@ static PyMethodDef pyAGMasterMod_Methods[] = {
     PY_METHOD_TERMINATOR
 };
 
-PY_GETSET_GETTER_DECL(AGMasterMod, privateAnims) {
+PY_GETSET_GETTER_DECL(AGMasterMod, privateAnims)
+{
     const std::vector<plKey>& anims = self->fThis->getPrivateAnims();
     PyObject* tup = PyTuple_New(anims.size());
     for (size_t i = 0; i < anims.size(); ++i)
@@ -106,7 +109,8 @@ PY_PROPERTY_SETTER_MSG(AGMasterMod, privateAnims,
                        "To add privateAnims, use addPrivateAnim()")
 PY_PROPERTY_GETSET_DECL(AGMasterMod, privateAnims)
 
-PY_GETSET_GETTER_DECL(AGMasterMod, eoaKeys) {
+PY_GETSET_GETTER_DECL(AGMasterMod, eoaKeys)
+{
     const std::vector<plKey>& keys = self->fThis->getEoaKeys();
     PyObject* tup = PyTuple_New(keys.size());
     for (size_t i = 0; i < keys.size(); ++i)
@@ -134,13 +138,14 @@ static PyGetSetDef pyAGMasterMod_GetSet[] = {
 
 PY_PLASMA_TYPE(AGMasterMod, plAGMasterMod, "plAGMasterMod wrapper")
 
-PY_PLASMA_TYPE_INIT(AGMasterMod) {
+PY_PLASMA_TYPE_INIT(AGMasterMod)
+{
     pyAGMasterMod_Type.tp_new = pyAGMasterMod_new;
     pyAGMasterMod_Type.tp_methods = pyAGMasterMod_Methods;
     pyAGMasterMod_Type.tp_getset = pyAGMasterMod_GetSet;
     pyAGMasterMod_Type.tp_base = &pySingleModifier_Type;
     if (PyType_CheckAndReady(&pyAGMasterMod_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyAGMasterMod_Type);
     return (PyObject*)&pyAGMasterMod_Type;

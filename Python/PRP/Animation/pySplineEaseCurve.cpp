@@ -21,14 +21,16 @@
 
 PY_PLASMA_NEW(SplineEaseCurve, plSplineEaseCurve)
 
-PY_GETSET_GETTER_DECL(SplineEaseCurve, splineCoef) {
+PY_GETSET_GETTER_DECL(SplineEaseCurve, splineCoef)
+{
     return Py_BuildValue("ffff", pyPlasma_convert(self->fThis->getSplineCoef(0)),
                                  pyPlasma_convert(self->fThis->getSplineCoef(1)),
                                  pyPlasma_convert(self->fThis->getSplineCoef(2)),
                                  pyPlasma_convert(self->fThis->getSplineCoef(3)));
 }
 
-PY_GETSET_SETTER_DECL(SplineEaseCurve, splineCoef) {
+PY_GETSET_SETTER_DECL(SplineEaseCurve, splineCoef)
+{
     PY_PROPERTY_CHECK_NULL(splineCoef)
     if (!PyTuple_Check(value) || PyTuple_Size(value) != 4) {
         PyErr_SetString(PyExc_TypeError, "splineCoef should be a tuple of 4 floats");
@@ -54,12 +56,13 @@ static PyGetSetDef pySplineEaseCurve_GetSet[] = {
 
 PY_PLASMA_TYPE(SplineEaseCurve, plSplineEaseCurve, "plSplineEaseCurve wrapper")
 
-PY_PLASMA_TYPE_INIT(SplineEaseCurve) {
+PY_PLASMA_TYPE_INIT(SplineEaseCurve)
+{
     pySplineEaseCurve_Type.tp_new = pySplineEaseCurve_new;
     pySplineEaseCurve_Type.tp_getset = pySplineEaseCurve_GetSet;
     pySplineEaseCurve_Type.tp_base = &pyATCEaseCurve_Type;
     if (PyType_CheckAndReady(&pySplineEaseCurve_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pySplineEaseCurve_Type);
     return (PyObject*)&pySplineEaseCurve_Type;

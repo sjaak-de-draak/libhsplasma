@@ -26,24 +26,43 @@ PY_METHOD_VA(EncryptedStream, open,
     "Mode is: fmRead, fmWrite, fmReadWrite, fmCreate\n"
     "Encryption is: kEncNone, kEncXtea, kEncAES, kEncDroid, kEncAuto")
 {
-    const char* filename;
+    ST::string filename;
+    pyStream* stream;
     int mode, encryption;
 
-    if (!PyArg_ParseTuple(args, "sii", &filename, &mode, &encryption)) {
-        PyErr_SetString(PyExc_TypeError, "open expects string, int, int");
-        return NULL;
-    }
-    try {
-        if (!self->fThis->open(filename, (FileMode)mode,
-                               (plEncryptedStream::EncryptionType)encryption)) {
-            PyErr_SetString(PyExc_IOError, "Error opening file");
-            return NULL;
+    if (PyArg_ParseTuple(args, "O&ii", PyAnyString_PathDecoder, &filename, &mode, &encryption)) {
+        try {
+            if (!self->fThis->open(filename, (FileMode)mode, (plEncryptedStream::EncryptionType)encryption)) {
+                PyErr_SetString(PyExc_IOError, "Error opening file");
+                return nullptr;
+            }
+            Py_INCREF(self);
+            return (PyObject*)self;
+        } catch (const std::exception& ex) {
+            PyErr_SetString(PyExc_IOError, ex.what());
+            return nullptr;
         }
-        Py_INCREF(self);
-        return (PyObject*)self;
-    } catch (...) {
-        PyErr_SetString(PyExc_IOError, "Error opening file");
-        return NULL;
+    } else if (PyErr_Clear(), PyArg_ParseTuple(args, "Oii", &stream, &mode, &encryption)) {
+        if (!pyStream_Check((PyObject*)stream)) {
+            PyErr_SetString(PyExc_TypeError, "open expects a string, hsStream stream, or an os.PathLike object, an int, and an int");
+            return nullptr;
+        }
+
+        try {
+            if (!self->fThis->open(stream->fThis, (FileMode)mode,
+                                   (plEncryptedStream::EncryptionType)encryption)) {
+                PyErr_SetString(PyExc_IOError, "Error opening stream");
+                return nullptr;
+            }
+            Py_INCREF(self);
+            return (PyObject*)self;
+        } catch (const std::exception& ex) {
+            PyErr_SetString(PyExc_IOError, ex.what());
+            return nullptr;
+        }
+    } else {
+        PyErr_SetString(PyExc_TypeError, "open expects a string, hsStream stream, or an os.PathLike object, an int, and an int");
+        return nullptr;
     }
 }
 
@@ -58,28 +77,28 @@ PY_METHOD_VA(EncryptedStream, setKey,
     PyObject* keyListObj;
     if (!PyArg_ParseTuple(args, "O", &keyListObj)) {
         PyErr_SetString(PyExc_TypeError, "setKey expects an array of 4 ints");
-        return NULL;
+        return nullptr;
     }
     pySequenceFastRef keyList(keyListObj);
     if (!keyList.isSequence() || keyList.size() != 4) {
         PyErr_SetString(PyExc_TypeError, "setKey expects a tuple of 4 ints");
-        return NULL;
+        return nullptr;
     }
     int key[4];
     for (Py_ssize_t i=0; i<4; i++) {
         PyObject* k = keyList.get(i);
         if (!pyPlasma_check<int>(k)) {
             PyErr_SetString(PyExc_TypeError, "setKey expects a tuple of 4 ints");
-            return NULL;
+            return nullptr;
         }
         key[i] = pyPlasma_get<int>(k);
-        Py_DECREF(k);
     }
     self->fThis->setKey((unsigned int*)key);
     Py_RETURN_NONE;
 }
 
-PY_METHOD_NOARGS(EncryptedStream, getEncType, "Returns the encryption type") {
+PY_METHOD_NOARGS(EncryptedStream, getEncType, "Returns the encryption type")
+{
     return pyPlasma_convert(self->fThis->getEncType());
 }
 
@@ -88,20 +107,27 @@ PY_METHOD_STATIC_VA(EncryptedStream, IsFileEncrypted,
     "Params: filename\n"
     "Tests whether the specified file is encrypted")
 {
-    const char* filename;
-    if (!PyArg_ParseTuple(args, "s", &filename)) {
-        PyErr_SetString(PyExc_TypeError, "IsFileEncrypted expects a string");
-        return NULL;
+    ST::string filename;
+    if (!PyArg_ParseTuple(args, "O&", PyAnyString_PathDecoder, &filename)) {
+        PyErr_SetString(PyExc_TypeError, "IsFileEncrypted expects a string or an os.PathLike object");
+        return nullptr;
     }
-    return pyPlasma_convert(plEncryptedStream::IsFileEncrypted(filename));
+    try {
+        return pyPlasma_convert(plEncryptedStream::IsFileEncrypted(filename));
+    } catch (const std::exception& ex) {
+        PyErr_SetString(PyExc_IOError, ex.what());
+        return nullptr;
+    }
 }
 
-PY_METHOD_NOARGS(EncryptedStream, __enter__, NULL) {
+PY_METHOD_NOARGS(EncryptedStream, __enter__, nullptr)
+{
     Py_INCREF(self);
     return (PyObject*)self;
 }
 
-PY_METHOD_VA(EncryptedStream, __exit__, NULL) {
+PY_METHOD_VA(EncryptedStream, __exit__, nullptr)
+{
     self->fThis->close();
     Py_RETURN_NONE;
 }
@@ -118,12 +144,13 @@ static PyMethodDef pyEncryptedStream_Methods[] = {
 
 PY_PLASMA_TYPE(EncryptedStream, plEncryptedStream, "plEncryptedStream wrapper")
 
-PY_PLASMA_TYPE_INIT(EncryptedStream) {
+PY_PLASMA_TYPE_INIT(EncryptedStream)
+{
     pyEncryptedStream_Type.tp_new = pyEncryptedStream_new;
     pyEncryptedStream_Type.tp_methods = pyEncryptedStream_Methods;
     pyEncryptedStream_Type.tp_base = &pyFileStream_Type;
     if (PyType_CheckAndReady(&pyEncryptedStream_Type) < 0)
-        return NULL;
+        return nullptr;
 
     PY_TYPE_ADD_CONST(EncryptedStream, "kEncNone", plEncryptedStream::kEncNone);
     PY_TYPE_ADD_CONST(EncryptedStream, "kEncXtea", plEncryptedStream::kEncXtea);

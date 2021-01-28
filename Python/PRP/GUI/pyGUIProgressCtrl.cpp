@@ -28,11 +28,11 @@ PY_METHOD_VA(GUIProgressCtrl, addAnimKey,
     pyKey* key;
     if (!PyArg_ParseTuple(args, "O", &key)) {
         PyErr_SetString(PyExc_TypeError, "addAnimKey expects a plKey");
-        return NULL;
+        return nullptr;
     }
     if (!pyKey_Check((PyObject*)key)) {
         PyErr_SetString(PyExc_TypeError, "addAnimKey expects a plKey");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addAnimKey(*key->fThis);
     Py_RETURN_NONE;
@@ -45,7 +45,7 @@ PY_METHOD_VA(GUIProgressCtrl, delAnimKey,
     int idx;
     if (!PyArg_ParseTuple(args, "i", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delAnimKey expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->delAnimKey(idx);
     Py_RETURN_NONE;
@@ -65,7 +65,8 @@ static PyMethodDef pyGUIProgressCtrl_Methods[] = {
     PY_METHOD_TERMINATOR
 };
 
-PY_GETSET_GETTER_DECL(GUIProgressCtrl, animKeys) {
+PY_GETSET_GETTER_DECL(GUIProgressCtrl, animKeys)
+{
     PyObject* list = PyTuple_New(self->fThis->getAnimKeys().size());
     for (size_t i = 0; i<self->fThis->getAnimKeys().size(); i++)
         PyTuple_SET_ITEM(list, i, pyPlasma_convert(self->fThis->getAnimKeys()[i]));
@@ -85,13 +86,14 @@ static PyGetSetDef pyGUIProgressCtrl_GetSet[] = {
 
 PY_PLASMA_TYPE(GUIProgressCtrl, pfGUIProgressCtrl, "pfGUIProgressCtrl wrapper")
 
-PY_PLASMA_TYPE_INIT(GUIProgressCtrl) {
+PY_PLASMA_TYPE_INIT(GUIProgressCtrl)
+{
     pyGUIProgressCtrl_Type.tp_new = pyGUIProgressCtrl_new;
     pyGUIProgressCtrl_Type.tp_methods = pyGUIProgressCtrl_Methods;
     pyGUIProgressCtrl_Type.tp_getset = pyGUIProgressCtrl_GetSet;
     pyGUIProgressCtrl_Type.tp_base = &pyGUIValueCtrl_Type;
     if (PyType_CheckAndReady(&pyGUIProgressCtrl_Type) < 0)
-        return NULL;
+        return nullptr;
 
     /* Konstants */
     PY_TYPE_ADD_CONST(GUIProgressCtrl, "kReverseValues", pfGUIProgressCtrl::kReverseValues);

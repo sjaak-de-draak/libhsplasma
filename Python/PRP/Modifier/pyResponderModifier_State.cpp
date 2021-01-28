@@ -31,11 +31,11 @@ PY_METHOD_VA(ResponderModifier_State, addCommand,
     int waitOn;
     if (!PyArg_ParseTuple(args, "Oi", &msg, &waitOn)) {
         PyErr_SetString(PyExc_TypeError, "addCommand expects plMessage, int");
-        return NULL;
+        return nullptr;
     }
     if (!pyMessage_Check((PyObject*)msg)) {
         PyErr_SetString(PyExc_TypeError, "addCommand expects plMessage, int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addCommand(msg->fThis, waitOn);
     msg->fPyOwned = false;
@@ -49,7 +49,7 @@ PY_METHOD_VA(ResponderModifier_State, delCommand,
     int idx;
     if (!PyArg_ParseTuple(args, "i", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delCommand expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->delCommand(idx);
     Py_RETURN_NONE;
@@ -69,7 +69,8 @@ static PyMethodDef pyResponderModifier_State_Methods[] = {
     PY_METHOD_TERMINATOR
 };
 
-PY_GETSET_GETTER_DECL(ResponderModifier_State, commands) {
+PY_GETSET_GETTER_DECL(ResponderModifier_State, commands)
+{
     PyObject* list = PyTuple_New(self->fThis->fCmds.size());
     for (size_t i=0; i<self->fThis->fCmds.size(); i++)
         PyTuple_SET_ITEM(list, i, pyResponderModifier_Cmd_FromResponderModifier_Cmd(self->fThis->fCmds[i]));
@@ -79,14 +80,16 @@ PY_GETSET_GETTER_DECL(ResponderModifier_State, commands) {
 PY_PROPERTY_SETTER_MSG(ResponderModifier_State, commands, "To add commands, use addCommand")
 PY_PROPERTY_GETSET_DECL(ResponderModifier_State, commands)
 
-PY_GETSET_GETTER_DECL(ResponderModifier_State, waitToCmd) {
+PY_GETSET_GETTER_DECL(ResponderModifier_State, waitToCmd)
+{
     PyObject* dict = PyDict_New();
     for (const auto& wp : self->fThis->fWaitToCmd)
         PyDict_SetItem(dict, pyPlasma_convert(wp.first), pyPlasma_convert(wp.second));
     return dict;
 }
 
-PY_GETSET_SETTER_DECL(ResponderModifier_State, waitToCmd) {
+PY_GETSET_SETTER_DECL(ResponderModifier_State, waitToCmd)
+{
     PY_PROPERTY_CHECK_NULL(waitToCmd)
     if (!PyDict_Check(value)) {
         PyErr_SetString(PyExc_TypeError, "waitToCmd should be a dict { int => int }");
@@ -123,14 +126,15 @@ static PyGetSetDef pyResponderModifier_State_GetSet[] = {
 PY_PLASMA_TYPE(ResponderModifier_State, plResponderModifier_State,
                "plResponderModifier::plResponderState wrapper")
 
-PY_PLASMA_TYPE_INIT(ResponderModifier_State) {
+PY_PLASMA_TYPE_INIT(ResponderModifier_State)
+{
     pyResponderModifier_State_Type.tp_dealloc = pyResponderModifier_State_dealloc;
     pyResponderModifier_State_Type.tp_init = pyResponderModifier_State___init__;
     pyResponderModifier_State_Type.tp_new = pyResponderModifier_State_new;
     pyResponderModifier_State_Type.tp_methods = pyResponderModifier_State_Methods;
     pyResponderModifier_State_Type.tp_getset = pyResponderModifier_State_GetSet;
     if (PyType_CheckAndReady(&pyResponderModifier_State_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyResponderModifier_State_Type);
     return (PyObject*)&pyResponderModifier_State_Type;

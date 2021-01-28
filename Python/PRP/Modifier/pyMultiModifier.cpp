@@ -28,7 +28,7 @@ PY_METHOD_VA(MultiModifier, getFlag,
     int flag;
     if (!PyArg_ParseTuple(args, "i", &flag)) {
         PyErr_SetString(PyExc_TypeError, "getFlag expects an int");
-        return NULL;
+        return nullptr;
     }
     return pyPlasma_convert(self->fThis->getFlag(flag));
 }
@@ -40,7 +40,7 @@ PY_METHOD_VA(MultiModifier, setFlag,
     int flag, value;
     if (!PyArg_ParseTuple(args, "ii", &flag, &value)) {
         PyErr_SetString(PyExc_TypeError, "setFlag expects int, bool");
-        return NULL;
+        return nullptr;
     }
     self->fThis->setFlag(flag, value != 0);
     Py_RETURN_NONE;
@@ -54,12 +54,13 @@ static PyMethodDef pyMultiModifier_Methods[] = {
 
 PY_PLASMA_TYPE(MultiModifier, plMultiModifier, "plMultiModifier wrapper")
 
-PY_PLASMA_TYPE_INIT(MultiModifier) {
+PY_PLASMA_TYPE_INIT(MultiModifier)
+{
     pyMultiModifier_Type.tp_new = pyMultiModifier_new;
     pyMultiModifier_Type.tp_methods = pyMultiModifier_Methods;
     pyMultiModifier_Type.tp_base = &pyModifier_Type;
     if (PyType_CheckAndReady(&pyMultiModifier_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyMultiModifier_Type);
     return (PyObject*)&pyMultiModifier_Type;

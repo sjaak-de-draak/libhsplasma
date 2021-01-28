@@ -28,7 +28,8 @@
 
 enum FileMode { fmRead, fmWrite, fmReadWrite, fmCreate };
 
-class PLASMA_DLL hsStream {
+class PLASMA_DLL hsStream
+{
 protected:
     PlasmaVer ver;
 
@@ -90,8 +91,8 @@ protected:
     FileMode fm;
 
 public:
-    explicit hsFileStream(int pv = PlasmaVer::pvUnknown) : hsStream(pv), F(NULL) { }
-    virtual ~hsFileStream() { close(); }
+    explicit hsFileStream(int pv = PlasmaVer::pvUnknown) : hsStream(pv), F() { }
+    ~hsFileStream() { close(); }
 
     static bool FileExists(const ST::string& file);
 
@@ -114,16 +115,28 @@ public:
     time_t getModTime() const;
 };
 
-class PLASMA_DLL hsFileReadException : public hsException {
+class hsFileReadException : public hsException
+{
 public:
-    hsFileReadException(const char* file, unsigned long line,
-                        const char* filename = NULL) HS_NOEXCEPT;
+    inline hsFileReadException(const char* file, unsigned long line,
+                               const char* filename = nullptr) HS_NOEXCEPT
+        : hsException(ST_LITERAL("Error reading file"), file, line)
+    {
+        if (filename != nullptr)
+            fWhat += ST_LITERAL(": ") + filename;
+    }
 };
 
-class PLASMA_DLL hsFileWriteException : public hsException {
+class hsFileWriteException : public hsException
+{
 public:
-    hsFileWriteException(const char* file, unsigned long line,
-                         const char* filename = NULL) HS_NOEXCEPT;
+    inline hsFileWriteException(const char* file, unsigned long line,
+                                const char* filename = nullptr) HS_NOEXCEPT
+        : hsException(ST_LITERAL("Error writing to file"), file, line)
+    {
+        if (filename != nullptr)
+            fWhat += ST_LITERAL(": ") + filename;
+    }
 };
 
 #endif

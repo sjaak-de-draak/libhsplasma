@@ -36,39 +36,28 @@
   #define PLASMANET_DLL
 #endif
 
-#ifdef _MSC_VER
-  typedef signed __int8     int8_t;
-  typedef unsigned __int8   uint8_t;
-  typedef signed __int16    int16_t;
-  typedef unsigned __int16  uint16_t;
-  typedef signed __int32    int32_t;
-  typedef unsigned __int32  uint32_t;
-  typedef signed __int64    int64_t;
-  typedef unsigned __int64  uint64_t;
+#include <cstdint>
+#include <cstddef>
+
+#define HS_OVERRIDE         override
+#define HS_FINAL            final
+#define HS_FINAL_OVERRIDE   override final  // Prefer both to satisfy -Wsuggest-override
+#if defined(_MSC_VER) && (_MSC_VER < 1900)
+#   define HS_NOEXCEPT      throw()
+#   define HS_CONSTEXPR     const
 #else
-  #include <stdint.h>
+#   define HS_NOEXCEPT      noexcept
+#   define HS_CONSTEXPR     constexpr
 #endif
 
-#ifdef HAVE_OVERRIDE
-  #define HS_OVERRIDE override
-  #define HS_FINAL    override final    // Add both to satisfy -Wsuggest-override
-#else
-  #define HS_OVERRIDE
-  #define HS_FINAL
-#endif
-
-#ifdef HAVE_NOEXCEPT
-  #define HS_NOEXCEPT noexcept
-#else
-  #define HS_NOEXCEPT throw()
-#endif
-
-enum CallbackEvent {
+enum CallbackEvent
+{
     kStart, kStop, kReverse, kTime, kLoop, kBegin, kEnd, kEventEnd,
     kSingleFrameAdjust, kSingleFrameEval
 };
 
-enum ControlEventCode {
+enum ControlEventCode
+{
     B_CONTROL_ACTION, B_CONTROL_ACTION_MOUSE, B_CONTROL_JUMP,
     B_CONTROL_MOVE_FORWARD, B_CONTROL_MOVE_BACKWARD, B_CONTROL_STRAFE_LEFT,
     B_CONTROL_STRAFE_RIGHT, B_CONTROL_MOVE_UP, B_CONTROL_MOVE_DOWN,
@@ -100,5 +89,11 @@ enum ControlEventCode {
     S_SET_WALK_BACK_LB_MODE, S_SET_CURSOR_UPWARD, S_SET_LADDER_CONTROL,
     S_CLEAR_LADDER_CONTROL, END_CONTROLS
 };
+
+template <typename T, size_t Size>
+HS_CONSTEXPR size_t hsArraySize(T(&)[Size])
+{
+    return Size;
+}
 
 #endif

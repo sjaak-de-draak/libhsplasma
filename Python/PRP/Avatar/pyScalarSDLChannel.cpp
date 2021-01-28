@@ -23,11 +23,12 @@ PY_PLASMA_NEW(ScalarSDLChannel, plScalarSDLChannel)
 
 PY_PLASMA_TYPE(ScalarSDLChannel, plScalarSDLChannel, "plScalarSDLChannel wrapper")
 
-PY_PLASMA_TYPE_INIT(ScalarSDLChannel) {
+PY_PLASMA_TYPE_INIT(ScalarSDLChannel)
+{
     pyScalarSDLChannel_Type.tp_new = pyScalarSDLChannel_new;
     pyScalarSDLChannel_Type.tp_base = &pyScalarChannel_Type;
     if (PyType_CheckAndReady(&pyScalarSDLChannel_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyScalarSDLChannel_Type);
     return (PyObject*)&pyScalarSDLChannel_Type;

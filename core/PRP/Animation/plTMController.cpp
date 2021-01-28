@@ -16,19 +16,21 @@
 
 #include "plTMController.h"
 
-plTMController::~plTMController() {
+plTMController::~plTMController()
+{
     delete fPosController;
     delete fRotController;
     delete fScaleController;
 }
 
-void plTMController::read(hsStream* S, plResManager* mgr) {
+void plTMController::read(hsStream* S, plResManager* mgr)
+{
     int type = S->readInt();
     if (type == plPosController::kCompound)
         setPosController(new plCompoundPosController());
     else if (type == plPosController::kSimple)
         setPosController(new plSimplePosController());
-    if (fPosController != NULL)
+    if (fPosController)
         fPosController->read(S, mgr);
 
     type = S->readInt();
@@ -36,32 +38,33 @@ void plTMController::read(hsStream* S, plResManager* mgr) {
         setRotController(new plCompoundRotController());
     else if (type == plRotController::kSimple)
         setRotController(new plSimpleRotController());
-    if (fRotController != NULL)
+    if (fRotController)
         fRotController->read(S, mgr);
 
     type = S->readInt();
     if (type == plScaleController::kSimple)
         setScaleController(new plSimpleScaleController());
-    if (fScaleController != NULL)
+    if (fScaleController)
         fScaleController->read(S, mgr);
 }
 
-void plTMController::write(hsStream* S, plResManager* mgr) {
-    if (fPosController != NULL) {
+void plTMController::write(hsStream* S, plResManager* mgr)
+{
+    if (fPosController) {
         S->writeInt(fPosController->getType());
         fPosController->write(S, mgr);
     } else {
         S->writeInt(0);
     }
 
-    if (fRotController != NULL) {
+    if (fRotController) {
         S->writeInt(fRotController->getType());
         fRotController->write(S, mgr);
     } else {
         S->writeInt(0);
     }
 
-    if (fScaleController != NULL) {
+    if (fScaleController) {
         S->writeInt(fScaleController->getType());
         fScaleController->write(S, mgr);
     } else {
@@ -69,9 +72,10 @@ void plTMController::write(hsStream* S, plResManager* mgr) {
     }
 }
 
-void plTMController::IPrcWrite(pfPrcHelper* prc) {
+void plTMController::IPrcWrite(pfPrcHelper* prc)
+{
     prc->writeSimpleTag("Position");
-    if (fPosController != NULL) {
+    if (fPosController) {
         fPosController->prcWrite(prc);
     } else {
         prc->startTag("plPosController");
@@ -81,7 +85,7 @@ void plTMController::IPrcWrite(pfPrcHelper* prc) {
     prc->closeTag();
 
     prc->writeSimpleTag("Rotation");
-    if (fRotController != NULL) {
+    if (fRotController) {
         fRotController->prcWrite(prc);
     } else {
         prc->startTag("plRotController");
@@ -91,7 +95,7 @@ void plTMController::IPrcWrite(pfPrcHelper* prc) {
     prc->closeTag();
 
     prc->writeSimpleTag("Scale");
-    if (fScaleController != NULL) {
+    if (fScaleController) {
         fScaleController->prcWrite(prc);
     } else {
         prc->startTag("plScaleController");
@@ -101,7 +105,8 @@ void plTMController::IPrcWrite(pfPrcHelper* prc) {
     prc->closeTag();
 }
 
-void plTMController::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
+void plTMController::IPrcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     if (tag->getName() == "Position") {
         if (tag->hasChildren() && !tag->getFirstChild()->getParam("NULL", "false").to_bool()) {
             if (tag->getFirstChild()->getName() == "plSimplePosController")
@@ -135,7 +140,8 @@ void plTMController::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
     }
 }
 
-plCompoundController* plTMController::convertToCompoundController() {
+plCompoundController* plTMController::convertToCompoundController()
+{
     plCompoundController* compound = new plCompoundController();
 
     // Position
@@ -175,17 +181,20 @@ plCompoundController* plTMController::convertToCompoundController() {
     return compound;
 }
 
-void plTMController::setPosController(plPosController* controller) {
+void plTMController::setPosController(plPosController* controller)
+{
     delete fPosController;
     fPosController = controller;
 }
 
-void plTMController::setRotController(plRotController* controller) {
+void plTMController::setRotController(plRotController* controller)
+{
     delete fRotController;
     fRotController = controller;
 }
 
-void plTMController::setScaleController(plScaleController* controller) {
+void plTMController::setScaleController(plScaleController* controller)
+{
     delete fScaleController;
     fScaleController = controller;
 }

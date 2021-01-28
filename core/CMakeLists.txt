@@ -60,6 +60,7 @@ set(PRP_ANIM_SOURCES
     PRP/Animation/plStereizer.cpp
     PRP/Animation/plTMController.cpp
     PRP/Animation/plViewFaceModifier.cpp
+    PRP/Animation/plWindBoneMod.cpp
 )
 set(PRP_ANIM_HEADERS
     PRP/Animation/hsKeys.h
@@ -79,6 +80,7 @@ set(PRP_ANIM_HEADERS
     PRP/Animation/plStereizer.h
     PRP/Animation/plTMController.h
     PRP/Animation/plViewFaceModifier.h
+    PRP/Animation/plWindBoneMod.h
 )
 
 set(PRP_AUDIO_SOURCES
@@ -336,6 +338,7 @@ set(PRP_MSG_SOURCES
     PRP/Message/plSwimMsg.cpp
     PRP/Message/plTimerCallbackMsg.cpp
     PRP/Message/plTransitionMsg.cpp
+    PRP/Message/plWarpMsg.cpp
     PRP/Message/proEventData.cpp
 )
 set(PRP_MSG_HEADERS
@@ -373,6 +376,7 @@ set(PRP_MSG_HEADERS
     PRP/Message/plSwimMsg.h
     PRP/Message/plTimerCallbackMsg.h
     PRP/Message/plTransitionMsg.h
+    PRP/Message/plWarpMsg.h
     PRP/Message/proEventData.h
 )
 
@@ -693,6 +697,7 @@ set(UTIL_SOURCES
     Util/hs3DDevice.cpp
     Util/hsBitVector.cpp
     Util/hsRadixSort.cpp
+    Util/hsSumFile.cpp
     Util/plDDSurface.cpp
     Util/plJPEG.cpp
     Util/plPNG.cpp
@@ -704,6 +709,7 @@ set(UTIL_HEADERS
     Util/hs3DDevice.h
     Util/hsBitVector.h
     Util/hsRadixSort.h
+    Util/hsSumFile.h
     Util/plDDSurface.h
     Util/plJPEG.h
     Util/plPNG.h
@@ -802,6 +808,10 @@ if(PHYSX_FOUND AND ENABLE_PHYSX)
     target_link_libraries(HSPlasma ${PHYSX_COOKING_LIBRARY})
 endif(PHYSX_FOUND AND ENABLE_PHYSX)
 
+target_include_directories(HSPlasma PUBLIC
+                           $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
+                           $<INSTALL_INTERFACE:include/HSPlasma>)
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/libhsplasma.pc.in.cmake ${CMAKE_CURRENT_BINARY_DIR}/libhsplasma.pc @ONLY)
 
 # Package Installation
@@ -811,7 +821,14 @@ install(TARGETS HSPlasma
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
 )
-install(FILES HSPlasmaConfig.cmake DESTINATION share/cmake/HSPlasma)
+
+include(CMakePackageConfigHelpers)
+configure_package_config_file(HSPlasmaConfig.cmake.in
+                              ${CMAKE_CURRENT_BINARY_DIR}/HSPlasmaConfig.cmake
+                              INSTALL_DESTINATION ${CMAKE_INSTALL_PREFIX}/share/cmake/HSPlasma)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/HSPlasmaConfig.cmake
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/share/cmake/HSPlasma)
+
 install(FILES ${DEBUG_HEADERS} DESTINATION include/HSPlasma/Debug)
 install(FILES ${MATH_HEADERS} DESTINATION include/HSPlasma/Math)
 install(FILES ${PRP_ANIM_HEADERS} DESTINATION include/HSPlasma/PRP/Animation)

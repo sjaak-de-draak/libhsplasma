@@ -34,13 +34,14 @@ static PyGetSetDef pySimpleScaleController_GetSet[] = {
 PY_PLASMA_TYPE(SimpleScaleController, plSimpleScaleController,
                "plSimpleScaleController wrapper")
 
-PY_PLASMA_TYPE_INIT(SimpleScaleController) {
+PY_PLASMA_TYPE_INIT(SimpleScaleController)
+{
     pySimpleScaleController_Type.tp_init = pySimpleScaleController___init__;
     pySimpleScaleController_Type.tp_new = pySimpleScaleController_new;
     pySimpleScaleController_Type.tp_getset = pySimpleScaleController_GetSet;
     pySimpleScaleController_Type.tp_base = &pyScaleController_Type;
     if (PyType_CheckAndReady(&pySimpleScaleController_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pySimpleScaleController_Type);
     return (PyObject*)&pySimpleScaleController_Type;

@@ -18,7 +18,8 @@
 #include <cstdlib>
 #include "hsElfStream.h"
 
-void hsElfStream::decipher(unsigned char* v, int size, unsigned char hint) {
+void hsElfStream::decipher(unsigned char* v, int size, unsigned char hint)
+{
     unsigned char key = (v[0] ^ hint) >> 5;
     for (int i=size-1; i>=0; i--) {
         unsigned char a = (v[i] ^ hint);
@@ -28,7 +29,8 @@ void hsElfStream::decipher(unsigned char* v, int size, unsigned char hint) {
     }
 }
 
-void hsElfStream::encipher(unsigned char* v, int size, unsigned char hint) {
+void hsElfStream::encipher(unsigned char* v, int size, unsigned char hint)
+{
     unsigned char key = (v[size-1] & 0xFC) << 3;
     for (int i=0; i<size; i++) {
         unsigned char a = (v[i] << 6) | (v[i] >> 2);
@@ -37,29 +39,28 @@ void hsElfStream::encipher(unsigned char* v, int size, unsigned char hint) {
     }
 }
 
-ST::string hsElfStream::readLine() {
+ST::string hsElfStream::readLine()
+{
     unsigned int p = pos();
     unsigned short segHead = readShort();
     unsigned short segSize = segHead ^ (p & 0xFFFF);
 
     ST::char_buffer line;
-    char* ln = line.create_writable_buffer(segSize);
-    read(segSize, ln);
-    ln[segSize] = 0;
-    decipher((unsigned char*)ln, segSize, (p & 0xFF));
+    line.allocate(segSize);
+    read(segSize, line.data());
+    decipher((unsigned char*)line.data(), segSize, (p & 0xFF));
     return line;
 }
 
-void hsElfStream::writeLine(const ST::string& ln, bool winEOL) {
+void hsElfStream::writeLine(const ST::string& ln, bool winEOL)
+{
     // This may or may not work...
     unsigned int p = pos();
     unsigned short segSize = ln.size();
 
     // Note: winEOL is ignored here
-    ST::char_buffer buffer;
-    char* lnWrite = buffer.create_writable_buffer(ln.size());
-    memcpy(lnWrite, ln.c_str(), ln.size() + 1);
-    encipher((unsigned char*)lnWrite, segSize, (p & 0xFF));
+    ST::char_buffer buffer = ln.to_utf8();
+    encipher((unsigned char*)buffer.data(), segSize, (p & 0xFF));
     writeShort(segSize ^ (p & 0xFFFF));
-    write(segSize, lnWrite);
+    write(segSize, buffer.data());
 }

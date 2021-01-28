@@ -19,7 +19,8 @@
 
 #include "plLogicModBase.h"
 
-class PLASMA_DLL plLogicModifier : public plLogicModBase {
+class PLASMA_DLL plLogicModifier : public plLogicModBase
+{
     CREATABLE(plLogicModifier, kLogicModifier, plLogicModBase)
 
 protected:
@@ -28,7 +29,7 @@ protected:
     plKey fParent;
 
 public:
-    plLogicModifier() : fMyCursor(0) { }
+    plLogicModifier() : fMyCursor() { }
 
     void read(hsStream* S, plResManager* mgr) HS_OVERRIDE;
     void write(hsStream* S, plResManager* mgr) HS_OVERRIDE;
@@ -40,7 +41,7 @@ protected:
 public:
     const std::vector<plKey>& getConditions() const { return fConditionList; }
     std::vector<plKey>& getConditions() { return fConditionList; }
-    void addCondition(plKey cond) { fConditionList.push_back(cond); }
+    void addCondition(plKey cond) { fConditionList.emplace_back(std::move(cond)); }
     void delCondition(size_t idx) { fConditionList.erase(fConditionList.begin() + idx); }
     void clearConditions() { fConditionList.clear(); }
 
@@ -48,7 +49,7 @@ public:
     plKey getParent() const { return fParent; }
 
     void setCursor(unsigned int cursor) { fMyCursor = cursor; }
-    void setParent(plKey parent) { fParent = parent; }
+    void setParent(plKey parent) { fParent = std::move(parent); }
 };
 
 #endif

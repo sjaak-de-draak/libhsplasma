@@ -21,12 +21,14 @@
 #include "Debug/hsExceptions.hpp"
 #include "Stream/hsStream.h"
 
-class PLASMA_DLL plSDLMgr {
+class PLASMA_DLL plSDLMgr
+{
 protected:
     std::vector<plStateDescriptor*> fDescriptors;
 
 private:
-    enum ParseState {
+    enum ParseState
+    {
         kFile, kUruStateDesc, kUruVarLine, kEoaStateDesc, kEoaVarLine
     };
 
@@ -38,15 +40,24 @@ public:
     void ReadDescriptors(hsStream* S);
     void ClearDescriptors();
     plStateDescriptor* GetDescriptor(const ST::string& name, int version = -1);
+    std::vector<ST::string> GetDescriptorNames() const;
 
     void read(hsStream* S);
     void write(hsStream* S);
 };
 
-class PLASMA_DLL plSDLParseException : public hsException {
+class plSDLParseException : public hsException
+{
 public:
-    plSDLParseException(const char* file, unsigned long line,
-                        const char* msg) HS_NOEXCEPT;
+    inline plSDLParseException(const char* file, unsigned long line,
+                               const char* msg) HS_NOEXCEPT
+        : hsException(file, line)
+    {
+        if (msg == nullptr)
+            fWhat = ST_LITERAL("Unknown SDL Parse Error");
+        else
+            fWhat = ST_LITERAL("SDL Error: ") + msg;
+    }
 };
 
 #endif

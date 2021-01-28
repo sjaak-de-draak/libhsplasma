@@ -19,7 +19,8 @@
 
 #include "PRP/Modifier/plModifier.h"
 
-class PLASMA_DLL plAGMasterMod : public plModifier {
+class PLASMA_DLL plAGMasterMod : public plModifier
+{
     CREATABLE(plAGMasterMod, kAGMasterMod, plModifier)
 
 protected:
@@ -29,10 +30,12 @@ protected:
     plKey fMsgForwarder;
 
 public:
-    plAGMasterMod() : fIsGrouped(false), fIsGroupMaster(false) { }
+    plAGMasterMod() : fIsGrouped(), fIsGroupMaster() { }
 
     void read(hsStream* S, plResManager* mgr) HS_OVERRIDE;
     void write(hsStream* S, plResManager* mgr) HS_OVERRIDE;
+
+    bool orderAfter(const hsKeyedObject* other) const HS_OVERRIDE;
 
 protected:
     void IPrcWrite(pfPrcHelper* prc) HS_OVERRIDE;
@@ -41,13 +44,13 @@ protected:
 public:
     const std::vector<plKey>& getPrivateAnims() const { return fPrivateAnims; }
     std::vector<plKey>& getPrivateAnims() { return fPrivateAnims; }
-    void addPrivateAnim(plKey key) { fPrivateAnims.push_back(key); }
+    void addPrivateAnim(plKey key) { fPrivateAnims.emplace_back(std::move(key)); }
     void delPrivateAnim(size_t idx) { fPrivateAnims.erase(fPrivateAnims.begin() + idx); }
     void clearPrivateAnims() { fPrivateAnims.clear(); }
 
     const std::vector<plKey>& getEoaKeys() const { return fEoaKeys2; }
     std::vector<plKey>& getEoaKeys() { return fEoaKeys2; }
-    void addEoaKey(plKey key) { fEoaKeys2.push_back(key); }
+    void addEoaKey(plKey key) { fEoaKeys2.emplace_back(std::move(key)); }
     void delEoaKey(size_t idx) { fEoaKeys2.erase(fEoaKeys2.begin() + idx); }
     void clearEoaKeys() { fEoaKeys2.clear(); }
 
@@ -59,7 +62,7 @@ public:
     void setGroupName(const ST::string& value) { fGroupName = value; }
     void setIsGrouped(bool value) { fIsGrouped = value; }
     void setIsGroupMaster(bool value) { fIsGroupMaster = value; }
-    void setMsgForwarder(plKey value) { fMsgForwarder = value; }
+    void setMsgForwarder(plKey value) { fMsgForwarder = std::move(value); }
 };
 
 #endif

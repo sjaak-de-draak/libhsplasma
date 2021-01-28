@@ -16,24 +16,27 @@
 
 #include "plMessageWithCallbacks.h"
 
-plMessageWithCallbacks::~plMessageWithCallbacks() {
+plMessageWithCallbacks::~plMessageWithCallbacks()
+{
     for (auto cback = fCallbacks.begin(); cback != fCallbacks.end(); ++cback)
         delete *cback;
 }
 
-void plMessageWithCallbacks::read(hsStream* S, plResManager* mgr) {
+void plMessageWithCallbacks::read(hsStream* S, plResManager* mgr)
+{
     plMessage::read(S, mgr);
 
     clearCallbacks();
     fCallbacks.resize(S->readInt());
     for (size_t i=0; i<fCallbacks.size(); i++) {
-        fCallbacks[i] = plMessage::Convert(mgr->ReadCreatable(S));
-        if (fCallbacks[i] == NULL)
+        fCallbacks[i] = mgr->ReadCreatableC<plMessage>(S);
+        if (fCallbacks[i] == nullptr)
             throw hsNotImplementedException(__FILE__, __LINE__, "Callback Message");
     }
 }
 
-void plMessageWithCallbacks::write(hsStream* S, plResManager* mgr) {
+void plMessageWithCallbacks::write(hsStream* S, plResManager* mgr)
+{
     plMessage::write(S, mgr);
 
     S->writeInt(fCallbacks.size());
@@ -41,7 +44,8 @@ void plMessageWithCallbacks::write(hsStream* S, plResManager* mgr) {
         mgr->WriteCreatable(S, fCallbacks[i]);
 }
 
-void plMessageWithCallbacks::IPrcWrite(pfPrcHelper* prc) {
+void plMessageWithCallbacks::IPrcWrite(pfPrcHelper* prc)
+{
     plMessage::IPrcWrite(prc);
 
     prc->writeSimpleTag("Callbacks");
@@ -50,13 +54,14 @@ void plMessageWithCallbacks::IPrcWrite(pfPrcHelper* prc) {
     prc->closeTag();
 }
 
-void plMessageWithCallbacks::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
+void plMessageWithCallbacks::IPrcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     if (tag->getName() == "Callbacks") {
         clearCallbacks();
         fCallbacks.resize(tag->countChildren());
         const pfPrcTag* child = tag->getFirstChild();
         for (size_t i=0; i<fCallbacks.size(); i++) {
-            fCallbacks[i] = plMessage::Convert(mgr->prcParseCreatable(child));
+            fCallbacks[i] = mgr->prcParseCreatableC<plMessage>(child);
             child = child->getNextSibling();
         }
     } else {
@@ -64,12 +69,14 @@ void plMessageWithCallbacks::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
     }
 }
 
-void plMessageWithCallbacks::delCallback(size_t idx) {
+void plMessageWithCallbacks::delCallback(size_t idx)
+{
     delete fCallbacks[idx];
     fCallbacks.erase(fCallbacks.begin() + idx);
 }
 
-void plMessageWithCallbacks::clearCallbacks() {
+void plMessageWithCallbacks::clearCallbacks()
+{
     for (auto cback = fCallbacks.begin(); cback != fCallbacks.end(); ++cback)
         delete *cback;
     fCallbacks.clear();

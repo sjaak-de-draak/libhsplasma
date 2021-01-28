@@ -17,7 +17,8 @@
 #include "pfGUIControlMod.h"
 
 /* pfGUIColorScheme */
-void pfGUIColorScheme::IReset() {
+void pfGUIColorScheme::IReset()
+{
     fForeColor.set(1.0f, 1.0f, 1.0f, 1.0f);
     fBackColor.set(0.0f, 0.0f, 0.0f, 1.0f);
     fSelForeColor.set(1.0f, 1.0f, 1.0f, 1.0f);
@@ -28,7 +29,8 @@ void pfGUIColorScheme::IReset() {
     fFontFlags = 0;
 }
 
-void pfGUIColorScheme::read(hsStream* S) {
+void pfGUIColorScheme::read(hsStream* S)
+{
     fForeColor.read(S);
     fBackColor.read(S);
     fSelForeColor.read(S);
@@ -39,7 +41,8 @@ void pfGUIColorScheme::read(hsStream* S) {
     fFontFlags = S->readByte();
 }
 
-void pfGUIColorScheme::write(hsStream* S) {
+void pfGUIColorScheme::write(hsStream* S)
+{
     fForeColor.write(S);
     fBackColor.write(S);
     fSelForeColor.write(S);
@@ -50,7 +53,8 @@ void pfGUIColorScheme::write(hsStream* S) {
     S->writeByte(fFontFlags);
 }
 
-void pfGUIColorScheme::prcWrite(pfPrcHelper* prc) {
+void pfGUIColorScheme::prcWrite(pfPrcHelper* prc)
+{
     prc->startTag("pfGUIColorScheme");
     prc->writeParam("Face", fFontFace);
     prc->writeParam("Size", fFontSize);
@@ -74,7 +78,8 @@ void pfGUIColorScheme::prcWrite(pfPrcHelper* prc) {
     prc->closeTag();
 }
 
-void pfGUIColorScheme::prcParse(const pfPrcTag* tag) {
+void pfGUIColorScheme::prcParse(const pfPrcTag* tag)
+{
     if (tag->getName() != "pfGUIColorScheme")
         throw pfPrcTagException(__FILE__, __LINE__, tag->getName());
 
@@ -84,7 +89,7 @@ void pfGUIColorScheme::prcParse(const pfPrcTag* tag) {
     fFontFlags = tag->getParam("flags", "0").to_uint();
 
     const pfPrcTag* child = tag->getFirstChild();
-    while (child != NULL) {
+    while (child) {
         if (child->getName() == "Foreground") {
             if (child->hasChildren())
                 fForeColor.prcParse(child->getFirstChild());
@@ -107,7 +112,8 @@ void pfGUIColorScheme::prcParse(const pfPrcTag* tag) {
 
 /* pfGUIControlMod */
 pfGUIControlMod::pfGUIControlMod()
-               : fTagID(0), fVisible(true), fHandler(NULL), fColorScheme(NULL) {
+    : fTagID(), fVisible(true), fHandler(), fColorScheme()
+{
     fFlags.setName(kWantsInterest, "kWantsInterest");
     fFlags.setName(kInheritProcFromDlg, "kInheritProcFromDlg");
     fFlags.setName(kIntangible, "kIntangible");
@@ -118,12 +124,14 @@ pfGUIControlMod::pfGUIControlMod()
     fFlags.setName(kBetterHitTesting, "kBetterHitTesting");
 }
 
-pfGUIControlMod::~pfGUIControlMod() {
+pfGUIControlMod::~pfGUIControlMod()
+{
     delete fHandler;
     delete fColorScheme;
 }
 
-void pfGUIControlMod::read(hsStream* S, plResManager* mgr) {
+void pfGUIControlMod::read(hsStream* S, plResManager* mgr)
+{
     plSingleModifier::read(S, mgr);
 
     fTagID = S->readInt();
@@ -139,7 +147,7 @@ void pfGUIControlMod::read(hsStream* S, plResManager* mgr) {
         setColorScheme(new pfGUIColorScheme());
         fColorScheme->read(S);
     } else {
-        setColorScheme(NULL);
+        setColorScheme(nullptr);
     }
 
     fSoundIndices.resize(S->readByte());
@@ -151,10 +159,11 @@ void pfGUIControlMod::read(hsStream* S, plResManager* mgr) {
     fSkin = mgr->readKey(S);
 }
 
-void pfGUIControlMod::write(hsStream* S, plResManager* mgr) {
+void pfGUIControlMod::write(hsStream* S, plResManager* mgr)
+{
     plSingleModifier::write(S, mgr);
 
-    if (fFlags[kHasProxy] && fProxy == NULL)
+    if (fFlags[kHasProxy] && !fProxy.Exists())
         fFlags[kHasProxy] = false;
     S->writeInt(fTagID);
     S->writeBool(fVisible);
@@ -168,7 +177,7 @@ void pfGUIControlMod::write(hsStream* S, plResManager* mgr) {
         S->writeBool(false);
     }
 
-    if (fColorScheme != NULL) {
+    if (fColorScheme) {
         S->writeBool(true);
         fColorScheme->write(S);
     } else {
@@ -184,10 +193,11 @@ void pfGUIControlMod::write(hsStream* S, plResManager* mgr) {
     mgr->writeKey(S, fSkin);
 }
 
-void pfGUIControlMod::IPrcWrite(pfPrcHelper* prc) {
+void pfGUIControlMod::IPrcWrite(pfPrcHelper* prc)
+{
     plSingleModifier::IPrcWrite(prc);
 
-    if (fFlags[kHasProxy] && fProxy == NULL)
+    if (fFlags[kHasProxy] && !fProxy.Exists())
         fFlags[kHasProxy] = false;
     prc->startTag("ControlParams");
     prc->writeParam("TagID", fTagID);
@@ -205,7 +215,7 @@ void pfGUIControlMod::IPrcWrite(pfPrcHelper* prc) {
     plResManager::PrcWriteKey(prc, fDynTextMap);
     prc->closeTag();
 
-    if (fColorScheme != NULL) {
+    if (fColorScheme) {
         fColorScheme->prcWrite(prc);
     } else {
         prc->startTag("pfGUIColorScheme");
@@ -231,7 +241,8 @@ void pfGUIControlMod::IPrcWrite(pfPrcHelper* prc) {
     prc->closeTag();
 }
 
-void pfGUIControlMod::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
+void pfGUIControlMod::IPrcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     if (tag->getName() == "ControlParams") {
         fTagID = tag->getParam("TagID", "0").to_uint();
         fVisible = tag->getParam("Visible", "true").to_bool();
@@ -239,7 +250,7 @@ void pfGUIControlMod::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
         if (tag->hasChildren())
             setHandler(pfGUICtrlProcWriteableObject::PrcParse(tag->getFirstChild()));
         else
-            setHandler(NULL);
+            setHandler(nullptr);
     } else if (tag->getName() == "DynTextLayer") {
         if (tag->hasChildren())
             fDynTextLayer = mgr->prcParseKey(tag->getFirstChild());
@@ -248,7 +259,7 @@ void pfGUIControlMod::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
             fDynTextMap = mgr->prcParseKey(tag->getFirstChild());
     } else if (tag->getName() == "pfGUIColorScheme") {
         if (tag->getParam("NULL", "false").to_bool()) {
-            setColorScheme(NULL);
+            setColorScheme(nullptr);
         } else {
             setColorScheme(new pfGUIColorScheme());
             fColorScheme->prcParse(tag);
@@ -273,12 +284,14 @@ void pfGUIControlMod::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
     }
 }
 
-void pfGUIControlMod::setHandler(pfGUICtrlProcWriteableObject* handler) {
+void pfGUIControlMod::setHandler(pfGUICtrlProcWriteableObject* handler)
+{
     delete fHandler;
     fHandler = handler;
 }
 
-void pfGUIControlMod::setColorScheme(pfGUIColorScheme* scheme) {
+void pfGUIControlMod::setColorScheme(pfGUIColorScheme* scheme)
+{
     delete fColorScheme;
     fColorScheme = scheme;
 }

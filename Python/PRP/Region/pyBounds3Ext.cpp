@@ -28,7 +28,7 @@ PY_METHOD_VA(Bounds3Ext, getAxis,
     int axis;
     if (!PyArg_ParseTuple(args, "i", &axis)) {
         PyErr_SetString(PyExc_TypeError, "getAxis expects an int");
-        return NULL;
+        return nullptr;
     }
     return pyPlasma_convert(self->fThis->getAxis((size_t)axis));
 }
@@ -41,11 +41,11 @@ PY_METHOD_VA(Bounds3Ext, setAxis,
     PyObject* value;
     if (!PyArg_ParseTuple(args, "iO", &axis, &value)) {
         PyErr_SetString(PyExc_TypeError, "setAxis expects int, hsVector3");
-        return NULL;
+        return nullptr;
     }
     if (!pyPlasma_check<hsVector3>(value)) {
         PyErr_SetString(PyExc_TypeError, "setAxis expects int, hsVector3");
-        return NULL;
+        return nullptr;
     }
     self->fThis->setAxis((size_t)axis, pyPlasma_get<hsVector3>(value));
     Py_RETURN_NONE;
@@ -58,7 +58,7 @@ PY_METHOD_VA(Bounds3Ext, getDist,
     int axis;
     if (!PyArg_ParseTuple(args, "i", &axis)) {
         PyErr_SetString(PyExc_TypeError, "getDist expects an int");
-        return NULL;
+        return nullptr;
     }
     hsFloatPoint2 dist = self->fThis->getDist((size_t)axis);
     return Py_BuildValue("ff", dist.X, dist.Y);
@@ -72,7 +72,7 @@ PY_METHOD_VA(Bounds3Ext, setDist,
     hsFloatPoint2 value;
     if (!PyArg_ParseTuple(args, "iff", &axis, &value.X, &value.Y)) {
         PyErr_SetString(PyExc_TypeError, "setAxis expects int, float, float");
-        return NULL;
+        return nullptr;
     }
     self->fThis->setDist((size_t)axis, value);
     Py_RETURN_NONE;
@@ -88,10 +88,12 @@ PyMethodDef pyBounds3Ext_Methods[] = {
 
 /* Backwards compatibility */
 #define BOUNDS_GETSET_AXIS(id)                                          \
-    PY_GETSET_GETTER_DECL(Bounds3Ext, axis##id) {                       \
+    PY_GETSET_GETTER_DECL(Bounds3Ext, axis##id)                         \
+    {                                                                   \
         return pyPlasma_convert(self->fThis->getAxis(id));              \
     }                                                                   \
-    PY_GETSET_SETTER_DECL(Bounds3Ext, axis##id) {                       \
+    PY_GETSET_SETTER_DECL(Bounds3Ext, axis##id)                         \
+    {                                                                   \
         PY_PROPERTY_CHECK_NULL(axis##id)                                \
         if (!pyPlasma_check<hsVector3>(value)) {                        \
             PyErr_SetString(PyExc_TypeError, "axis" #id " expected type hsVector3"); \
@@ -107,11 +109,13 @@ BOUNDS_GETSET_AXIS(1)
 BOUNDS_GETSET_AXIS(2)
 
 #define BOUNDS_GETSET_DIST(id)                                          \
-    PY_GETSET_GETTER_DECL(Bounds3Ext, dist##id) {                       \
+    PY_GETSET_GETTER_DECL(Bounds3Ext, dist##id)                         \
+    {                                                                   \
         hsFloatPoint2 dist = self->fThis->getDist(id);                  \
         return Py_BuildValue("ff", dist.X, dist.Y);                     \
     }                                                                   \
-    PY_GETSET_SETTER_DECL(Bounds3Ext, dist##id) {                       \
+    PY_GETSET_SETTER_DECL(Bounds3Ext, dist##id)                         \
+    {                                                                   \
         PY_PROPERTY_CHECK_NULL(dist##id)                                \
         if (!PyTuple_Check(value) || (PyTuple_Size(value) != 2)) {      \
             PyErr_SetString(PyExc_TypeError, "dist" #id " expected type tuple(float, float)"); \
@@ -154,13 +158,14 @@ static PyGetSetDef pyBounds3Ext_GetSet[] = {
 
 PY_PLASMA_TYPE(Bounds3Ext, hsBounds3Ext, "hsBounds3Ext wrapper")
 
-PY_PLASMA_TYPE_INIT(Bounds3Ext) {
+PY_PLASMA_TYPE_INIT(Bounds3Ext)
+{
     pyBounds3Ext_Type.tp_new = pyBounds3Ext_new;
     pyBounds3Ext_Type.tp_methods = pyBounds3Ext_Methods;
     pyBounds3Ext_Type.tp_getset = pyBounds3Ext_GetSet;
     pyBounds3Ext_Type.tp_base = &pyBounds3_Type;
     if (PyType_CheckAndReady(&pyBounds3Ext_Type) < 0)
-        return NULL;
+        return nullptr;
 
     PY_TYPE_ADD_CONST(Bounds3Ext, "kAxisAligned", hsBounds3Ext::kAxisAligned);
     PY_TYPE_ADD_CONST(Bounds3Ext, "kSphereSet", hsBounds3Ext::kSphereSet);

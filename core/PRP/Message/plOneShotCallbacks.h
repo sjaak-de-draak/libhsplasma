@@ -20,18 +20,20 @@
 #include "PRP/KeyedObject/plKey.h"
 #include "ResManager/plResManager.h"
 
-class PLASMA_DLL plOneShotCallbacks {
+class PLASMA_DLL plOneShotCallbacks
+{
 public:
-    class PLASMA_DLL plOneShotCallback {
+    class PLASMA_DLL plOneShotCallback
+    {
     public:
         ST::string fMarker;
         plKey fReceiver;
         short fUser;
 
-        plOneShotCallback() : fUser(0) { }
-        plOneShotCallback(const ST::string& marker, plKey receiver, short user)
-            : fMarker(marker), fReceiver(receiver), fUser(user)
-        { }
+        plOneShotCallback() : fUser() { }
+        plOneShotCallback(ST::string marker, plKey receiver, short user)
+            : fMarker(std::move(marker)), fReceiver(std::move(receiver)),
+              fUser(user) { }
     };
 
 protected:
@@ -46,7 +48,12 @@ public:
 public:
     const std::vector<plOneShotCallback>& getCallbacks() const { return fCallbacks; }
     std::vector<plOneShotCallback>& getCallbacks() { return fCallbacks; }
-    void addCallback(const ST::string& marker, plKey receiver, short user) { fCallbacks.emplace_back(marker, receiver, user); }
+
+    void addCallback(const ST::string& marker, plKey receiver, short user)
+    {
+        fCallbacks.emplace_back(marker, std::move(receiver), user);
+    }
+
     void clearCallbacks() { fCallbacks.clear(); }
     void delCallback(size_t idx) { fCallbacks.erase(fCallbacks.begin() + idx); }
     size_t getNumCallbacks() const { return fCallbacks.size(); }

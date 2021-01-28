@@ -24,9 +24,11 @@
 #include "PRP/Light/plLightInfo.h"
 #include "plGeometrySpan.h"
 
-class PLASMA_DLL plSpan {
+class PLASMA_DLL plSpan
+{
 public:
-    enum {
+    enum
+    {
         kLiteMaterial = 0x0,
         kPropNoDraw = 0x1,
         kPropNoShadowCast = 0x2,
@@ -53,7 +55,8 @@ public:
         kVisLOS = 0x1000000
     };
 
-    enum plSpanType {
+    enum plSpanType
+    {
         kSpan = 0x0,
         kVertexSpan = 0x1,
         kIcicleSpan = 0x2,
@@ -83,10 +86,11 @@ protected:
 public:
     virtual const char* ClassName() const { return "plSpan"; }
 
-    plSpan() : fSubType(kVertexSpan), fMaterialIdx(0), fBaseMatrix(0),
-               fNumMatrices(0), fLocalUVWChans(0), fMaxBoneIdx(0),
-               fPenBoneIdx(0), fProps(0), fMinDist(0), fMaxDist(0),
-               fWaterHeight(0) { }
+    plSpan()
+        : fSubType(kVertexSpan), fMaterialIdx(), fBaseMatrix(), fNumMatrices(),
+          fLocalUVWChans(), fMaxBoneIdx(), fPenBoneIdx(), fProps(), fMinDist(),
+          fMaxDist(), fWaterHeight() { }
+
     plSpan(const plSpan& init)
         : fSubType(init.fSubType), fMaterialIdx(init.fMaterialIdx),
           fLocalToWorld(init.fLocalToWorld), fWorldToLocal(init.fWorldToLocal),
@@ -97,6 +101,7 @@ public:
           fFogEnvironment(init.fFogEnvironment), fMinDist(init.fMinDist),
           fMaxDist(init.fMaxDist), fWaterHeight(init.fWaterHeight),
           fPermaLights(init.fPermaLights), fPermaProjs(init.fPermaProjs) { }
+
     virtual ~plSpan() { }
 
     virtual void read(hsStream* S);
@@ -126,7 +131,7 @@ public:
     const hsBounds3Ext& getLocalBounds() const { return fLocalBounds; }
     const hsBounds3Ext& getWorldBounds() const { return fWorldBounds; }
 
-    void setFogEnvironment(plKey fog) { fFogEnvironment = fog; }
+    void setFogEnvironment(plKey fog) { fFogEnvironment = std::move(fog); }
     void setLocalToWorld(hsMatrix44 l2w) { fLocalToWorld = l2w; }
     void setWorldToLocal(hsMatrix44 w2l) { fWorldToLocal = w2l; }
     void setSubType(unsigned short type) { fSubType = type; }
@@ -146,14 +151,14 @@ public:
     const std::vector<plKey>& getPermaLights() const { return fPermaLights; }
     std::vector<plKey>& getPermaLights() { return fPermaLights; }
     void setPermaLights(const std::vector<plKey>& lights) { fPermaLights = lights; }
-    void addPermaLight(plKey light) { fPermaLights.push_back(light); }
+    void addPermaLight(plKey light) { fPermaLights.emplace_back(std::move(light)); }
     void delPermaLight(size_t idx) { fPermaLights.erase(fPermaLights.begin() + idx); }
     void clearPermaLights() { fPermaLights.clear(); }
 
     const std::vector<plKey>& getPermaProjs() const { return fPermaProjs; }
     std::vector<plKey>& getPermaProjs() { return fPermaProjs; }
     void setPermaProjs(const std::vector<plKey>& lights) { fPermaProjs = lights; }
-    void addPermaProj(plKey proj) { fPermaProjs.push_back(proj); }
+    void addPermaProj(plKey proj) { fPermaProjs.emplace_back(std::move(proj)); }
     void delPermaProj(size_t idx) { fPermaProjs.erase(fPermaProjs.begin() + idx); }
     void clearPermaProjs() { fPermaProjs.clear(); }
 };

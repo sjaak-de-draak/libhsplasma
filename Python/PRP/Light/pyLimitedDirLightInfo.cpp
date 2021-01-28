@@ -35,12 +35,13 @@ static PyGetSetDef pyLimitedDirLightInfo_GetSet[] = {
 PY_PLASMA_TYPE(LimitedDirLightInfo, plLimitedDirLightInfo,
                "plLimitedDirLightInfo wrapper")
 
-PY_PLASMA_TYPE_INIT(LimitedDirLightInfo) {
+PY_PLASMA_TYPE_INIT(LimitedDirLightInfo)
+{
     pyLimitedDirLightInfo_Type.tp_new = pyLimitedDirLightInfo_new;
     pyLimitedDirLightInfo_Type.tp_getset = pyLimitedDirLightInfo_GetSet;
     pyLimitedDirLightInfo_Type.tp_base = &pyDirectionalLightInfo_Type;
     if (PyType_CheckAndReady(&pyLimitedDirLightInfo_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyLimitedDirLightInfo_Type);
     return (PyObject*)&pyLimitedDirLightInfo_Type;

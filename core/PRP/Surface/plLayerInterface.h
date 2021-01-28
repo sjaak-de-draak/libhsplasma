@@ -23,11 +23,13 @@
 #include "plBitmap.h"
 #include "hsGMatState.h"
 
-class PLASMA_DLL plLayerInterface : public plSynchedObject {
+class PLASMA_DLL plLayerInterface : public plSynchedObject
+{
     CREATABLE(plLayerInterface, kLayerInterface, plSynchedObject)
 
 public:
-    enum plLayerDirtyBits {
+    enum plLayerDirtyBits
+    {
         kTransform = 0x1,
         kPreshadeColor = 0x2,
         kAmbientColor = 0x4,
@@ -45,7 +47,8 @@ public:
         kAllDirty = 0xFFFFFFFF
     };
 
-    enum plUVWSrcModifiers {
+    enum plUVWSrcModifiers
+    {
         kUVWPassThru = 0,
         kUVWIdxMask = 0xFFFF,
         kUVWNormal = 0x10000,
@@ -67,7 +70,7 @@ protected:
 
 public:
     plLayerInterface()
-        : fOpacity(1.0f), fUVWSrc(0), fLODBias(0.0f), fSpecularPower(0.0f) { }
+        : fOpacity(1.0f), fUVWSrc(), fLODBias(), fSpecularPower() { }
 
     void read(hsStream* S, plResManager* mgr) HS_OVERRIDE;
     void write(hsStream* S, plResManager* mgr) HS_OVERRIDE;
@@ -81,10 +84,10 @@ public:
     plKey getTexture() const { return fTexture; }
     plKey getVertexShader() const { return fVertexShader; }
     plKey getPixelShader() const { return fPixelShader; }
-    void setUnderLay(plKey layer) { fUnderLay = layer; }
-    void setTexture(plKey tex) { fTexture = tex; }
-    void setVertexShader(plKey shader) { fVertexShader = shader; }
-    void setPixelShader(plKey shader) { fPixelShader = shader; }
+    void setUnderLay(plKey layer) { fUnderLay = std::move(layer); }
+    void setTexture(plKey tex) { fTexture = std::move(tex); }
+    void setVertexShader(plKey shader) { fVertexShader = std::move(shader); }
+    void setPixelShader(plKey shader) { fPixelShader = std::move(shader); }
 
     hsMatrix44 getTransform() const { return fTransform; }
     hsMatrix44 getBumpEnvTransform() const { return fBumpEnvXfm; }

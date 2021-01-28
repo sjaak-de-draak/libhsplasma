@@ -17,14 +17,16 @@
 #include "plLineFollowMod.h"
 
 /* plLineFollowMod */
-plLineFollowMod::~plLineFollowMod() {
+plLineFollowMod::~plLineFollowMod()
+{
     delete fPath;
 }
 
-void plLineFollowMod::read(hsStream* S, plResManager* mgr) {
+void plLineFollowMod::read(hsStream* S, plResManager* mgr)
+{
     plMultiModifier::read(S, mgr);
 
-    setPath(plAnimPath::Convert(mgr->ReadCreatable(S)));
+    setPath(mgr->ReadCreatableC<plAnimPath>(S));
     fPathParent = mgr->readKey(S);
     fRefObj = mgr->readKey(S);
 
@@ -43,7 +45,8 @@ void plLineFollowMod::read(hsStream* S, plResManager* mgr) {
         fSpeedClamp = S->readFloat();
 }
 
-void plLineFollowMod::write(hsStream* S, plResManager* mgr) {
+void plLineFollowMod::write(hsStream* S, plResManager* mgr)
+{
     plMultiModifier::write(S, mgr);
 
     mgr->WriteCreatable(S, fPath);
@@ -63,7 +66,8 @@ void plLineFollowMod::write(hsStream* S, plResManager* mgr) {
         S->writeFloat(fSpeedClamp);
 }
 
-void plLineFollowMod::IPrcWrite(pfPrcHelper* prc) {
+void plLineFollowMod::IPrcWrite(pfPrcHelper* prc)
+{
     plMultiModifier::IPrcWrite(prc);
 
     prc->writeSimpleTag("Path");
@@ -93,10 +97,11 @@ void plLineFollowMod::IPrcWrite(pfPrcHelper* prc) {
     prc->endTag(true);
 }
 
-void plLineFollowMod::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
+void plLineFollowMod::IPrcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     if (tag->getName() == "Path") {
         if (tag->hasChildren())
-            setPath(plAnimPath::Convert(mgr->prcParseCreatable(tag->getFirstChild())));
+            setPath(mgr->prcParseCreatableC<plAnimPath>(tag->getFirstChild()));
     } else if (tag->getName() == "Parent") {
         if (tag->hasChildren())
             fPathParent = mgr->prcParseKey(tag->getFirstChild());
@@ -121,7 +126,8 @@ void plLineFollowMod::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
     }
 }
 
-void plLineFollowMod::setPath(plAnimPath* path) {
+void plLineFollowMod::setPath(plAnimPath* path)
+{
     delete fPath;
     fPath = path;
 }

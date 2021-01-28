@@ -35,13 +35,14 @@ static PyGetSetDef pyGBufferCell_GetSet[] = {
 
 PY_PLASMA_TYPE(GBufferCell, plGBufferCell, "plGBufferCell wrapper")
 
-PY_PLASMA_TYPE_INIT(GBufferCell) {
+PY_PLASMA_TYPE_INIT(GBufferCell)
+{
     pyGBufferCell_Type.tp_dealloc = pyGBufferCell_dealloc;
     pyGBufferCell_Type.tp_init = pyGBufferCell___init__;
     pyGBufferCell_Type.tp_new = pyGBufferCell_new;
     pyGBufferCell_Type.tp_getset = pyGBufferCell_GetSet;
     if (PyType_CheckAndReady(&pyGBufferCell_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyGBufferCell_Type);
     return (PyObject*)&pyGBufferCell_Type;

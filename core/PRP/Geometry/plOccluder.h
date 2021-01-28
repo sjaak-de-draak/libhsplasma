@@ -22,7 +22,8 @@
 #include "Math/hsMatrix44.h"
 #include "plCullPoly.h"
 
-class PLASMA_DLL plOccluder : public plObjInterface {
+class PLASMA_DLL plOccluder : public plObjInterface
+{
     CREATABLE(plOccluder, kOccluder, plObjInterface)
 
 protected:
@@ -33,7 +34,7 @@ protected:
     plKey fSceneNode;
 
 public:
-    plOccluder() : fPriority(0.0f) { }
+    plOccluder() : fPriority() { }
 
     void read(hsStream* S, plResManager* mgr) HS_OVERRIDE;
     void write(hsStream* S, plResManager* mgr) HS_OVERRIDE;
@@ -49,7 +50,7 @@ public:
 
     void setPriority(float priority) { fPriority = priority; }
     void setWorldBounds(const hsBounds3Ext& bounds) { fWorldBounds = bounds; }
-    void setSceneNode(plKey node) { fSceneNode = node; }
+    void setSceneNode(plKey node) { fSceneNode = std::move(node); }
 
     const std::vector<plCullPoly>& getPolys() const { return fPolys; }
     std::vector<plCullPoly>& getPolys() { return fPolys; }
@@ -59,13 +60,14 @@ public:
 
     const std::vector<plKey>& getVisRegions() const { return fVisRegions; }
     std::vector<plKey>& getVisRegions() { return fVisRegions; }
-    void addVisRegion(plKey region) { fVisRegions.push_back(region); }
+    void addVisRegion(plKey region) { fVisRegions.emplace_back(std::move(region)); }
     void delVisRegion(size_t idx) { fVisRegions.erase(fVisRegions.begin() + idx); }
     void clearVisRegions() { fVisRegions.clear(); }
 };
 
 
-class PLASMA_DLL plMobileOccluder : public plOccluder {
+class PLASMA_DLL plMobileOccluder : public plOccluder
+{
     CREATABLE(plMobileOccluder, kMobileOccluder, plOccluder)
 
 protected:

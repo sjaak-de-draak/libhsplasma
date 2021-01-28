@@ -30,7 +30,7 @@ PY_METHOD_VA(ActivatorConditionalObject, addActivator,
     PyObject* key;
     if (!(PyArg_ParseTuple(args, "O", &key) && pyKey_Check(key))) {
         PyErr_SetString(PyExc_TypeError, "addActivator expects a plKey");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addActivator(*((pyKey*)key)->fThis);
     Py_RETURN_NONE;
@@ -50,7 +50,7 @@ PY_METHOD_VA(ActivatorConditionalObject, delActivator,
     Py_ssize_t idx;
     if (!PyArg_ParseTuple(args, "n", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delActivator expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->delActivator((size_t)idx);
     Py_RETURN_NONE;
@@ -63,7 +63,8 @@ static PyMethodDef pyActivatorConditionalObject_Methods[] = {
     PY_METHOD_TERMINATOR
 };
 
-PY_GETSET_GETTER_DECL(ActivatorConditionalObject, activators) {
+PY_GETSET_GETTER_DECL(ActivatorConditionalObject, activators)
+{
     plActivatorConditionalObject* act = self->fThis;
     PyObject* activators = PyTuple_New(act->getActivators().size());
     for (size_t i = 0; i < act->getActivators().size(); ++i)
@@ -83,13 +84,14 @@ static PyGetSetDef pyActivatorConditionalObject_GetSet[] = {
 PY_PLASMA_TYPE(ActivatorConditionalObject, plActivatorConditionalObject,
                "plActivatorConditionalObject wrapper")
 
-PY_PLASMA_TYPE_INIT(ActivatorConditionalObject) {
+PY_PLASMA_TYPE_INIT(ActivatorConditionalObject)
+{
     pyActivatorConditionalObject_Type.tp_new = pyActivatorConditionalObject_new;
     pyActivatorConditionalObject_Type.tp_methods = pyActivatorConditionalObject_Methods;
     pyActivatorConditionalObject_Type.tp_getset = pyActivatorConditionalObject_GetSet;
     pyActivatorConditionalObject_Type.tp_base = &pyConditionalObject_Type;
     if (PyType_CheckAndReady(&pyActivatorConditionalObject_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyActivatorConditionalObject_Type);
     return (PyObject*)&pyActivatorConditionalObject_Type;

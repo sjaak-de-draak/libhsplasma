@@ -29,7 +29,7 @@ PY_METHOD_VA(SynchedObject, setExclude,
     const char* str;
     if (!PyArg_ParseTuple(args, "s", &str)) {
         PyErr_SetString(PyExc_TypeError, "setExclude expects a string");
-        return NULL;
+        return nullptr;
     }
     self->fThis->setExclude(str);
     Py_RETURN_NONE;
@@ -42,7 +42,7 @@ PY_METHOD_VA(SynchedObject, setVolatile,
     const char* str;
     if (!PyArg_ParseTuple(args, "s", &str)) {
         PyErr_SetString(PyExc_TypeError, "setVolatile expects a string");
-        return NULL;
+        return nullptr;
     }
     self->fThis->setVolatile(str);
     Py_RETURN_NONE;
@@ -54,7 +54,8 @@ static PyMethodDef pySynchedObject_Methods[] = {
     PY_METHOD_TERMINATOR
 };
 
-PY_GETSET_GETTER_DECL(SynchedObject, excludes) {
+PY_GETSET_GETTER_DECL(SynchedObject, excludes)
+{
     plSynchedObject* so = self->fThis;
     PyObject* list = PyTuple_New(so->getExcludes().size());
     for (size_t i=0; i<so->getExcludes().size(); i++)
@@ -62,7 +63,8 @@ PY_GETSET_GETTER_DECL(SynchedObject, excludes) {
     return list;
 }
 
-PY_GETSET_SETTER_DECL(SynchedObject, excludes) {
+PY_GETSET_SETTER_DECL(SynchedObject, excludes)
+{
     PY_PROPERTY_CHECK_NULL(excludes)
     pySequenceFastRef seq(value);
     if (!seq.isSequence()) {
@@ -83,7 +85,8 @@ PY_GETSET_SETTER_DECL(SynchedObject, excludes) {
 
 PY_PROPERTY_GETSET_DECL(SynchedObject, excludes)
 
-PY_GETSET_GETTER_DECL(SynchedObject, volatiles) {
+PY_GETSET_GETTER_DECL(SynchedObject, volatiles)
+{
     plSynchedObject* so = self->fThis;
     PyObject* list = PyTuple_New(so->getVolatiles().size());
     for (size_t i=0; i<so->getVolatiles().size(); i++)
@@ -91,7 +94,8 @@ PY_GETSET_GETTER_DECL(SynchedObject, volatiles) {
     return list;
 }
 
-PY_GETSET_SETTER_DECL(SynchedObject, volatiles) {
+PY_GETSET_SETTER_DECL(SynchedObject, volatiles)
+{
     PY_PROPERTY_CHECK_NULL(volatiles)
     pySequenceFastRef seq(value);
     if (!seq.isSequence()) {
@@ -123,13 +127,14 @@ static PyGetSetDef pySynchedObject_GetSet[] = {
 
 PY_PLASMA_TYPE(SynchedObject, plSynchedObject, "plSynchedObject wrapper")
 
-PY_PLASMA_TYPE_INIT(SynchedObject) {
+PY_PLASMA_TYPE_INIT(SynchedObject)
+{
     pySynchedObject_Type.tp_new = pySynchedObject_new;
     pySynchedObject_Type.tp_methods = pySynchedObject_Methods;
     pySynchedObject_Type.tp_getset = pySynchedObject_GetSet;
     pySynchedObject_Type.tp_base = &pyKeyedObject_Type;
     if (PyType_CheckAndReady(&pySynchedObject_Type) < 0)
-        return NULL;
+        return nullptr;
 
     /* Flags */
     PY_TYPE_ADD_CONST(SynchedObject, "kDontDirty",

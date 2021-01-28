@@ -29,7 +29,7 @@ PY_METHOD_VA(ANDConditionalObject, addChild,
     PyObject* key;
     if (!(PyArg_ParseTuple(args, "O", &key) && pyKey_Check(key))) {
         PyErr_SetString(PyExc_TypeError, "addChild expects a plKey");
-        return NULL;
+        return nullptr;
     }
     self->fThis->addChild(pyPlasma_get<plKey>(key));
     Py_RETURN_NONE;
@@ -49,7 +49,7 @@ PY_METHOD_VA(ANDConditionalObject, delChild,
     Py_ssize_t idx;
     if (!PyArg_ParseTuple(args, "n", &idx)) {
         PyErr_SetString(PyExc_TypeError, "delChild expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->delChild((size_t)idx);
     Py_RETURN_NONE;
@@ -62,7 +62,8 @@ static PyMethodDef pyANDConditionalObject_Methods[] = {
     PY_METHOD_TERMINATOR
 };
 
-PY_GETSET_GETTER_DECL(ANDConditionalObject, children) {
+PY_GETSET_GETTER_DECL(ANDConditionalObject, children)
+{
     PyObject* children = PyTuple_New(self->fThis->getChildren().size());
     for (size_t i = 0; i < self->fThis->getChildren().size(); ++i)
         PyTuple_SET_ITEM(children, i, pyPlasma_convert(self->fThis->getChildren()[i]));
@@ -80,13 +81,14 @@ static PyGetSetDef pyANDConditionalObject_GetSet[] = {
 PY_PLASMA_TYPE(ANDConditionalObject, plANDConditionalObject,
                "plANDConditionalObject wrapper")
 
-PY_PLASMA_TYPE_INIT(ANDConditionalObject) {
+PY_PLASMA_TYPE_INIT(ANDConditionalObject)
+{
     pyANDConditionalObject_Type.tp_new = pyANDConditionalObject_new;
     pyANDConditionalObject_Type.tp_methods = pyANDConditionalObject_Methods;
     pyANDConditionalObject_Type.tp_getset = pyANDConditionalObject_GetSet;
     pyANDConditionalObject_Type.tp_base = &pyConditionalObject_Type;
     if (PyType_CheckAndReady(&pyANDConditionalObject_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyANDConditionalObject_Type);
     return (PyObject*)&pyANDConditionalObject_Type;

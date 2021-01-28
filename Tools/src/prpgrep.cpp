@@ -25,7 +25,8 @@
 static char lnbuf[4096];
 static char* lnbuf_ptr = &lnbuf[4096];
 
-ST::string GetLine(hsStream* S) {
+static ST::string GetLine(hsStream* S)
+{
     if (lnbuf_ptr >= &lnbuf[4096]) {
         size_t len = S->size() - S->pos();
         if (len > 4096)
@@ -51,10 +52,12 @@ ST::string GetLine(hsStream* S) {
     }
 
     // Should never get here...
-    return ST::null;
+    return ST::string();
 }
 
-void DoSearch(hsStream* S, const ST::string& pattern, const ST::string& filename, plKey key) {
+static void DoSearch(hsStream* S, const ST::string& pattern,
+                     const ST::string& filename, const plKey& key)
+{
     unsigned int ln = 1;
     lnbuf_ptr = &lnbuf[4096];
     while (!S->eof()) {
@@ -72,11 +75,13 @@ void DoSearch(hsStream* S, const ST::string& pattern, const ST::string& filename
     }
 }
 
-void doHelp(const char* progname) {
+static void doHelp(const char* progname)
+{
     ST::printf("Usage: {} pattern file1 [file2 [...]]\n\n", progname);
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
     if (argc < 3) {
         doHelp(argv[0]);
         return 1;
@@ -112,7 +117,7 @@ int main(int argc, char* argv[]) {
                 prc.exclude(pfPrcHelper::kExcludeTextureData);
                 prc.exclude(pfPrcHelper::kExcludeVertexData);
                 hsKeyedObject* obj = GET_KEY_OBJECT((*ki), hsKeyedObject);
-                if (obj == NULL)
+                if (obj == nullptr)
                     continue;
                 obj->prcWrite(&prc);
                 prcOut.rewind();

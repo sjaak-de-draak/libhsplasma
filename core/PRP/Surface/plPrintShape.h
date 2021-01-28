@@ -19,14 +19,15 @@
 
 #include "PRP/Object/plObjInterface.h"
 
-class PLASMA_DLL plPrintShape : public plObjInterface {
+class PLASMA_DLL plPrintShape : public plObjInterface
+{
     CREATABLE(plPrintShape, kPrintShape, plObjInterface)
 
 protected:
     float fWidth, fLength, fHeight;
 
 public:
-    plPrintShape() : fWidth(0.0f), fLength(0.0f), fHeight(0.0f) { }
+    plPrintShape() : fWidth(), fLength(), fHeight() { }
 
     void read(hsStream* S, plResManager* mgr)HS_OVERRIDE;
     void write(hsStream* S, plResManager* mgr) HS_OVERRIDE;
@@ -34,10 +35,20 @@ public:
 protected:
     void IPrcWrite(pfPrcHelper* prc) HS_OVERRIDE;
     void IPrcParse(const pfPrcTag* tag, plResManager* mgr) HS_OVERRIDE;
+
+public:
+    float getWidth() const { return fWidth; }
+    float getLength() const { return fLength; }
+    float getHeight() const { return fHeight; }
+
+    void setWidth(float width) { fWidth = width; }
+    void setLength(float length) { fLength = length; }
+    void setHeight(float height) { fHeight = height; }
 };
 
 
-class PLASMA_DLL plActivePrintShape : public plPrintShape {
+class PLASMA_DLL plActivePrintShape : public plPrintShape
+{
     CREATABLE(plActivePrintShape, kActivePrintShape, plPrintShape)
 
 protected:
@@ -50,6 +61,13 @@ public:
 protected:
     void IPrcWrite(pfPrcHelper* prc) HS_OVERRIDE;
     void IPrcParse(const pfPrcTag* tag, plResManager* mgr) HS_OVERRIDE;
+
+public:
+    void addDecalMgr(plKey mgr) { fDecalMgrs.emplace_back(std::move(mgr)); }
+    void clearDecalMgrs() { fDecalMgrs.clear(); }
+    void delDecalMgr(size_t idx) { fDecalMgrs.erase(fDecalMgrs.begin() + idx); }
+    plKey getDecalMgr(size_t idx) const { return fDecalMgrs[idx]; }
+    size_t getNumDecalMgrs() const { return fDecalMgrs.size(); }
 };
 
 #endif

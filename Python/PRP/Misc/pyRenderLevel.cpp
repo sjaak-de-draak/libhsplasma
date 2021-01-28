@@ -23,10 +23,11 @@ PY_PLASMA_NEW_MSG(RenderLevel, "Cannot construct plRenderLevel objects")
 typedef PyObject pyRenderLevel;
 PY_PLASMA_TYPE(RenderLevel, plRenderLevel, "plRenderLevel constants")
 
-PY_PLASMA_TYPE_INIT(RenderLevel) {
+PY_PLASMA_TYPE_INIT(RenderLevel)
+{
     pyRenderLevel_Type.tp_new = pyRenderLevel_new;
     if (PyType_CheckAndReady(&pyRenderLevel_Type) < 0)
-        return NULL;
+        return nullptr;
 
     PY_TYPE_ADD_CONST(RenderLevel, "kOpaqueMajorLevel", plRenderLevel::kOpaqueMajorLevel);
     PY_TYPE_ADD_CONST(RenderLevel, "kFBMajorLevel", plRenderLevel::kFBMajorLevel);

@@ -18,7 +18,8 @@
 #include "pfGUIControlMod.h"
 
 /* pfGUICtrlProcWriteableObject */
-pfGUICtrlProcWriteableObject* pfGUICtrlProcWriteableObject::Read(hsStream* S) {
+pfGUICtrlProcWriteableObject* pfGUICtrlProcWriteableObject::Read(hsStream* S)
+{
     pfGUICtrlProcWriteableObject* proc;
 
     switch (S->readInt()) {
@@ -35,14 +36,15 @@ pfGUICtrlProcWriteableObject* pfGUICtrlProcWriteableObject::Read(hsStream* S) {
         proc->IRead(S);
         break;
     default:
-        proc = NULL;
+        proc = nullptr;
     }
 
     return proc;
 }
 
-void pfGUICtrlProcWriteableObject::Write(hsStream* S, pfGUICtrlProcWriteableObject* proc) {
-    if (proc == NULL) {
+void pfGUICtrlProcWriteableObject::Write(hsStream* S, pfGUICtrlProcWriteableObject* proc)
+{
+    if (proc == nullptr) {
         S->writeInt(kNull);
     } else {
         S->writeInt(proc->fType);
@@ -50,8 +52,9 @@ void pfGUICtrlProcWriteableObject::Write(hsStream* S, pfGUICtrlProcWriteableObje
     }
 }
 
-void pfGUICtrlProcWriteableObject::PrcWrite(pfPrcHelper* prc, pfGUICtrlProcWriteableObject* proc) {
-    if (proc == NULL) {
+void pfGUICtrlProcWriteableObject::PrcWrite(pfPrcHelper* prc, pfGUICtrlProcWriteableObject* proc)
+{
+    if (proc == nullptr) {
         prc->startTag("pfGUICtrlProcObject");
         prc->writeParam("NULL", true);
         prc->endTag(true);
@@ -60,12 +63,13 @@ void pfGUICtrlProcWriteableObject::PrcWrite(pfPrcHelper* prc, pfGUICtrlProcWrite
     }
 }
 
-pfGUICtrlProcWriteableObject* pfGUICtrlProcWriteableObject::PrcParse(const pfPrcTag* tag) {
+pfGUICtrlProcWriteableObject* pfGUICtrlProcWriteableObject::PrcParse(const pfPrcTag* tag)
+{
     pfGUICtrlProcWriteableObject* proc;
 
     if (tag->getName() == "pfGUICtrlProcObject") {
         if (tag->getParam("NULL", "false").to_bool())
-            return NULL;
+            return nullptr;
         throw pfPrcParseException(__FILE__, __LINE__, "Abstract class");
     } else if (tag->getName() == "pfGUICloseDlgProc") {
         proc = new pfGUICloseDlgProc();
@@ -86,36 +90,42 @@ pfGUICtrlProcWriteableObject* pfGUICtrlProcWriteableObject::PrcParse(const pfPrc
 
 
 /* pfGUICloseDlgProc */
-void pfGUICloseDlgProc::IPrcWrite(pfPrcHelper* prc) {
+void pfGUICloseDlgProc::IPrcWrite(pfPrcHelper* prc)
+{
     prc->startTag("pfGUICloseDlgProc");
     prc->endTag(true);
 }
 
 
 /* pfGUIConsoleCmdProc */
-void pfGUIConsoleCmdProc::IRead(hsStream* S) {
+void pfGUIConsoleCmdProc::IRead(hsStream* S)
+{
     int len = S->readInt();
     fCommand = S->readStr(len);
 }
 
-void pfGUIConsoleCmdProc::IWrite(hsStream* S) {
+void pfGUIConsoleCmdProc::IWrite(hsStream* S)
+{
     S->writeInt(fCommand.size());
     S->writeStr(fCommand);
 }
 
-void pfGUIConsoleCmdProc::IPrcWrite(pfPrcHelper* prc) {
+void pfGUIConsoleCmdProc::IPrcWrite(pfPrcHelper* prc)
+{
     prc->startTag("pfGUIConsoleCmdProc");
     prc->writeParam("Command", fCommand);
     prc->endTag(true);
 }
 
-void pfGUIConsoleCmdProc::IPrcParse(const pfPrcTag* tag) {
+void pfGUIConsoleCmdProc::IPrcParse(const pfPrcTag* tag)
+{
     fCommand = tag->getParam("Command", "");
 }
 
 
 /* pfGUIPythonScriptProc */
-void pfGUIPythonScriptProc::IPrcWrite(pfPrcHelper* prc) {
+void pfGUIPythonScriptProc::IPrcWrite(pfPrcHelper* prc)
+{
     prc->startTag("pfGUIPythonScriptProc");
     prc->endTag(true);
 }

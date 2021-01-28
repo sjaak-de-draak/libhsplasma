@@ -24,7 +24,8 @@ PY_PLASMA_VALUE_DEALLOC(CullPoly)
 PY_PLASMA_EMPTY_INIT(CullPoly)
 PY_PLASMA_VALUE_NEW(CullPoly, plCullPoly)
 
-PY_GETSET_GETTER_DECL(CullPoly, verts) {
+PY_GETSET_GETTER_DECL(CullPoly, verts)
+{
     const std::vector<hsVector3>& verts = self->fThis->getVerts();
     PyObject* list = PyTuple_New(verts.size());
     for (size_t i=0; i<verts.size(); i++)
@@ -32,7 +33,8 @@ PY_GETSET_GETTER_DECL(CullPoly, verts) {
     return list;
 }
 
-PY_GETSET_SETTER_DECL(CullPoly, verts) {
+PY_GETSET_SETTER_DECL(CullPoly, verts)
+{
     PY_PROPERTY_CHECK_NULL(verts)
     pySequenceFastRef seq(value);
     if (!seq.isSequence()) {
@@ -73,13 +75,14 @@ static PyGetSetDef pyCullPoly_GetSet[] = {
 
 PY_PLASMA_TYPE(CullPoly, plCullPoly, "plCullPoly wrapper")
 
-PY_PLASMA_TYPE_INIT(CullPoly) {
+PY_PLASMA_TYPE_INIT(CullPoly)
+{
     pyCullPoly_Type.tp_dealloc = pyCullPoly_dealloc;
     pyCullPoly_Type.tp_init = pyCullPoly___init__;
     pyCullPoly_Type.tp_new = pyCullPoly_new;
     pyCullPoly_Type.tp_getset = pyCullPoly_GetSet;
     if (PyType_CheckAndReady(&pyCullPoly_Type) < 0)
-        return NULL;
+        return nullptr;
 
     PY_TYPE_ADD_CONST(CullPoly, "kNone", plCullPoly::kNone);
     PY_TYPE_ADD_CONST(CullPoly, "kHole", plCullPoly::kHole);

@@ -21,8 +21,8 @@
 
 PY_PLASMA_NEW(AGAnimBink, plAGAnimBink)
 
-PY_PROPERTY(ST::string, AGAnimBink, binkFilename, getBinkFilename, setBinkFilename)
-PY_PROPERTY(ST::string, AGAnimBink,sgtFilename, getSgtFilename, setSgtFilename)
+PY_PROPERTY_PATHLIKE(AGAnimBink, binkFilename, getBinkFilename, setBinkFilename)
+PY_PROPERTY_PATHLIKE(AGAnimBink, sgtFilename, getSgtFilename, setSgtFilename)
 PY_PROPERTY(ST::string, AGAnimBink,subtitleId, getSubtitleId, setSubtitleId)
 
 static PyGetSetDef pyAGAnimBink_GetSet[] = {
@@ -34,12 +34,13 @@ static PyGetSetDef pyAGAnimBink_GetSet[] = {
 
 PY_PLASMA_TYPE(AGAnimBink, plAGAnimBink, "plAGAnimBink wrapper")
 
-PY_PLASMA_TYPE_INIT(AGAnimBink) {
+PY_PLASMA_TYPE_INIT(AGAnimBink)
+{
     pyAGAnimBink_Type.tp_new = pyAGAnimBink_new;
     pyAGAnimBink_Type.tp_getset = pyAGAnimBink_GetSet;
     pyAGAnimBink_Type.tp_base = &pyATCAnim_Type;
     if (PyType_CheckAndReady(&pyAGAnimBink_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyAGAnimBink_Type);
     return (PyObject*)&pyAGAnimBink_Type;

@@ -19,11 +19,13 @@
 
 #include "pfGUIValueCtrl.h"
 
-class PLASMA_DLL pfGUIProgressCtrl : public pfGUIValueCtrl {
+class PLASMA_DLL pfGUIProgressCtrl : public pfGUIValueCtrl
+{
     CREATABLE(pfGUIProgressCtrl, kGUIProgressCtrl, pfGUIValueCtrl)
 
 public:
-    enum ProgressFlags {
+    enum ProgressFlags
+    {
         kReverseValues = kDerivedFlagsStart, kLeftRightOrientation,
         kMapToScreenRange, kTriggerOnlyOnMouseUp, kMapToAnimationRange
     };
@@ -45,7 +47,7 @@ protected:
 public:
     const std::vector<plKey>& getAnimKeys() const { return fAnimationKeys; }
     std::vector<plKey>& getAnimKeys() { return fAnimationKeys; }
-    void addAnimKey(plKey key) { fAnimationKeys.push_back(key); }
+    void addAnimKey(plKey key) { fAnimationKeys.emplace_back(std::move(key)); }
     void delAnimKey(size_t idx) { fAnimationKeys.erase(fAnimationKeys.begin() + idx); }
     void clearAnimKeys() { fAnimationKeys.clear(); }
 

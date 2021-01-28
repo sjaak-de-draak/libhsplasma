@@ -32,7 +32,8 @@ PY_METHOD_NOARGS(SpaceTreeNode, getChildren,
     return children;
 }
 
-PY_METHOD_NOARGS(SpaceTreeNode, getLeafIndex, "Returns the node's leaf index") {
+PY_METHOD_NOARGS(SpaceTreeNode, getLeafIndex, "Returns the node's leaf index")
+{
     return pyPlasma_convert(self->fThis->getLeafIndex());
 }
 
@@ -43,7 +44,7 @@ PY_METHOD_VA(SpaceTreeNode, setChildren,
     int left, right;
     if (!PyArg_ParseTuple(args, "ii", &left, &right)) {
         PyErr_SetString(PyExc_TypeError, "setChildren expects int, int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->setChildren(left, right);
     Py_RETURN_NONE;
@@ -56,7 +57,7 @@ PY_METHOD_VA(SpaceTreeNode, setLeafIndex,
     int idx;
     if (!PyArg_ParseTuple(args, "i", &idx)) {
         PyErr_SetString(PyExc_TypeError, "setLeafIndex expects an int");
-        return NULL;
+        return nullptr;
     }
     self->fThis->setLeafIndex(idx);
     Py_RETURN_NONE;
@@ -83,14 +84,15 @@ static PyGetSetDef pySpaceTreeNode_GetSet[] = {
 
 PY_PLASMA_TYPE(SpaceTreeNode, plSpaceTreeNode, "plSpaceTreeNode wrapper")
 
-PY_PLASMA_TYPE_INIT(SpaceTreeNode) {
+PY_PLASMA_TYPE_INIT(SpaceTreeNode)
+{
     pySpaceTreeNode_Type.tp_dealloc = pySpaceTreeNode_dealloc;
     pySpaceTreeNode_Type.tp_init = pySpaceTreeNode___init__;
     pySpaceTreeNode_Type.tp_new = pySpaceTreeNode_new;
     pySpaceTreeNode_Type.tp_methods = pySpaceTreeNode_Methods;
     pySpaceTreeNode_Type.tp_getset = pySpaceTreeNode_GetSet;
     if (PyType_CheckAndReady(&pySpaceTreeNode_Type) < 0)
-        return NULL;
+        return nullptr;
 
     PY_TYPE_ADD_CONST(SpaceTreeNode, "kNone", plSpaceTreeNode::kNone);
     PY_TYPE_ADD_CONST(SpaceTreeNode, "kIsLeaf", plSpaceTreeNode::kIsLeaf);

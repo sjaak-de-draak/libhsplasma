@@ -28,7 +28,8 @@
 #include "PRP/Geometry/plDrawableSpans.h"
 #include "PRP/Surface/plLayer.h"
 
-void doHelp(const char* myname) {
+static void doHelp(const char* myname)
+{
     ST::printf("Usage: {} filename.prp [options] [objectname ...]\n", myname);
     puts("");
     puts("Options:");
@@ -40,15 +41,17 @@ void doHelp(const char* myname) {
     puts("");
 }
 
-ST::string filenameConvert(const ST::string& filename, const char* ext) {
+static ST::string filenameConvert(const ST::string& filename, const char* ext)
+{
     ST::string basename = filename.before_first('.');
     return basename + ext;
 }
 
-void WriteObj(plSceneObject* obj, hsStream* S, bool doXform);
-void WriteMat(hsGMaterial* mat, hsStream* S);
+static void WriteObj(plSceneObject* obj, hsStream* S, bool doXform);
+static void WriteMat(hsGMaterial* mat, hsStream* S);
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
     if (argc < 2) {
         doHelp(argv[0]);
         return 0;
@@ -154,13 +157,14 @@ int main(int argc, char* argv[]) {
 static size_t s_BaseIndex = 1;
 static size_t s_TexBaseIndex = 1;
 
-void WriteObj(plSceneObject* obj, hsStream* S, bool doXform) {
+static void WriteObj(plSceneObject* obj, hsStream* S, bool doXform)
+{
     if (!obj->getDrawInterface().isLoaded()) {
         plDebug::Warning("Cannot get draw interface for {}", obj->getKey()->getName());
         return;
     }
     plDrawInterface* draw = plDrawInterface::Convert(obj->getDrawInterface()->getObj());
-    plCoordinateInterface* coord = NULL;
+    plCoordinateInterface* coord = nullptr;
     if (obj->getCoordInterface().Exists())
         coord = plCoordinateInterface::Convert(obj->getCoordInterface()->getObj());
 
@@ -184,9 +188,9 @@ void WriteObj(plSceneObject* obj, hsStream* S, bool doXform) {
             plKey matKey = span->getMaterials()[ice->getMaterialIdx()];
             if (matKey.Exists()) {
                 hsGMaterial* mat = hsGMaterial::Convert(matKey->getObj(), false);
-                if (mat != NULL && mat->getLayers().size() > 0) {
+                if (mat && mat->getLayers().size() > 0) {
                     plLayerInterface* lay = plLayerInterface::Convert(mat->getLayers()[0]->getObj(), false);
-                    while (lay != NULL && lay->getUnderLay().Exists())
+                    while (lay && lay->getUnderLay().Exists())
                         lay = plLayerInterface::Convert(lay->getUnderLay()->getObj(), false);
                     uvwSrc = lay->getUVWSrc();
                     uvwXform = lay->getTransform();
@@ -196,7 +200,7 @@ void WriteObj(plSceneObject* obj, hsStream* S, bool doXform) {
             for (size_t j = 0; j < verts.size(); j++) {
                 hsVector3 pos;
                 if (doXform) {
-                    if (coord != NULL)
+                    if (coord)
                         pos = coord->getLocalToWorld().multPoint(verts[j].fPos) * 10.0f;
                     else
                         pos = ice->getLocalToWorld().multPoint(verts[j].fPos) * 10.0f;
@@ -252,16 +256,17 @@ void WriteObj(plSceneObject* obj, hsStream* S, bool doXform) {
     }
 }
 
-void WriteMat(hsGMaterial* mat, hsStream* S) {
+static void WriteMat(hsGMaterial* mat, hsStream* S)
+{
     if (mat->getLayers().empty())
         return;
 
     // Obj doesn't support multiple textures, so we just get the texture
     // on the base of the first layer in each material...
     plLayerInterface* lay = plLayerInterface::Convert(mat->getLayers()[0]->getObj(), false);
-    while (lay != NULL && lay->getUnderLay().Exists())
+    while (lay && lay->getUnderLay().Exists())
         lay = plLayerInterface::Convert(lay->getUnderLay()->getObj(), false);
-    if (lay == NULL) {
+    if (lay == nullptr) {
         plDebug::Warning("Cannot get layer for {}", mat->getKey()->getName());
         return;
     }

@@ -23,11 +23,12 @@ PY_PLASMA_NEW(ScalarTimeScale, plScalarTimeScale)
 
 PY_PLASMA_TYPE(ScalarTimeScale, plScalarTimeScale, "plScalarTimeScale wrapper")
 
-PY_PLASMA_TYPE_INIT(ScalarTimeScale) {
+PY_PLASMA_TYPE_INIT(ScalarTimeScale)
+{
     pyScalarTimeScale_Type.tp_new = pyScalarTimeScale_new;
     pyScalarTimeScale_Type.tp_base = &pyScalarChannel_Type;
     if (PyType_CheckAndReady(&pyScalarTimeScale_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyScalarTimeScale_Type);
     return (PyObject*)&pyScalarTimeScale_Type;

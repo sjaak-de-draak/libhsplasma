@@ -22,7 +22,7 @@
 
 PY_PLASMA_NEW(LayerMovie, plLayerMovie)
 
-PY_PROPERTY(ST::string, LayerMovie, movieName, getMovieName, setMovieName)
+PY_PROPERTY_PATHLIKE(LayerMovie, movieName, getMovieName, setMovieName)
 
 static PyGetSetDef pyLayerMovie_GetSet[] = {
     pyLayerMovie_movieName_getset,
@@ -31,12 +31,13 @@ static PyGetSetDef pyLayerMovie_GetSet[] = {
 
 PY_PLASMA_TYPE(LayerMovie, plLayerMovie, "plLayerMovie wrapper")
 
-PY_PLASMA_TYPE_INIT(LayerMovie) {
+PY_PLASMA_TYPE_INIT(LayerMovie)
+{
     pyLayerMovie_Type.tp_new = pyLayerMovie_new;
     pyLayerMovie_Type.tp_getset = pyLayerMovie_GetSet;
     pyLayerMovie_Type.tp_base = &pyLayerAnimation_Type;
     if (PyType_CheckAndReady(&pyLayerMovie_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyLayerMovie_Type);
     return (PyObject*)&pyLayerMovie_Type;

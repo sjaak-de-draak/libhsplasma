@@ -36,12 +36,13 @@ static PyGetSetDef pyOmniLightInfo_GetSet[] = {
 
 PY_PLASMA_TYPE(OmniLightInfo, plOmniLightInfo, "plOmniLightInfo wrapper")
 
-PY_PLASMA_TYPE_INIT(OmniLightInfo) {
+PY_PLASMA_TYPE_INIT(OmniLightInfo)
+{
     pyOmniLightInfo_Type.tp_new = pyOmniLightInfo_new;
     pyOmniLightInfo_Type.tp_getset = pyOmniLightInfo_GetSet;
     pyOmniLightInfo_Type.tp_base = &pyLightInfo_Type;
     if (PyType_CheckAndReady(&pyOmniLightInfo_Type) < 0)
-        return NULL;
+        return nullptr;
 
     Py_INCREF(&pyOmniLightInfo_Type);
     return (PyObject*)&pyOmniLightInfo_Type;

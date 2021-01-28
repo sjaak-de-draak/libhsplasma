@@ -19,7 +19,8 @@
 
 #include "PRP/Modifier/plModifier.h"
 
-class PLASMA_DLL plDetectorModifier : public plSingleModifier {
+class PLASMA_DLL plDetectorModifier : public plSingleModifier
+{
     CREATABLE(plDetectorModifier, kDetectorModifier, plSingleModifier)
 
 protected:
@@ -37,19 +38,20 @@ protected:
 public:
     const std::vector<plKey>& getReceivers() const { return fReceivers; }
     std::vector<plKey>& getReceivers() { return fReceivers; }
-    void addReceiver(plKey rcvr) { fReceivers.push_back(rcvr); }
+    void addReceiver(plKey rcvr) { fReceivers.emplace_back(std::move(rcvr)); }
     void delReceiver(size_t idx) { fReceivers.erase(fReceivers.begin() + idx); }
     void clearReceivers() { fReceivers.clear(); }
 
     plKey getRemoteMod() const { return fRemoteMod; }
     plKey getProxy() const { return fProxyKey; }
 
-    void setRemoteMod(plKey mod) { fRemoteMod = mod; }
-    void setProxy(plKey proxy) { fProxyKey = proxy; }
+    void setRemoteMod(plKey mod) { fRemoteMod = std::move(mod); }
+    void setProxy(plKey proxy) { fProxyKey = std::move(proxy); }
 };
 
 
-class PLASMA_DLL plPickingDetector : public plDetectorModifier {
+class PLASMA_DLL plPickingDetector : public plDetectorModifier
+{
     CREATABLE(plPickingDetector, kPickingDetector, plDetectorModifier)
 };
 

@@ -19,12 +19,15 @@
 
 #include "PRP/plCreatable.h"
 #include "PRP/KeyedObject/plKey.h"
+#include "ResManager/plResManager.h"
 
-class PLASMA_DLL plMessage : public plCreatable {
+class PLASMA_DLL plMessage : public plCreatable
+{
     CREATABLE(plMessage, kMessage, plCreatable)
 
 public:
-    enum plBCastFlags {
+    enum plBCastFlags
+    {
         kBCastNone = 0x0,
         kBCastByType = 0x1,
         kBCastUNUSED_0 = 0x2,
@@ -54,7 +57,7 @@ protected:
     unsigned int fBCastFlags;
 
 public:
-    plMessage() : fTimeStamp(0.0), fBCastFlags(kLocalPropagate) { }
+    plMessage() : fTimeStamp(), fBCastFlags(kLocalPropagate) { }
 
     void read(hsStream* S, plResManager* mgr) HS_OVERRIDE { IMsgRead(S, mgr); }
     void write(hsStream* S, plResManager* mgr) HS_OVERRIDE { IMsgWrite(S, mgr); }
@@ -70,13 +73,13 @@ public:
     double getTimeStamp() const { return fTimeStamp; }
     unsigned int getBCastFlags() const { return fBCastFlags; }
 
-    void setSender(plKey sender) { fSender = sender; }
+    void setSender(plKey sender) { fSender = std::move(sender); }
     void setTimeStamp(double timestamp) { fTimeStamp = timestamp; }
     void setBCastFlags(unsigned int flags) { fBCastFlags = flags; }
 
     const std::vector<plKey>& getReceivers() const { return fReceivers; }
     std::vector<plKey>& getReceivers() { return fReceivers; }
-    void addReceiver(plKey receiver) { fReceivers.push_back(receiver); }
+    void addReceiver(plKey receiver) { fReceivers.emplace_back(std::move(receiver)); }
     void delReceiver(size_t idx) { fReceivers.erase(fReceivers.begin() + idx); }
     void clearReceivers() { fReceivers.clear(); }
 };

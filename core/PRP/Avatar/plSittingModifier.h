@@ -19,11 +19,13 @@
 
 #include "PRP/Modifier/plModifier.h"
 
-class PLASMA_DLL plSittingModifier : public plSingleModifier {
+class PLASMA_DLL plSittingModifier : public plSingleModifier
+{
     CREATABLE(plSittingModifier, kSittingModifier, plSingleModifier)
 
 public:
-    enum {
+    enum
+    {
         kApproachFront = 0x1,
         kApproachLeft = 0x2,
         kApproachRight = 0x4,
@@ -39,7 +41,7 @@ protected:
     plKey fTriggeredAvatarKey;
 
 public:
-    plSittingModifier() : fMiscFlags(0) { }
+    plSittingModifier() : fMiscFlags() { }
 
     void read(hsStream* S, plResManager* mgr) HS_OVERRIDE;
     void write(hsStream* S, plResManager* mgr) HS_OVERRIDE;
@@ -54,7 +56,7 @@ public:
 
     const std::vector<plKey>& getNotifyKeys() const { return fNotifyKeys; }
     std::vector<plKey>& getNotifyKeys() { return fNotifyKeys; }
-    void addNotifyKey(plKey notify) { fNotifyKeys.push_back(notify); }
+    void addNotifyKey(plKey notify) { fNotifyKeys.emplace_back(std::move(notify)); }
     void delNotifyKey(size_t idx) { fNotifyKeys.erase(fNotifyKeys.begin() + idx); }
     void clearNotifyKeys() { fNotifyKeys.clear(); }
 };

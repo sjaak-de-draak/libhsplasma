@@ -16,20 +16,23 @@
 
 #include "plAnimEventModifier.h"
 
-plAnimEventModifier::~plAnimEventModifier() {
+plAnimEventModifier::~plAnimEventModifier()
+{
     delete fCallback;
 }
 
-void plAnimEventModifier::read(hsStream* S, plResManager* mgr) {
+void plAnimEventModifier::read(hsStream* S, plResManager* mgr)
+{
     plSingleModifier::read(S, mgr);
 
     fReceivers.resize(S->readInt());
     for (size_t i=0; i<fReceivers.size(); i++)
         fReceivers[i] = mgr->readKey(S);
-    setCallback(plMessage::Convert(mgr->ReadCreatable(S)));
+    setCallback(mgr->ReadCreatableC<plMessage>(S));
 }
 
-void plAnimEventModifier::write(hsStream* S, plResManager* mgr) {
+void plAnimEventModifier::write(hsStream* S, plResManager* mgr)
+{
     plSingleModifier::write(S, mgr);
 
     S->writeInt(fReceivers.size());
@@ -38,7 +41,8 @@ void plAnimEventModifier::write(hsStream* S, plResManager* mgr) {
     mgr->WriteCreatable(S, fCallback);
 }
 
-void plAnimEventModifier::IPrcWrite(pfPrcHelper* prc) {
+void plAnimEventModifier::IPrcWrite(pfPrcHelper* prc)
+{
     plSingleModifier::IPrcWrite(prc);
 
     prc->writeSimpleTag("Receivers");
@@ -51,7 +55,8 @@ void plAnimEventModifier::IPrcWrite(pfPrcHelper* prc) {
     prc->closeTag();
 }
 
-void plAnimEventModifier::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
+void plAnimEventModifier::IPrcParse(const pfPrcTag* tag, plResManager* mgr)
+{
     if (tag->getName() == "Receivers") {
         fReceivers.resize(tag->countChildren());
         const pfPrcTag* child = tag->getFirstChild();
@@ -61,13 +66,14 @@ void plAnimEventModifier::IPrcParse(const pfPrcTag* tag, plResManager* mgr) {
         }
     } else if (tag->getName() == "Callback") {
         if (tag->hasChildren())
-            setCallback(plMessage::Convert(mgr->prcParseCreatable(tag->getFirstChild())));
+            setCallback(mgr->prcParseCreatableC<plMessage>(tag->getFirstChild()));
     } else {
         plSingleModifier::IPrcParse(tag, mgr);
     }
 }
 
-void plAnimEventModifier::setCallback(plMessage* callback) {
+void plAnimEventModifier::setCallback(plMessage* callback)
+{
     delete fCallback;
     fCallback = callback;
 }
