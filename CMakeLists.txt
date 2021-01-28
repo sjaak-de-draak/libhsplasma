@@ -22,6 +22,10 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX OR
     endif()
 endif()
 
+if(UNIX)
+	add_definitions("-DUNIX=1")
+endif()
+
 if(APPLE)
     add_definitions("-DMACOSX")
     set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")

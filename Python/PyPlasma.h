@@ -17,9 +17,6 @@
 #ifndef _PYPLASMA_H
 #define _PYPLASMA_H
 
-//testing
-#define UNIX 1
-
 #include <Python.h>
 #include <PlasmaDefs.h>
 #include <Sys/Platform.h>
