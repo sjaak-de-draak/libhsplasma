@@ -17,6 +17,9 @@
 #ifndef _PYPLASMA_H
 #define _PYPLASMA_H
 
+//testing
+#define UNIX 1
+
 #include <Python.h>
 #include <PlasmaDefs.h>
 #include <Sys/Platform.h>
@@ -600,6 +603,7 @@ template <> inline size_t pyPlasma_get(PyObject* value) { return (size_t)(unsign
     #define _TP_VECTORCALL_PRINT
 #endif
 
+#if (UNIX == 0) 
 #define PY_PLASMA_TYPE(pyType, classname, doctext)                      \
     PyTypeObject py##pyType##_Type = {                                  \
         PyVarObject_HEAD_INIT(nullptr, 0)                               \
@@ -622,6 +626,25 @@ template <> inline size_t pyPlasma_get(PyObject* value) { return (size_t)(unsign
         _TP_FINALIZE_INIT                                               \
         _TP_VECTORCALL_PRINT                                            \
     };
+#else
+#define PY_PLASMA_TYPE(pyType, classname, doctext)                      \
+    PyTypeObject py##pyType##_Type = {                                  \
+        PyVarObject_HEAD_INIT(NULL, 0)                               \
+        "PyHSPlasma." #classname,                                       \
+        sizeof(py##pyType), 0,                                          \
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,     \
+        NULL, NULL, NULL, NULL, NULL,                                   \
+        Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,                       \
+        doctext,                                                        \
+	NULL, NULL, NULL, 0, NULL, NULL,                                \
+        NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0,                    \
+        NULL, NULL, NULL, NULL, NULL,                                   \
+        NULL, NULL, NULL, NULL, NULL,                                   \
+        NULL,                                                           \
+        _TP_VERSION_TAG_INIT                                            \
+        _TP_FINALIZE_INIT                                               \
+    };
+#endif
 
 #if (PY_MAJOR_VERSION < 3)
     #define _NB_DIVIDE_INIT         nullptr,
